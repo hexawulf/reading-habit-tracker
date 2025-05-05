@@ -1,0 +1,321 @@
+// Backend for Reading Habit Tracker
+// File: server.js
+
+const express = require('express');
+const multer = require('multer');
+const cors = require('cors');
+const csv = require('csv-parser');
+const fs = require('fs');
+const path = require('path');
+const net = require('net'); // Add this for the port finder
+
+const app = express();
+// We'll determine the port dynamically below
+// const PORT = process.env.PORT || 7070;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir);
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `goodreads-${Date.now()}${path.extname(file.originalname)}`);
+  }
+});
+
+const upload = multer({ 
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (path.extname(file.originalname) !== '.csv') {
+      return cb(new Error('Only CSV files are allowed'));
+    }
+    cb(null, true);
+  }
+});
+
+// API endpoint for uploading Goodreads CSV
+app.post('/api/upload', upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  try {
+    const results = await parseGoodreadsCSV(req.file.path);
+    return res.json({ 
+      success: true, 
+      message: 'File uploaded and processed successfully',
+      stats: generateStats(results),
+      data: results
+    });
+  } catch (error) {
+    console.error('Error processing file:', error);
+    return res.status(500).json({ error: 'Error processing file' });
+  }
+});
+
+// API endpoint to get reading stats without uploading
+app.get('/api/stats', async (req, res) => {
+  // In a production app, this would retrieve data from a database
+  // For now, we'll just use the most recent upload if available
+  const uploadDir = path.join(__dirname, 'uploads');
+  if (!fs.existsSync(uploadDir)) {
+    return res.status(404).json({ error: 'No data available' });
+  }
+
+  const files = fs.readdirSync(uploadDir);
+  if (files.length === 0) {
+    return res.status(404).json({ error: 'No data available' });
+  }
+
+  // Get the most recent file
+  const mostRecentFile = files
+    .filter(file => file.startsWith('goodreads-'))
+    .sort()
+    .reverse()[0];
+
+  if (!mostRecentFile) {
+    return res.status(404).json({ error: 'No data available' });
+  }
+
+  try {
+    const results = await parseGoodreadsCSV(path.join(uploadDir, mostRecentFile));
+    return res.json({ 
+      success: true, 
+      stats: generateStats(results),
+      data: results
+    });
+  } catch (error) {
+    console.error('Error retrieving stats:', error);
+    return res.status(500).json({ error: 'Error retrieving stats' });
+  }
+});
+
+// Function to parse Goodreads CSV
+function parseGoodreadsCSV(filePath) {
+  return new Promise((resolve, reject) => {
+    const results = [];
+    
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (data) => {
+        // Transform and clean data
+        const transformedData = {
+          bookId: data['Book Id'] || '',
+          title: data['Title'] || '',
+          author: data['Author'] || '',
+          authorLastFirst: data['Author l-f'] || '',
+          additionalAuthors: data['Additional Authors'] || '',
+          isbn: data['ISBN'] || '',
+          isbn13: data['ISBN13'] || '',
+          myRating: parseInt(data['My Rating']) || 0,
+          averageRating: parseFloat(data['Average Rating']) || 0,
+          publisher: data['Publisher'] || '',
+          binding: data['Binding'] || '',
+          pages: parseInt(data['Number of Pages']) || 0,
+          yearPublished: parseInt(data['Year Published']) || 0,
+          originalPublicationYear: parseInt(data['Original Publication Year']) || 0,
+          dateRead: data['Date Read'] ? new Date(data['Date Read']) : null,
+          dateAdded: data['Date Added'] ? new Date(data['Date Added']) : null,
+          bookshelves: data['Bookshelves'] || '',
+          bookshelvesWithPositions: data['Bookshelves with positions'] || '',
+          exclusiveShelf: data['Exclusive Shelf'] || '',
+          myReview: data['My Review'] || '',
+          spoiler: data['Spoiler'] || '',
+          privateNotes: data['Private Notes'] || '',
+          readCount: parseInt(data['Read Count']) || 0,
+          ownedCopies: parseInt(data['Owned Copies']) || 0
+        };
+        
+        // Only include books that have been read
+        if (transformedData.exclusiveShelf === 'read' && transformedData.dateRead) {
+          results.push(transformedData);
+        }
+      })
+      .on('end', () => {
+        // Sort books by date read (most recent first)
+        results.sort((a, b) => {
+          if (!a.dateRead) return 1;
+          if (!b.dateRead) return -1;
+          return b.dateRead - a.dateRead;
+        });
+        
+        resolve(results);
+      })
+      .on('error', (error) => {
+        reject(error);
+      });
+  });
+}
+
+// Function to generate reading statistics
+function generateStats(books) {
+  if (!books || books.length === 0) {
+    return {
+      totalBooks: 0,
+      averageRating: 0,
+      totalPages: 0,
+      averagePagesPerBook: 0,
+      readingByYear: {},
+      readingByMonth: {},
+      topAuthors: [],
+      ratingDistribution: {}
+    };
+  }
+
+  // Total books and pages
+  const totalBooks = books.length;
+  const totalPages = books.reduce((sum, book) => sum + (book.pages || 0), 0);
+  
+  // Calculate average rating
+  const ratingsSum = books.reduce((sum, book) => sum + (book.myRating || 0), 0);
+  const averageRating = ratingsSum / books.filter(book => book.myRating > 0).length;
+  
+  // Reading history by year
+  const readingByYear = {};
+  books.forEach(book => {
+    if (book.dateRead) {
+      const year = book.dateRead.getFullYear();
+      readingByYear[year] = (readingByYear[year] || 0) + 1;
+    }
+  });
+  
+  // Reading history by month (for the current and previous year)
+  const currentYear = new Date().getFullYear();
+  const readingByMonth = {};
+  
+  // Initialize all months for current and previous year
+  [currentYear, currentYear - 1].forEach(year => {
+    readingByMonth[year] = Array(12).fill(0);
+  });
+  
+  // Count books by month
+  books.forEach(book => {
+    if (book.dateRead) {
+      const year = book.dateRead.getFullYear();
+      const month = book.dateRead.getMonth();
+      
+      if (year === currentYear || year === currentYear - 1) {
+        readingByMonth[year][month] += 1;
+      }
+    }
+  });
+  
+  // Top authors
+  const authorCounts = {};
+  books.forEach(book => {
+    if (book.author) {
+      authorCounts[book.author] = (authorCounts[book.author] || 0) + 1;
+    }
+  });
+  
+  const topAuthors = Object.entries(authorCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([author, count]) => ({ author, count }));
+  
+  // Rating distribution
+  const ratingDistribution = {};
+  for (let i = 1; i <= 5; i++) {
+    ratingDistribution[i] = books.filter(book => book.myRating === i).length;
+  }
+  
+  // Calculate reading pace
+  const readingPace = {
+    currentYear: readingByYear[currentYear] || 0,
+    previousYear: readingByYear[currentYear - 1] || 0,
+    currentMonth: readingByMonth[currentYear][new Date().getMonth()] || 0,
+    averageBooksPerMonth: calculateAverageBooksPerMonth(books)
+  };
+  
+  // Recently read books
+  const recentBooks = books.slice(0, 30);
+  
+  // Goal progress (assuming a goal of 52 books per year)
+  const yearlyGoal = 52;
+  const goalProgress = {
+    target: yearlyGoal,
+    current: readingByYear[currentYear] || 0,
+    percentage: Math.round(((readingByYear[currentYear] || 0) / yearlyGoal) * 100)
+  };
+  
+  return {
+    totalBooks,
+    averageRating,
+    totalPages,
+    averagePagesPerBook: Math.round(totalPages / totalBooks),
+    readingByYear,
+    readingByMonth,
+    topAuthors,
+    ratingDistribution,
+    readingPace,
+    recentBooks,
+    goalProgress
+  };
+}
+
+// Helper function to calculate average books per month
+function calculateAverageBooksPerMonth(books) {
+  if (!books || books.length === 0) return 0;
+  
+  // Get unique years with at least one book read
+  const yearsWithReading = new Set();
+  books.forEach(book => {
+    if (book.dateRead) {
+      yearsWithReading.add(book.dateRead.getFullYear());
+    }
+  });
+  
+  // Calculate total months of active reading
+  const totalMonths = yearsWithReading.size * 12;
+  
+  // Return average
+  return parseFloat((books.length / totalMonths).toFixed(2));
+}
+
+// Serve static files from the client/build folder if in production
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files
+  app.use(express.static(path.join(__dirname, 'client/build')));
+  
+  // For any request that doesn't match an API route, send the index.html file
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+  });
+} else {
+  // In development mode, add a basic root route
+  app.get('/', (req, res) => {
+    res.send('Reading Habits API is running... Use the API endpoints to interact with the service or connect your frontend application.');
+  });
+}
+
+// Function to find an available port
+function findAvailablePort(startPort, callback) {
+  const server = net.createServer();
+  
+  server.listen(startPort, () => {
+    const port = server.address().port;
+    server.close(() => callback(port));
+  });
+  
+  server.on('error', () => {
+    // Port is in use, try the next one
+    findAvailablePort(startPort + 1, callback);
+  });
+}
+
+// Start server with fixed port for Replit
+const PORT = 5000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Server started successfully!`);
+});
+
+module.exports = app; // For testing purposes

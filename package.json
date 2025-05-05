@@ -1,0 +1,33 @@
+{
+  "name": "reading-habit-tracker",
+  "version": "1.0.0",
+  "description": "A web application to track reading habits using Goodreads export data",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "install-client": "cd client && npm install",
+    "heroku-postbuild": "npm run install-client && npm run build",
+    "test": "jest"
+  },
+  "author": "hexawulf",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
+    "dayjs": "^1.11.9",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0",
+    "jest": "^29.6.1",
+    "nodemon": "^3.0.1",
+    "supertest": "^6.3.3"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

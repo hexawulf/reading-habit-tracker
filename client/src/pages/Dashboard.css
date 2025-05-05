@@ -1,0 +1,354 @@
+/* client/src/pages/Dashboard.css */
+.dashboard {
+    padding: 1.5rem;
+  }
+  
+  .dashboard h1 {
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-size: 2rem;
+    font-weight: 700;
+  }
+  
+  .stats-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .stat-card {
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stat-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #666;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  
+  .stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 0.25rem;
+  }
+  
+  .rating-stars {
+    color: #FFC107;
+    font-size: 1.2rem;
+    margin-top: 0.25rem;
+  }
+  
+  .books-read .stat-value {
+    color: #3F51B5;
+  }
+  
+  .this-year .stat-value {
+    color: #4CAF50;
+  }
+  
+  .rating .stat-value {
+    color: #FF9800;
+  }
+  
+  .reading-pace .stat-value {
+    color: #9C27B0;
+  }
+  
+  .goal-progress {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .goal-progress h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #333;
+    font-size: 1.5rem;
+  }
+  
+  .goal-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .goal-card {
+    padding: 1rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border-left: 4px solid #4CAF50;
+  }
+  
+  .goal-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-size: 1.2rem;
+  }
+  
+  .progress-container {
+    margin-top: 0.5rem;
+  }
+  
+  .progress-bar {
+    height: 12px;
+    background-color: #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background-color: #4CAF50;
+    border-radius: 6px;
+  }
+  
+  .progress-text {
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .set-goals-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  .set-goals-link:hover {
+    text-decoration: underline;
+  }
+  
+  .charts-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .chart-card {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .chart-card h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  
+  .top-authors {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .author-item {
+    margin-bottom: 1rem;
+  }
+  
+  .author-name {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.25rem;
+  }
+  
+  .author-count {
+    display: block;
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+  }
+  
+  .author-bar {
+    height: 8px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .author-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+  }
+  
+  .see-more-link {
+    display: block;
+    text-align: center;
+    margin-top: 1rem;
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  .see-more-link:hover {
+    text-decoration: underline;
+  }
+  
+  .recent-books {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .recent-books h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-size: 1.5rem;
+  }
+  
+  .books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .book-card {
+    padding: 1rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+  }
+  
+  .book-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .book-title {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .book-author {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
+    font-style: italic;
+  }
+  
+  .book-rating {
+    color: #FFC107;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .book-date, .book-pages {
+    margin: 0;
+    color: #888;
+    font-size: 0.8rem;
+  }
+  
+  .reading-insights {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .reading-insights h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-size: 1.5rem;
+  }
+  
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .insight-card {
+    padding: 1rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border-top: 4px solid #4CAF50;
+  }
+  
+  .insight-card:nth-child(2) {
+    border-top-color: #3F51B5;
+  }
+  
+  .insight-card:nth-child(3) {
+    border-top-color: #FF9800;
+  }
+  
+  .insight-card:nth-child(4) {
+    border-top-color: #9C27B0;
+  }
+  
+  .insight-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  
+  .insight-card p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  @media (max-width: 768px) {
+    .charts-container {
+      grid-template-columns: 1fr;
+    }
+    
+    .books-grid {
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .stat-card {
+      padding: 1rem;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+    }
+    
+    .books-grid {
+      grid-template-columns: 1fr;
+    }
+  }
