@@ -1,0 +1,204 @@
+/* client/src/pages/ReadingStats.css */
+.reading-stats-page {
+  padding: 1.5rem;
+}
+
+.reading-stats-page h1 {
+  margin-bottom: 1.5rem;
+  color: #333;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.reading-stats-page h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.reading-stats-page h3 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: #333;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.stats-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.total-books .stat-value {
+  color: #4CAF50;
+}
+
+.total-pages .stat-value {
+  color: #3F51B5;
+}
+
+.avg-pages .stat-value {
+  color: #FF9800;
+}
+
+.avg-rating .stat-value {
+  color: #FFC107;
+}
+
+.rating-stars {
+  color: #FFC107;
+  font-size: 1.2rem;
+}
+
+.stat-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-section {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stat-container {
+  width: 100%;
+}
+
+.stat-insight {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  border-left: 4px solid #4CAF50;
+}
+
+.stat-insight p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.interesting-facts {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.facts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.fact-card {
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border-top: 4px solid #4CAF50;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.fact-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.fact-card:nth-child(2) {
+  border-top-color: #3F51B5;
+}
+
+.fact-card:nth-child(3) {
+  border-top-color: #FF9800;
+}
+
+.fact-card:nth-child(4) {
+  border-top-color: #9C27B0;
+}
+
+.fact-card h3 {
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.fact-title {
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.fact-subtitle {
+  font-style: italic;
+  color: #666;
+  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
+}
+
+.fact-detail {
+  color: #888;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+  .stat-sections {
+    grid-template-columns: 1fr;
+  }
+  
+  .facts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .reading-stats-page {
+    padding: 1rem;
+  }
+  
+  .stat-card {
+    padding: 1rem;
+  }
+  
+  .stat-value {
+    font-size: 2rem;
+  }
+  
+  .stat-section,
+  .interesting-facts {
+    padding: 1rem;
+  }
+}
