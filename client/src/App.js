@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ReadingDataProvider } from './context/ReadingDataContext';
 import './App.css';
 
 // Import components
@@ -27,7 +28,8 @@ function App() {
 
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <div className="app">
+      <ReadingDataProvider>
+        <div className="app">
         <Header toggleSidebar={toggleSidebar} />
         <div className="main-content">
           <Sidebar />
@@ -46,6 +48,7 @@ function App() {
         </div>
         <Footer />
       </div>
+      </ReadingDataProvider>
     </Router>
   );
 }
