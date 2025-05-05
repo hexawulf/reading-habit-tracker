@@ -1,176 +1,160 @@
 ## 📚 Reading Habit Tracker
 
-![Book Icon](generated-icon.png)
-
+<p align="center">
+  <img src="generated-icon.png" alt="Book Icon" width="180"/>
+</p>
 
 # Reading Habit Tracker
 
 A web application for tracking and visualizing your reading habits using Goodreads export data. This tool allows you to upload your Goodreads library export CSV and provides insightful visualizations and statistics about your reading history.
 
+---
 
-## Features
+## ✨ Features
 
-- **Direct Goodreads CSV Import**: Simply upload your Goodreads library export to get started
-- **Comprehensive Dashboard**: View an overview of your reading habits at a glance
-- **Reading Progress Tracking**: Track your progress toward yearly and monthly reading goals
-- **Detailed Visualizations**: Analyze your reading patterns with interactive charts and graphs
-- **Author Statistics**: Discover your most-read authors and genres
-- **Reading Pace Analysis**: Monitor your reading speed and patterns over time
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Direct Goodreads CSV Import**: Simply upload your Goodreads library export to get started  
+- **Comprehensive Dashboard**: View an overview of your reading habits at a glance  
+- **Reading Progress Tracking**: Track your progress toward yearly and monthly reading goals  
+- **Detailed Visualizations**: Analyze your reading patterns with interactive charts and graphs  
+- **Author Statistics**: Discover your most-read authors and genres  
+- **Reading Pace Analysis**: Monitor your reading speed and patterns over time  
+- **Responsive Design**: Works seamlessly on desktop and mobile devices  
 
-## How to Get Your Goodreads Data
+---
 
-1. Log in to your Goodreads account
-2. Navigate to "My Books" (your bookshelf)
-3. Click on "Import and Export" (at the bottom of the left sidebar)
-4. Select "Export Library"
-5. Wait for the export to be generated and download the CSV file
-6. Upload the CSV file to the Reading Habit Tracker
+## 📤 How to Get Your Goodreads Data
 
-## Tech Stack
+1. Log in to your Goodreads account  
+2. Navigate to **My Books**  
+3. Click on **Import and Export** (bottom left sidebar)  
+4. Select **Export Library**  
+5. Download the generated CSV file  
+6. Upload it to the Reading Habit Tracker
 
-- **Frontend**: React, React Router, Recharts (for visualizations)
-- **Backend**: Node.js, Express
-- **Data Processing**: CSV Parser, Day.js
-- **Styling**: CSS (with custom components)
+---
 
-## Local Development
+## 🛠️ Tech Stack
 
-### Prerequisites
+- **Frontend**: React, React Router, Recharts  
+- **Backend**: Node.js, Express  
+- **Data Processing**: CSV Parser, Day.js  
+- **Styling**: Custom CSS  
+
+---
+
+## 🧑‍💻 Local Development
+
+### ✅ Prerequisites
 
 - Node.js (v14 or higher)
 - npm or yarn
 
-### Installation
+### 🚀 Installation
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/hexawulf/reading-habit-tracker.git
-   cd reading-habit-tracker
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/hexawulf/reading-habit-tracker.git
+cd reading-habit-tracker
 
-2. Install server dependencies:
-   ```
-   npm install
-   ```
+# Install server dependencies
+npm install
 
-3. Install client dependencies:
-   ```
-   cd client
-   npm install
-   cd ..
-   ```
+# Install client dependencies
+cd client
+npm install
+cd ..
 
-4. Create an uploads directory:
-   ```
-   mkdir uploads
-   ```
+# Create an uploads directory
+mkdir uploads
+🏃 Running the Application
+bash
+Copy
+Edit
+# Start the backend
+npm run dev
 
-### Running the Application
-
-1. Start the development server:
-   ```
-   npm run dev
-   ```
-
-2. Start the client:
-   ```
-   npm run client
-   ```
-
-3. Open your browser and navigate to `http://localhost:3000`
-
-## Deployment
-
-The application is designed to be easily deployed to various platforms such as Heroku, Vercel, or Netlify.
-
-### Deploying to Heroku
-
-1. Create a Heroku account and install the Heroku CLI
-2. Log in to Heroku CLI:
-   ```
-   heroku login
-   ```
-
-3. Create a new Heroku app:
-   ```
-   heroku create reading-habit-tracker
-   ```
-
-4. Deploy to Heroku:
-   ```
-   git push heroku main
-   ```
-
-### Environment Variables
-
-The following environment variables can be used to configure the application:
-
-- `PORT`: Port on which the server will run (default: 5000)
-- `NODE_ENV`: Environment mode (development, production)
-
-## Project Structure
-
+# Start the frontend
+npm run client
+Then open your browser and navigate to: http://localhost:3000
 ```
-├── client/                  # React frontend
-│   ├── public/              # Static files
-│   ├── src/                 # Source files
-│   │   ├── components/      # Reusable components
-│   │   ├── context/         # React context
-│   │   ├── pages/           # Page components
-│   │   ├── utils/           # Utility functions
-│   │   ├── App.js           # Main application component
-│   │   └── index.js         # Entry point
-├── server.js                # Express server
-├── utils/                   # Server utilities
-│   └── goodreadsParser.js   # CSV parsing utility
-├── uploads/                 # Upload directory for CSV files
-├── package.json             # Project dependencies
-└── README.md                # Project documentation
-```
+🌐 Deployment
+This app can be deployed to Heroku, Vercel, or Netlify.
 
-## API Endpoints
+🚀 Heroku Deployment
+bash
+Copy
+Edit
+heroku login
+heroku create reading-habit-tracker
+git push heroku main
+🌱 Environment Variables
+Variable	Description
+PORT	Port on which the server runs (default: 5000)
+NODE_ENV	Environment mode (development/production)
 
-The Reading Habit Tracker provides the following API endpoints:
+📁 Project Structure
+pgsql
+Copy
+Edit
+├── client/
+│   ├── public/
+│   └── src/
+│       ├── components/
+│       ├── context/
+│       ├── pages/
+│       ├── utils/
+│       ├── App.js
+│       └── index.js
+├── server.js
+├── utils/
+│   └── goodreadsParser.js
+├── uploads/
+├── package.json
+└── README.md
+📡 API Endpoints
+POST /api/upload – Upload a Goodreads CSV
 
-- `POST /api/upload` - Upload a Goodreads CSV file for processing
-- `GET /api/stats` - Get reading statistics based on the most recently uploaded file
+GET /api/stats – Get generated reading stats
 
-## Contributing
+🤝 Contributing
+Fork the repo
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Create a branch (git checkout -b feature/my-feature)
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Commit your changes (git commit -m 'Add feature')
 
-## License
+Push to GitHub (git push origin feature/my-feature)
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Open a Pull Request
 
-## Acknowledgments
+📜 License
+MIT License – see the LICENSE file for details.
 
-- Goodreads for providing the export functionality
-- The open-source libraries used in this project
-- All book lovers who track their reading habits!
+🙏 Acknowledgments
+Goodreads for export tools
 
-## Roadmap
+Open-source devs who make great libraries
 
-Here are some features planned for future releases:
+You — the reader, the tracker, the book lover!
 
-- [ ] Reading challenges (e.g., read books from different countries)
-- [ ] Book recommendations based on reading history
-- [ ] Integration with Open Library API for book covers
-- [ ] Social sharing features
-- [ ] Dark mode
-- [ ] User accounts and data persistence
-- [ ] Multiple library support (import from multiple sources)
-- [ ] Reading statistics comparison with friends
+🔮 Roadmap
+ Reading challenges
 
-## Contact
+ Open Library API integration
 
-hexawulf - [@hexawulf](https://twitter.com/hexawulf) - hexawulf@gmail.com
+ Book recommendations
 
-Project Link: [https://github.com/hexawulf/reading-habit-tracker](https://github.com/hexawulf/reading-habit-tracker)
+ User accounts & data sync
+
+ Dark mode
+
+ Social sharing
+
+ Friend stats comparison
+
+📬 Contact
+hexawulf
+Twitter: @hexawulf
+📧 hexawulf@gmail.com
+
+GitHub Project: https://github.com/hexawulf/reading-habit-tracker
