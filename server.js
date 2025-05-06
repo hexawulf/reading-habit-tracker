@@ -32,11 +32,11 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI,
+    mongoUrl: mongoURI,
     ttl: 14 * 24 * 60 * 60 // Session TTL of 14 days
   }),
   cookie: {
