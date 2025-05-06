@@ -26,6 +26,10 @@ const Auth = ({ onClose }) => {
   const handleGoogleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
+      if (!result?.user?.accessToken) {
+        setError('Google login failed - no access token received');
+        return;
+      }
       const response = await fetch('/api/auth/google', {
         method: 'POST',
         headers: {
@@ -35,9 +39,19 @@ const Auth = ({ onClose }) => {
       });
       if (response.ok) {
         window.location.reload();
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to authenticate with server');
       }
     } catch (error) {
       console.error('Google auth error:', error);
+      if (error.code === 'auth/unauthorized-domain') {
+        setError('This domain is not authorized for Google login. Please add it to Firebase Console.');
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        setError('Login popup was closed');
+      } else {
+        setError(error.message || 'Failed to login with Google');
+      }
     }
   };
 
