@@ -102,6 +102,38 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// Google Auth endpoint
+app.post('/api/auth/google', async (req, res) => {
+  try {
+    const { token } = req.body;
+    // Verify the token with Firebase Admin
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const userId = decodedToken.uid;
+    
+    let user = await User.findOne({ googleId: userId });
+    if (!user) {
+      user = await User.create({
+        googleId: userId,
+        username: decodedToken.name || decodedToken.email,
+        email: decodedToken.email,
+        readingData: {
+          books: [],
+          stats: {},
+          goals: {
+            yearly: 52,
+            monthly: 4
+          }
+        }
+      });
+    }
+
+    req.session.userId = user._id;
+    res.json({ user });
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
 app.get('/api/auth/user', async (req, res) => {
   try {
     if (!req.session.userId) {
