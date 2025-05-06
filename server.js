@@ -11,12 +11,19 @@ const bcrypt = require('bcrypt');
 const User = require('./models/User');
 
 // Connect to MongoDB
-const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/reading-tracker';
+const mongoURI = 'mongodb+srv://reading-tracker.mongocluster.net/reading-tracker';
+mongoose.set('strictQuery', true);
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
+  retryWrites: true,
+  serverSelectionTimeoutMS: 5000
 }).then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    // Continue without DB for now
+    console.log('Continuing without database connection...');
+  });
 const csv = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
