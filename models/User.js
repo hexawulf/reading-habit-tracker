@@ -7,8 +7,14 @@ const UserSchema = new mongoose.Schema({
   email: { type: String },
   readingData: {
     books: [Object],
-    stats: Object
+    stats: Object,
+    goals: {
+      yearly: { type: Number, default: 52 },
+      monthly: { type: Number, default: 4 },
+      pages: { type: Number }
+    }
   },
+  lastLogin: { type: Date },
   createdAt: { type: Date, default: Date.now }
 });
 

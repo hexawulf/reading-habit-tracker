@@ -66,11 +66,24 @@ app.post('/api/auth/login', async (req, res) => {
     if (!user) {
       user = await User.create({
         replitId: userId,
-        username: username
+        username: username,
+        readingData: {
+          books: [],
+          stats: {},
+          goals: {
+            yearly: 52,
+            monthly: 4
+          }
+        }
       });
     }
 
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+
     req.session.userId = user._id;
+    req.session.replitId = userId;
     res.json({ user });
   } catch (error) {
     res.status(500).json({ error: error.message });
