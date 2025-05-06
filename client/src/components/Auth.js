@@ -25,7 +25,7 @@ try {
   console.error('Firebase initialization error:', error);
 }
 
-const Auth = () => {
+const Auth = ({ onClose }) => {
   const [showOptions, setShowOptions] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
