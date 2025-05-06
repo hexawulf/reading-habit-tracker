@@ -111,9 +111,14 @@ const Auth = ({ onClose }) => {
     <div className="auth-container">
       <h2>Reading Habit Tracker</h2>
       {!showOptions ? (
-        <button onClick={() => setShowOptions(true)} className="login-btn">
-          Login
-        </button>
+        <div className="auth-buttons">
+          <button onClick={() => setShowOptions(true)} className="login-btn">
+            Login
+          </button>
+          <button onClick={() => {setShowOptions(true); setIsRegistering(true);}} className="register-btn">
+            Register
+          </button>
+        </div>
       ) : (
         <div className="auth-options">
           <button onClick={handleReplitLogin} className="replit-btn">
