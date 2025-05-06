@@ -17,6 +17,7 @@ const Header = ({ toggleSidebar }) => {
           <span></span>
         </button>
         <Link to="/" className="logo">
+          <img src="/generated-icon.png" alt="Reading Habit Tracker" className="header-logo" />
           <h1>Reading Habit Tracker</h1>
         </Link>
         <nav className="nav-links">
