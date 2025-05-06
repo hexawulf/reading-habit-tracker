@@ -46,11 +46,12 @@ const Auth = ({ onClose }) => {
     } catch (error) {
       console.error('Google auth error:', error);
       if (error.code === 'auth/unauthorized-domain') {
-        setError('This domain is not authorized for Google login. Please add it to Firebase Console.');
-      } else if (error.code === 'auth/popup-closed-by-user') {
-        setError('Login popup was closed');
+        setError('This domain is not authorized. Please try username/password login instead.');
+      } else if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+        setError('Login window was closed');
       } else {
-        setError(error.message || 'Failed to login with Google');
+        console.error('Google auth error:', error);
+        setError('Google login failed. Please try username/password login instead.');
       }
     }
   };
