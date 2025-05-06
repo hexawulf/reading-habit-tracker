@@ -4,12 +4,17 @@ import './Auth.css';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
-// Initialize Firebase (we'll move this to environment variables later)
+// Initialize Firebase with environment variables
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID
 };
+
+// Only initialize if we have the required config
+if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId) {
+  console.error('Firebase configuration is incomplete. Please check environment variables.');
+}
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
