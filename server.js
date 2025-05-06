@@ -4,6 +4,13 @@
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+const User = require('./models/User');
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/reading-tracker');
 const csv = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
@@ -14,8 +21,72 @@ const app = express();
 // const PORT = process.env.PORT || 7070;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'dev-secret',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/reading-tracker'
+  }),
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+  }
+}));
+
+// Auth middleware
+const requireAuth = (req, res, next) => {
+  const userId = req.headers['x-replit-user-id'];
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+};
+
+// Auth endpoints
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const userId = req.headers['x-replit-user-id'];
+    const username = req.headers['x-replit-user-name'];
+    
+    if (!userId || !username) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    let user = await User.findOne({ replitId: userId });
+    
+    if (!user) {
+      user = await User.create({
+        replitId: userId,
+        username: username
+      });
+    }
+
+    req.session.userId = user._id;
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/auth/user', async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+    
+    const user = await User.findById(req.session.userId);
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -42,18 +113,31 @@ const upload = multer({
 });
 
 // API endpoint for uploading Goodreads CSV
-app.post('/api/upload', upload.single('file'), async (req, res) => {
+app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
 
   try {
     const results = await parseGoodreadsCSV(req.file.path);
+    const userId = req.headers['x-replit-user-id'];
+    const user = await User.findOne({ replitId: userId });
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.readingData = {
+      books: results,
+      stats: generateStats(results)
+    };
+    await user.save();
+
     return res.json({ 
       success: true, 
       message: 'File uploaded and processed successfully',
-      stats: generateStats(results),
-      data: results
+      stats: user.readingData.stats,
+      data: user.readingData.books
     });
   } catch (error) {
     console.error('Error processing file:', error);
