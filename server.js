@@ -7,6 +7,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
+const bcrypt = require('bcrypt');
 const User = require('./models/User');
 
 // Connect to MongoDB
@@ -103,6 +104,65 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Google Auth endpoint
+// Register endpoint
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    
+    // Check if user exists
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Username already exists' });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Create user
+    const user = await User.create({
+      username,
+      password: hashedPassword,
+      readingData: {
+        books: [],
+        stats: {},
+        goals: {
+          yearly: 52,
+          monthly: 4
+        }
+      }
+    });
+
+    req.session.userId = user._id;
+    res.json({ user: { ...user.toJSON(), password: undefined } });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Login endpoint
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    
+    // Find user
+    const user = await User.findOne({ username });
+    if (!user || !user.password) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Check password
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    req.session.userId = user._id;
+    res.json({ user: { ...user.toJSON(), password: undefined } });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/auth/google', async (req, res) => {
   try {
     const { token } = req.body;
