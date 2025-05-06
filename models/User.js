@@ -4,7 +4,8 @@ const mongoose = require('mongoose');
 const UserSchema = new mongoose.Schema({
   replitId: { type: String, sparse: true, unique: true },
   googleId: { type: String, sparse: true, unique: true },
-  username: { type: String, required: true },
+  username: { type: String, required: true, unique: true },
+  password: { type: String },
   email: { type: String },
   readingData: {
     books: [Object],
