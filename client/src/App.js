@@ -31,14 +31,10 @@ function App() {
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ReadingDataProvider>
         <div className="app">
-        {!localStorage.getItem('user') ? (
-          <Auth />
-        ) : (
-          <>
-            <Header toggleSidebar={toggleSidebar} />
-        <div className="main-content">
-          <Sidebar />
-          <div className="content">
+          <Header toggleSidebar={toggleSidebar} />
+          <div className="main-content">
+            <Sidebar />
+            <div className="content">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/yearly-progress" element={<YearlyProgress />} />
@@ -52,8 +48,6 @@ function App() {
           </div>
         </div>
         <Footer />
-          </>
-        )}
       </div>
       </ReadingDataProvider>
     </Router>
