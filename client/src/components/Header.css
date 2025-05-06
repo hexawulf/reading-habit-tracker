@@ -1,12 +1,19 @@
 
 /* client/src/components/Header.css */
 .app-header {
-  background-color: #4CAF50;
+  background-color: #2c3e50;
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 100;
+}
+
+.header-logo {
+  width: 40px;
+  height: 40px;
+  margin-right: 15px;
+  vertical-align: middle;
 }
 
 .menu-toggle {
@@ -48,6 +55,8 @@
 .logo {
   text-decoration: none;
   color: white;
+  display: flex;
+  align-items: center;
 }
 
 .logo h1 {
