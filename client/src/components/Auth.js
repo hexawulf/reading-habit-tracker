@@ -74,6 +74,14 @@ const Auth = ({ onClose }) => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (!username || !password) {
+      setError('Username and password are required');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
@@ -83,13 +91,26 @@ const Auth = ({ onClose }) => {
         body: JSON.stringify({ username, password })
       });
 
+      const data = await response.json();
+      
       if (response.ok) {
-        setIsRegistering(false);
         setError('');
-        // Auto-login after registration
-        handleUsernameLogin(e);
+        // Auto-login after successful registration
+        const loginResponse = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, password })
+        });
+        
+        if (loginResponse.ok) {
+          window.location.reload();
+        } else {
+          setError('Registration successful but login failed. Please try logging in.');
+          setIsRegistering(false);
+        }
       } else {
-        const data = await response.json();
         setError(data.error || 'Registration failed');
       }
     } catch (error) {
