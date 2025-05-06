@@ -61,15 +61,16 @@ app.use(session({
 const requireAuth = (req, res, next) => {
   const userId = req.headers['x-replit-user-id'];
   const username = req.headers['x-replit-user-name'];
+  const sessionUserId = req.session.userId;
 
-  if (!userId || !username) {
-    return res.status(401).json({ error: 'Unauthorized - Please login with Replit' });
+  if (!userId && !sessionUserId) {
+    return res.status(401).json({ error: 'Unauthorized - Please login' });
   }
 
   // Add user info to request object
   req.user = {
-    id: userId,
-    username: username
+    id: userId || sessionUserId,
+    username: username || req.session.username
   };
 
   next();
