@@ -31,8 +31,10 @@ const Header = ({ toggleSidebar }) => {
           >
             GitHub
           </a>
-          <div className="login-btn">
-            <script src="https://auth.util.repl.co/script.js" authed="location.reload()"></script>
+          <div className="auth-button">
+            <div className="replit-auth-button">
+              <script src="https://auth.util.repl.co/script.js"></script>
+            </div>
           </div>
         </nav>
       </div>
