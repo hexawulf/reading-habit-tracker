@@ -18,9 +18,8 @@
   vertical-align: middle;
 }
 
-.header-controls {
+.header-right {
   display: flex;
-  gap: 1rem;
   align-items: center;
 }
 
@@ -31,6 +30,7 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  margin-left: 1.5rem;
 }
 
 .menu-toggle {
