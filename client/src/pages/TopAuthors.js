@@ -40,9 +40,8 @@ const TopAuthors = () => {
   }
   
   // Filter authors based on search term
-  const filteredAuthors = searchTerm && stats.topAuthors 
-    ? stats.topAuthors.filter(author => 
-        author && author.author && 
+  const filteredAuthors = searchTerm
+    ? (stats.topAuthors || []).filter(author => 
         author.author.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : (stats.topAuthors || []);
