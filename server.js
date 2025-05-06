@@ -10,8 +10,11 @@ const MongoStore = require('connect-mongo');
 const User = require('./models/User');
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
+const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/reading-tracker';
+mongoose.connect(mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 const csv = require('csv-parser');
 const fs = require('fs');
@@ -145,30 +148,44 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 
   try {
     console.log('Processing file:', req.file.path);
+    
+    // Check if file exists and is readable
+    await fs.promises.access(req.file.path, fs.constants.R_OK);
+    
     const results = await parseGoodreadsCSV(req.file.path);
     console.log('File processed successfully');
     
+    // Generate stats before cleaning up
+    const stats = generateStats(results);
+    
     // Clean up the uploaded file
-    fs.unlink(req.file.path, (err) => {
-      if (err) console.error('Error deleting file:', err);
-    });
+    try {
+      await fs.promises.unlink(req.file.path);
+    } catch (err) {
+      console.error('Error deleting file:', err);
+      // Continue execution even if cleanup fails
+    }
 
     return res.json({ 
       success: true, 
-      stats: generateStats(results),
+      stats: stats,
       data: results
     });
   } catch (error) {
     console.error('Error processing file:', error);
+    
     // Clean up the uploaded file on error
-    if (req.file) {
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.error('Error deleting file:', err);
-      });
+    if (req.file && req.file.path) {
+      try {
+        await fs.promises.unlink(req.file.path);
+      } catch (err) {
+        console.error('Error deleting file during error handling:', err);
+      }
     }
+    
     return res.status(500).json({ 
       error: 'Error processing file',
-      details: error.message 
+      details: error.message || 'Unknown error occurred'
     });
   }
 });
