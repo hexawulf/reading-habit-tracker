@@ -62,7 +62,15 @@ button {
 .content {
   flex: 1;
   padding: 1rem;
+  padding-top: 75px;
+  margin-left: 240px;
   overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .content {
+    margin-left: 0;
+  }
 }
 
 /* Loading and Error States */
