@@ -43,7 +43,6 @@ const TopAuthors = () => {
   const topAuthors = stats.topAuthors || [];
   
   // Filter authors based on search term
-  const topAuthors = stats.topAuthors || [];
   const filteredAuthors = searchTerm 
     ? topAuthors.filter(author => 
         author && author.author && 
