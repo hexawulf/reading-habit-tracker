@@ -31,9 +31,9 @@ const Header = ({ toggleSidebar }) => {
           >
             GitHub
           </a>
-          <div className="auth-container">
+          <button className="login-btn">
             <script src="https://auth.util.repl.co/script.js" authed="location.reload()"></script>
-          </div>
+          </button>
         </nav>
       </div>
     </header>
