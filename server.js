@@ -11,8 +11,12 @@ const bcrypt = require('bcrypt');
 const User = require('./models/User');
 
 // Connect to MongoDB
-const mongoURI = 'mongodb+srv://reading-tracker.mongocluster.net/reading-tracker';
-mongoose.set('strictQuery', true);
+const mongoURI = process.env.MONGO_URI;
+if (!mongoURI) {
+  console.error('MONGO_URI environment variable is not set');
+  process.exit(1);
+}
+
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -57,17 +61,17 @@ app.use(session({
 const requireAuth = (req, res, next) => {
   const userId = req.headers['x-replit-user-id'];
   const username = req.headers['x-replit-user-name'];
-  
+
   if (!userId || !username) {
     return res.status(401).json({ error: 'Unauthorized - Please login with Replit' });
   }
-  
+
   // Add user info to request object
   req.user = {
     id: userId,
     username: username
   };
-  
+
   next();
 };
 
@@ -115,7 +119,7 @@ app.post('/api/auth/login', async (req, res) => {
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, password } = req.body;
-    
+
     // Check if user exists
     const existingUser = await User.findOne({ username });
     if (existingUser) {
@@ -124,7 +128,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     // Create user
     const user = await User.create({
       username,
@@ -150,7 +154,7 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    
+
     // Find user
     const user = await User.findOne({ username });
     if (!user || !user.password) {
@@ -176,7 +180,7 @@ app.post('/api/auth/google', async (req, res) => {
     // Verify the token with Firebase Admin
     const decodedToken = await admin.auth().verifyIdToken(token);
     const userId = decodedToken.uid;
-    
+
     let user = await User.findOne({ googleId: userId });
     if (!user) {
       user = await User.create({
@@ -247,16 +251,16 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 
   try {
     console.log('Processing file:', req.file.path);
-    
+
     // Check if file exists and is readable
     await fs.promises.access(req.file.path, fs.constants.R_OK);
-    
+
     const results = await parseGoodreadsCSV(req.file.path);
     console.log('File processed successfully');
-    
+
     // Generate stats before cleaning up
     const stats = generateStats(results);
-    
+
     // Clean up the uploaded file
     try {
       await fs.promises.unlink(req.file.path);
@@ -272,7 +276,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     });
   } catch (error) {
     console.error('Error processing file:', error);
-    
+
     // Clean up the uploaded file on error
     if (req.file && req.file.path) {
       try {
@@ -281,7 +285,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
         console.error('Error deleting file during error handling:', err);
       }
     }
-    
+
     return res.status(500).json({ 
       error: 'Error processing file',
       details: error.message || 'Unknown error occurred'
