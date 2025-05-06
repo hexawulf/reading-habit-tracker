@@ -29,6 +29,8 @@ const Auth = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [error, setError] = useState('');
 
   const handleGoogleLogin = async () => {
     try {
@@ -71,6 +73,41 @@ const Auth = () => {
     }
   };
 
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password })
+      });
+      
+      if (response.ok) {
+        setIsRegistering(false);
+        setError('');
+        // Auto-login after registration
+        handleUsernameLogin(e);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setError('Registration failed. Please try again.');
+    }
+  };
+
+  const handleReplitLogin = () => {
+    window.addEventListener("message", (e) => {
+      if (e.data === "auth_complete") {
+        window.location.reload();
+      }
+    });
+    window.open("https://replit.com/auth_with_repl_site?domain=" + location.host, "_blank");
+  };
+
   return (
     <div className="auth-container">
       <h2>Reading Habit Tracker</h2>
@@ -80,9 +117,9 @@ const Auth = () => {
         </button>
       ) : (
         <div className="auth-options">
-          <div className="auth-button">
-            <script src="https://auth.util.repl.co/script.js" authed="location.reload()"></script>
-          </div>
+          <button onClick={handleReplitLogin} className="replit-btn">
+            Login with Replit
+          </button>
           
           <div className="auth-separator">
             <span>or</span>
@@ -96,7 +133,8 @@ const Auth = () => {
             <span>or</span>
           </div>
 
-          <form onSubmit={handleUsernameLogin} className="login-form">
+          <form onSubmit={isRegistering ? handleRegister : handleUsernameLogin} className="login-form">
+            {error && <div className="error-message">{error}</div>}
             <input
               type="text"
               placeholder="Username"
@@ -110,9 +148,15 @@ const Auth = () => {
               onChange={(e) => setPassword(e.target.value)}
             />
             <button type="submit" className="username-btn">
-              Sign in with Username
+              {isRegistering ? 'Register' : 'Sign in with Username'}
             </button>
           </form>
+          <button 
+            onClick={() => setIsRegistering(!isRegistering)} 
+            className="toggle-auth-btn"
+          >
+            {isRegistering ? 'Already have an account? Login' : 'Need an account? Register'}
+          </button>
         </div>
       )}
     </div>

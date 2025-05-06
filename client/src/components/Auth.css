@@ -55,6 +55,27 @@
   color: white;
 }
 
+.replit-btn {
+  background-color: #0D1117;
+  color: white;
+  border: 1px solid #30363D;
+}
+
+.toggle-auth-btn {
+  background: none;
+  border: none;
+  color: #666;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.error-message {
+  color: #ff4444;
+  margin: 10px 0;
+  font-size: 14px;
+}
+
 
 .login-form {
   display: flex;
