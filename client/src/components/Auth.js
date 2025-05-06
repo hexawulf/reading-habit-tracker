@@ -13,7 +13,6 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
 let app;
 let auth;
 let googleProvider;
@@ -27,10 +26,13 @@ try {
 }
 
 const Auth = () => {
+  const [showOptions, setShowOptions] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
   const handleGoogleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      // Send the token to your backend
       const response = await fetch('/api/auth/google', {
         method: 'POST',
         headers: {
@@ -46,24 +48,56 @@ const Auth = () => {
     }
   };
 
+  const handleUsernameLogin = async (e) => {
+    e.preventDefault();
+    // Implement username/password login logic here
+    console.log('Username login:', username, password);
+  };
+
   return (
     <div className="auth-container">
-      <h2>Sign In</h2>
-      <p>Choose your preferred login method:</p>
-      
-      <div className="auth-options">
-        <div className="auth-button">
-          <script src="https://auth.util.repl.co/script.js" authed="location.reload()"></script>
-        </div>
-        
-        <div className="auth-separator">
-          <span>or</span>
-        </div>
-        
-        <button onClick={handleGoogleLogin} className="google-btn">
-          Sign in with Google
+      <h2>Reading Habit Tracker</h2>
+      {!showOptions ? (
+        <button onClick={() => setShowOptions(true)} className="login-btn">
+          Login
         </button>
-      </div>
+      ) : (
+        <div className="auth-options">
+          <div className="auth-button">
+            <script src="https://auth.util.repl.co/script.js" authed="location.reload()"></script>
+          </div>
+          
+          <div className="auth-separator">
+            <span>or</span>
+          </div>
+          
+          <button onClick={handleGoogleLogin} className="google-btn">
+            Sign in with Google
+          </button>
+
+          <div className="auth-separator">
+            <span>or</span>
+          </div>
+
+          <form onSubmit={handleUsernameLogin} className="login-form">
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button type="submit" className="username-btn">
+              Sign in with Username
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 };
