@@ -121,6 +121,14 @@ app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, password } = req.body;
 
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    }
+
     // Check if user exists
     const existingUser = await User.findOne({ username });
     if (existingUser) {
@@ -145,9 +153,11 @@ app.post('/api/auth/register', async (req, res) => {
     });
 
     req.session.userId = user._id;
+    req.session.username = user.username;
     res.json({ user: { ...user.toJSON(), password: undefined } });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Registration error:', error);
+    res.status(500).json({ error: 'Registration failed. Please try again.' });
   }
 });
 
