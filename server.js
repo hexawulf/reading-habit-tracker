@@ -10,7 +10,9 @@ const MongoStore = require('connect-mongo');
 const User = require('./models/User');
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/reading-tracker');
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
 const csv = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
@@ -27,11 +29,12 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'dev-secret',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/reading-tracker'
+    mongoUrl: process.env.MONGODB_URI,
+    ttl: 14 * 24 * 60 * 60 // Session TTL of 14 days
   }),
   cookie: {
     secure: process.env.NODE_ENV === 'production',
