@@ -1,4 +1,4 @@
-// client/src/components/Header.js
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Header.css';
@@ -22,16 +22,17 @@ const Header = ({ toggleSidebar }) => {
         </Link>
         <div className="header-right">
           <nav className="nav-links">
-          <Link to="/" className="nav-link">Dashboard</Link>
-          <Link to="/upload" className="nav-link">Upload Data</Link>
-          <a href="https://github.com/hexawulf/reading-habit-tracker" 
-             target="_blank" 
-             rel="noopener noreferrer" 
-             className="nav-link">GitHub</a>
-          <button onClick={() => window.location.href='/login'} className="login-btn">
-            Login
-          </button>
-        </nav>
+            <Link to="/" className="nav-link">Dashboard</Link>
+            <Link to="/upload" className="nav-link">Upload Data</Link>
+            <a href="https://github.com/hexawulf/reading-habit-tracker" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               className="nav-link">GitHub</a>
+            <button onClick={() => window.location.href='/login'} className="login-btn">
+              Login
+            </button>
+          </nav>
+        </div>
       </div>
     </header>
   );
