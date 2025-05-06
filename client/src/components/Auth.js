@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import './Auth.css';
 import { initializeApp } from 'firebase/app';
@@ -60,7 +59,7 @@ const Auth = ({ onClose }) => {
         },
         body: JSON.stringify({ username, password })
       });
-      
+
       if (response.ok) {
         window.location.reload();
       } else {
@@ -83,7 +82,7 @@ const Auth = ({ onClose }) => {
         },
         body: JSON.stringify({ username, password })
       });
-      
+
       if (response.ok) {
         setIsRegistering(false);
         setError('');
@@ -120,11 +119,11 @@ const Auth = ({ onClose }) => {
           <button onClick={handleReplitLogin} className="replit-btn">
             Login with Replit
           </button>
-          
+
           <div className="auth-separator">
             <span>or</span>
           </div>
-          
+
           <button onClick={handleGoogleLogin} className="google-btn">
             Sign in with Google
           </button>
