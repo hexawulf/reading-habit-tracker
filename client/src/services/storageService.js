@@ -1,40 +1,70 @@
+
 // client/src/services/storageService.js
 const STORAGE_KEY = 'reading-habit-tracker-data';
 
 const storageService = {
-  // Save reading data to localStorage
-  saveData: (data) => {
+  isLoggedIn: () => {
+    return !!localStorage.getItem('user');
+  },
+
+  saveData: async (data) => {
     try {
       const serializedData = JSON.stringify(data);
       localStorage.setItem(STORAGE_KEY, serializedData);
+      
+      if (storageService.isLoggedIn()) {
+        // Also save to server if logged in
+        await fetch('/api/user/data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: serializedData
+        });
+      }
       return true;
     } catch (error) {
-      console.error('Error saving data to localStorage:', error);
+      console.error('Error saving data:', error);
       return false;
     }
   },
 
-  // Load reading data from localStorage
-  loadData: () => {
+  loadData: async () => {
     try {
-      const serializedData = localStorage.getItem(STORAGE_KEY);
-      if (serializedData === null) {
-        return null;
+      if (storageService.isLoggedIn()) {
+        // Try to load from server first
+        const response = await fetch('/api/user/data', {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          return data;
+        }
       }
-      return JSON.parse(serializedData);
+      
+      // Fall back to local storage
+      const serializedData = localStorage.getItem(STORAGE_KEY);
+      return serializedData ? JSON.parse(serializedData) : null;
     } catch (error) {
-      console.error('Error loading data from localStorage:', error);
+      console.error('Error loading data:', error);
       return null;
     }
   },
 
-  // Clear reading data from localStorage
   clearData: () => {
     try {
       localStorage.removeItem(STORAGE_KEY);
+      if (storageService.isLoggedIn()) {
+        fetch('/api/user/data', {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+      }
       return true;
     } catch (error) {
-      console.error('Error clearing data from localStorage:', error);
+      console.error('Error clearing data:', error);
       return false;
     }
   }

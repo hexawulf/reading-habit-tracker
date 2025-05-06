@@ -20,6 +20,11 @@ const Header = ({ toggleSidebar }) => {
           <img src="/generated-icon.png" alt="Reading Habit Tracker" className="header-logo" />
           <h1>Reading Habit Tracker</h1>
         </Link>
+        <div className="header-controls">
+          <button onClick={() => window.location.href='/login'} className="login-btn">
+            Login
+          </button>
+          </div>
         <nav className="nav-links">
           <Link to="/" className="nav-link">Dashboard</Link>
           <Link to="/upload" className="nav-link">Upload Data</Link>
