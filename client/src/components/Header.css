@@ -22,17 +22,14 @@
 }
 
 .login-btn {
-  padding: 0.5rem 1rem;
-  background: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
   margin-left: 1rem;
+  display: flex;
+  align-items: center;
 }
 
-.login-btn:hover {
-  background: #45a049;
+.login-btn iframe {
+  border: none;
+  background: transparent;
 }
 
 .header-logo {
