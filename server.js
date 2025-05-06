@@ -202,9 +202,22 @@ app.post('/api/auth/login', async (req, res) => {
 app.post('/api/auth/google', async (req, res) => {
   try {
     const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ error: 'No token provided' });
+    }
+
+    if (!admin.apps.length) {
+      return res.status(500).json({ error: 'Firebase Admin not initialized' });
+    }
+
     // Verify the token with Firebase Admin
     const decodedToken = await admin.auth().verifyIdToken(token);
+    if (!decodedToken) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
     const userId = decodedToken.uid;
+    console.log('Decoded token:', decodedToken);
 
     let user = await User.findOne({ googleId: userId });
     if (!user) {
@@ -226,7 +239,11 @@ app.post('/api/auth/google', async (req, res) => {
     req.session.userId = user._id;
     res.json({ user });
   } catch (error) {
-    res.status(401).json({ error: 'Invalid token' });
+    console.error('Google auth error:', error);
+    res.status(500).json({ 
+      error: 'Authentication failed',
+      details: error.message 
+    });
   }
 });
 
