@@ -32,9 +32,19 @@ const Header = ({ toggleSidebar }) => {
             GitHub
           </a>
           <div className="auth-button">
-            <div className="replit-auth-button">
-              <script src="https://auth.util.repl.co/script.js"></script>
-            </div>
+            <button 
+              className="login-btn" 
+              onClick={() => {
+                window.addEventListener("message", (e) => {
+                  if (e.data === "auth_complete") {
+                    window.location.reload();
+                  }
+                });
+                window.open("https://replit.com/auth_with_repl_site?domain=" + location.host, "_blank");
+              }}
+            >
+              Login with Replit
+            </button>
           </div>
         </nav>
       </div>
