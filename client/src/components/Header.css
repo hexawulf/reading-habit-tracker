@@ -35,7 +35,26 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.login-btn::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.login-btn:has(+ .auth-modal),
+.login-btn:hover {
+  background: #45a049;
 }
 
 .login-btn:hover {

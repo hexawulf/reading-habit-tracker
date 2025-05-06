@@ -38,7 +38,7 @@ const Header = ({ toggleSidebar }) => {
               className="login-btn" 
               onClick={() => setShowOptions(true)}
             >
-              Login
+              {window.localStorage.getItem('user') ? 'My Account' : 'Login'}
             </button>
           </div>
         </nav>
