@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Header.css';
+import Auth from './Auth';
 
 const Header = ({ toggleSidebar }) => {
+  const [showOptions, setShowOptions] = useState(false);
   return (
     <header className="app-header">
       <div className="header-content">
@@ -34,20 +36,20 @@ const Header = ({ toggleSidebar }) => {
           <div className="auth-button">
             <button 
               className="login-btn" 
-              onClick={() => {
-                window.addEventListener("message", (e) => {
-                  if (e.data === "auth_complete") {
-                    window.location.reload();
-                  }
-                });
-                window.open("https://replit.com/auth_with_repl_site?domain=" + location.host, "_blank");
-              }}
+              onClick={() => setShowOptions(true)}
             >
-              Login with Replit
+              Login
             </button>
           </div>
         </nav>
       </div>
+    {showOptions && (
+        <div className="auth-modal-overlay" onClick={() => setShowOptions(false)}>
+          <div className="auth-modal" onClick={e => e.stopPropagation()}>
+            <Auth onClose={() => setShowOptions(false)} />
+          </div>
+        </div>
+      )}
     </header>
   );
 };
