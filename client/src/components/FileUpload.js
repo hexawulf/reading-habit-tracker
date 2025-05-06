@@ -42,6 +42,9 @@ const FileUpload = () => {
       const response = await axios.post('/api/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
+        },
+        validateStatus: function (status) {
+          return status >= 200 && status < 300;
         }
       });
       

@@ -147,6 +147,12 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     console.log('Processing file:', req.file.path);
     const results = await parseGoodreadsCSV(req.file.path);
     console.log('File processed successfully');
+    
+    // Clean up the uploaded file
+    fs.unlink(req.file.path, (err) => {
+      if (err) console.error('Error deleting file:', err);
+    });
+
     return res.json({ 
       success: true, 
       stats: generateStats(results),
@@ -154,6 +160,12 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     });
   } catch (error) {
     console.error('Error processing file:', error);
+    // Clean up the uploaded file on error
+    if (req.file) {
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('Error deleting file:', err);
+      });
+    }
     return res.status(500).json({ 
       error: 'Error processing file',
       details: error.message 
