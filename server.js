@@ -56,13 +56,13 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const userId = req.headers['x-replit-user-id'];
     const username = req.headers['x-replit-user-name'];
-    
+
     if (!userId || !username) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
     let user = await User.findOne({ replitId: userId });
-    
+
     if (!user) {
       user = await User.create({
         replitId: userId,
@@ -95,7 +95,7 @@ app.get('/api/auth/user', async (req, res) => {
     if (!req.session.userId) {
       return res.status(401).json({ error: 'Not authenticated' });
     }
-    
+
     const user = await User.findById(req.session.userId);
     res.json({ user });
   } catch (error) {
@@ -135,29 +135,20 @@ app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => 
   }
 
   try {
+    console.log('Processing file:', req.file.path);
     const results = await parseGoodreadsCSV(req.file.path);
-    const userId = req.headers['x-replit-user-id'];
-    const user = await User.findOne({ replitId: userId });
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    user.readingData = {
-      books: results,
-      stats: generateStats(results)
-    };
-    await user.save();
-
+    console.log('File processed successfully');
     return res.json({ 
       success: true, 
-      message: 'File uploaded and processed successfully',
-      stats: user.readingData.stats,
-      data: user.readingData.books
+      stats: generateStats(results),
+      data: results
     });
   } catch (error) {
     console.error('Error processing file:', error);
-    return res.status(500).json({ error: 'Error processing file' });
+    return res.status(500).json({ 
+      error: 'Error processing file',
+      details: error.message 
+    });
   }
 });
 
@@ -202,7 +193,7 @@ app.get('/api/stats', async (req, res) => {
 function parseGoodreadsCSV(filePath) {
   return new Promise((resolve, reject) => {
     const results = [];
-    
+
     fs.createReadStream(filePath)
       .pipe(csv())
       .on('data', (data) => {
@@ -233,7 +224,7 @@ function parseGoodreadsCSV(filePath) {
           readCount: parseInt(data['Read Count']) || 0,
           ownedCopies: parseInt(data['Owned Copies']) || 0
         };
-        
+
         // Only include books that have been read
         if (transformedData.exclusiveShelf === 'read' && transformedData.dateRead) {
           results.push(transformedData);
@@ -246,7 +237,7 @@ function parseGoodreadsCSV(filePath) {
           if (!b.dateRead) return -1;
           return b.dateRead - a.dateRead;
         });
-        
+
         resolve(results);
       })
       .on('error', (error) => {
@@ -273,11 +264,11 @@ function generateStats(books) {
   // Total books and pages
   const totalBooks = books.length;
   const totalPages = books.reduce((sum, book) => sum + (book.pages || 0), 0);
-  
+
   // Calculate average rating
   const ratingsSum = books.reduce((sum, book) => sum + (book.myRating || 0), 0);
   const averageRating = ratingsSum / books.filter(book => book.myRating > 0).length;
-  
+
   // Reading history by year
   const readingByYear = {};
   books.forEach(book => {
@@ -286,28 +277,28 @@ function generateStats(books) {
       readingByYear[year] = (readingByYear[year] || 0) + 1;
     }
   });
-  
+
   // Reading history by month (for the current and previous year)
   const currentYear = new Date().getFullYear();
   const readingByMonth = {};
-  
+
   // Initialize all months for current and previous year
   [currentYear, currentYear - 1].forEach(year => {
     readingByMonth[year] = Array(12).fill(0);
   });
-  
+
   // Count books by month
   books.forEach(book => {
     if (book.dateRead) {
       const year = book.dateRead.getFullYear();
       const month = book.dateRead.getMonth();
-      
+
       if (year === currentYear || year === currentYear - 1) {
         readingByMonth[year][month] += 1;
       }
     }
   });
-  
+
   // Top authors
   const authorCounts = {};
   books.forEach(book => {
@@ -315,18 +306,18 @@ function generateStats(books) {
       authorCounts[book.author] = (authorCounts[book.author] || 0) + 1;
     }
   });
-  
+
   const topAuthors = Object.entries(authorCounts)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)
     .map(([author, count]) => ({ author, count }));
-  
+
   // Rating distribution
   const ratingDistribution = {};
   for (let i = 1; i <= 5; i++) {
     ratingDistribution[i] = books.filter(book => book.myRating === i).length;
   }
-  
+
   // Calculate reading pace
   const readingPace = {
     currentYear: readingByYear[currentYear] || 0,
@@ -334,10 +325,10 @@ function generateStats(books) {
     currentMonth: readingByMonth[currentYear][new Date().getMonth()] || 0,
     averageBooksPerMonth: calculateAverageBooksPerMonth(books)
   };
-  
+
   // Recently read books
   const recentBooks = books.slice(0, 30);
-  
+
   // Goal progress (assuming a goal of 52 books per year)
   const yearlyGoal = 52;
   const goalProgress = {
@@ -345,7 +336,7 @@ function generateStats(books) {
     current: readingByYear[currentYear] || 0,
     percentage: Math.round(((readingByYear[currentYear] || 0) / yearlyGoal) * 100)
   };
-  
+
   return {
     totalBooks,
     averageRating,
@@ -364,7 +355,7 @@ function generateStats(books) {
 // Helper function to calculate average books per month
 function calculateAverageBooksPerMonth(books) {
   if (!books || books.length === 0) return 0;
-  
+
   // Get unique years with at least one book read
   const yearsWithReading = new Set();
   books.forEach(book => {
@@ -372,10 +363,10 @@ function calculateAverageBooksPerMonth(books) {
       yearsWithReading.add(book.dateRead.getFullYear());
     }
   });
-  
+
   // Calculate total months of active reading
   const totalMonths = yearsWithReading.size * 12;
-  
+
   // Return average
   return parseFloat((books.length / totalMonths).toFixed(2));
 }
@@ -384,7 +375,7 @@ function calculateAverageBooksPerMonth(books) {
 if (process.env.NODE_ENV === 'production') {
   // Serve static files
   app.use(express.static(path.join(__dirname, 'client/build')));
-  
+
   // For any request that doesn't match an API route, send the index.html file
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
@@ -399,12 +390,12 @@ if (process.env.NODE_ENV === 'production') {
 // Function to find an available port
 function findAvailablePort(startPort, callback) {
   const server = net.createServer();
-  
+
   server.listen(startPort, () => {
     const port = server.address().port;
     server.close(() => callback(port));
   });
-  
+
   server.on('error', () => {
     // Port is in use, try the next one
     findAvailablePort(startPort + 1, callback);
