@@ -46,12 +46,13 @@ const Auth = ({ onClose }) => {
     } catch (error) {
       console.error('Google auth error:', error);
       if (error.code === 'auth/unauthorized-domain') {
-        setError('This domain is not authorized. Please try username/password login instead.');
+        setError('Google login is not set up for this domain yet. Please use username/password login.');
       } else if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-        setError('Login window was closed');
+        // Don't show error for user-initiated cancellations
+        setError('');
       } else {
         console.error('Google auth error:', error);
-        setError('Google login failed. Please try username/password login instead.');
+        setError('Unable to login with Google. Please try username/password instead.');
       }
     }
   };
