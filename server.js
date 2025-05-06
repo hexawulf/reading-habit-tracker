@@ -45,9 +45,18 @@ app.use(session({
 // Auth middleware
 const requireAuth = (req, res, next) => {
   const userId = req.headers['x-replit-user-id'];
-  if (!userId) {
-    return res.status(401).json({ error: 'Unauthorized' });
+  const username = req.headers['x-replit-user-name'];
+  
+  if (!userId || !username) {
+    return res.status(401).json({ error: 'Unauthorized - Please login with Replit' });
   }
+  
+  // Add user info to request object
+  req.user = {
+    id: userId,
+    username: username
+  };
+  
   next();
 };
 

@@ -1,5 +1,5 @@
-// client/src/components/FileUpload.js
-import React, { useState, useRef, useContext } from 'react';
+
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './FileUpload.css';
@@ -15,7 +15,12 @@ const FileUpload = () => {
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      if (selectedFile.type !== 'text/csv') {
+        setError('Please select a CSV file');
+        return;
+      }
+      setFile(selectedFile);
       setError('');
     }
   };
@@ -32,14 +37,23 @@ const FileUpload = () => {
 
     try {
       setUploading(true);
-      console.log('Uploading file...', file.name);
-      const response = await axios.post('/api/upload', formData);
-      console.log('Upload successful:', response.data);
-      processReadingData(response.data.data);
-      navigate('/'); // Redirect to dashboard after successful upload
+      setError('');
+      
+      const response = await axios.post('/api/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      if (response.data && response.data.data) {
+        processReadingData(response.data.data);
+        navigate('/');
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (err) {
       console.error('Upload failed:', err);
-      setError(err.response?.data?.error || 'Upload failed');
+      setError(err.response?.data?.error || 'Failed to upload file. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -55,7 +69,7 @@ const FileUpload = () => {
 
         {error && <div className="error-message">{error}</div>}
 
-        <form onSubmit={handleSubmit} className="upload-form" encType="multipart/form-data">
+        <form onSubmit={handleSubmit} className="upload-form">
           <div className="file-input-container">
             <input 
               type="file" 
