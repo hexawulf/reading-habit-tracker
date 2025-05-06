@@ -4,6 +4,7 @@ import { ReadingDataProvider } from './context/ReadingDataContext';
 import './App.css';
 
 // Import components
+import Auth from './components/Auth';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Footer from './components/Footer';
@@ -30,7 +31,11 @@ function App() {
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ReadingDataProvider>
         <div className="app">
-        <Header toggleSidebar={toggleSidebar} />
+        {!localStorage.getItem('user') ? (
+          <Auth />
+        ) : (
+          <>
+            <Header toggleSidebar={toggleSidebar} />
         <div className="main-content">
           <Sidebar />
           <div className="content">
@@ -47,6 +52,8 @@ function App() {
           </div>
         </div>
         <Footer />
+          </>
+        )}
       </div>
       </ReadingDataProvider>
     </Router>
