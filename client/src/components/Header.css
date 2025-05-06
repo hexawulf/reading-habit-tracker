@@ -65,11 +65,14 @@
 
 .logo h1 {
   font-size: 1.8rem;
-  letter-spacing: 0.5px;
-  font-weight: 700;
+  letter-spacing: 1.2px;
+  font-weight: 800;
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(45deg, #ffffff, #e6e6e6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding: 4px 0;
 }
 
 .nav-links {
