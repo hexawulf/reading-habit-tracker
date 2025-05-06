@@ -20,19 +20,21 @@ const Header = ({ toggleSidebar }) => {
           <img src="/generated-icon.png" alt="Reading Habit Tracker" className="header-logo" />
           <h1>Reading Habit Tracker</h1>
         </Link>
-        <div className="header-right">
-          <nav className="nav-links">
-            <Link to="/" className="nav-link">Dashboard</Link>
-            <Link to="/upload" className="nav-link">Upload Data</Link>
-            <a href="https://github.com/hexawulf/reading-habit-tracker" 
-               target="_blank" 
-               rel="noopener noreferrer" 
-               className="nav-link">GitHub</a>
-            <div className="auth-container">
-              <script src="https://auth.util.repl.co/script.js" authed="location.reload()"></script>
-            </div>
-          </nav>
-        </div>
+        <nav className="nav-links">
+          <Link to="/" className="nav-link">Dashboard</Link>
+          <Link to="/upload" className="nav-link">Upload Data</Link>
+          <a 
+            href="https://github.com/hexawulf/reading-habit-tracker" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="nav-link"
+          >
+            GitHub
+          </a>
+          <div className="auth-container">
+            <script src="https://auth.util.repl.co/script.js" authed="location.reload()"></script>
+          </div>
+        </nav>
       </div>
     </header>
   );
