@@ -21,13 +21,17 @@
   padding: 0 1.5rem;
 }
 
-.login-btn {
+.auth-button {
   margin-left: 1rem;
   display: flex;
   align-items: center;
 }
 
-.login-btn iframe {
+.replit-auth-button {
+  min-width: 120px;
+}
+
+.replit-auth-button iframe {
   border: none;
   background: transparent;
 }
