@@ -138,6 +138,18 @@ export const ReadingDataProvider = ({ children }) => {
       readingByMonth[year][month]++;
     });
 
+    // Calculate top authors
+    const authorCounts = {};
+    books.forEach(book => {
+      if (book.author) {
+        authorCounts[book.author] = (authorCounts[book.author] || 0) + 1;
+      }
+    });
+
+    const topAuthors = Object.entries(authorCounts)
+      .map(([author, count]) => ({ author, count }))
+      .sort((a, b) => b.count - a.count);
+
     return {
       totalBooks: books.length,
       averageRating: books.reduce((sum, book) => sum + (book.myRating || 0), 0) / books.length,
@@ -157,7 +169,7 @@ export const ReadingDataProvider = ({ children }) => {
           { title: '', pages: 0 }
         )
       },
-      topAuthors: [],
+      topAuthors,
       readingByGenre: {}
     };
   };
