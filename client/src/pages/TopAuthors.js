@@ -43,11 +43,13 @@ const TopAuthors = () => {
   const topAuthors = stats.topAuthors || [];
   
   // Filter authors based on search term
+  const topAuthors = stats.topAuthors || [];
   const filteredAuthors = searchTerm 
-    ? (stats.topAuthors || []).filter(author => 
-        author.author && author.author.toLowerCase().includes(searchTerm.toLowerCase())
+    ? topAuthors.filter(author => 
+        author && author.author && 
+        author.author.toLowerCase().includes(searchTerm.toLowerCase())
       )
-    : (stats.topAuthors || []);
+    : topAuthors;
   
   // Get author-specific book details when an author is selected
   const authorBooks = selectedAuthor 
