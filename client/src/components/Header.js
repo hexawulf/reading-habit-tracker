@@ -38,7 +38,7 @@ const Header = ({ toggleSidebar }) => {
               className="login-btn" 
               onClick={() => setShowOptions(true)}
             >
-              {(localStorage.getItem('token') || sessionStorage.getItem('token')) ? (
+              {(localStorage.getItem('userName') || localStorage.getItem('userPicture')) ? (
                 <>
                   <span className="user-avatar">
                     {localStorage.getItem('userPicture') && 
