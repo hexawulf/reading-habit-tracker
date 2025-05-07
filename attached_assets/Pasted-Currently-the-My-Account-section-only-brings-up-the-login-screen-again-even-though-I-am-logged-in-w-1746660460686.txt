@@ -1,0 +1,74 @@
+Currently, the My Account section only brings up the login screen again even though I am logged in with Google OAuth. Please help implement the missing backend features required to make this section fully functional.
+
+✅ Core Tasks
+🔐 1. Authenticate Users via Google OAuth
+
+Ensure user login state is persistent across sessions.
+
+Use JWT-based authentication or cookie sessions.
+
+Extract the user's email/ID and use it to organize user-specific files and data.
+
+📁 2. Handle CSV File Uploads (User-Specific)
+
+Create an Express route: POST /api/files/upload
+
+Use multer to upload .csv files into a unique folder per user:
+/uploads/{user_email}/
+
+Accept only .csv files and handle duplicates gracefully.
+
+📄 3. List Uploaded Files
+
+Create a route: GET /api/files/list
+
+Return a list of uploaded files for the logged-in user with metadata (name, size, upload date).
+
+🗑️ 4. Allow File Deletion
+
+Create a route: DELETE /api/files/delete/:filename
+
+Ensure only the logged-in user can delete their own files.
+
+📊 5. Auto-Extract & Save Statistics
+
+When a CSV is uploaded:
+
+Parse it for statistics (e.g., total books, books per year, average rating, books per month).
+
+Save extracted stats to user_data/{user_email}/stats.json
+
+Create a route: GET /api/user/stats to return these on login/dashboard.
+
+🧪 6. Return Authentication Status
+
+Add a route: GET /api/auth/status that returns whether the user is logged in and their name/email/profile pic.
+
+✅ Bonus Enhancements (Optional but Valuable)
+📈 Reading Timeline
+
+Extract dates and show how many books were read per month/year using Chart.js in frontend.
+
+📚 Favorite Genres
+
+Parse genre data if available from Goodreads and show top 5 genres.
+
+🎯 User Goals
+
+Allow users to set a reading goal (books/year) and track progress.
+
+📤 Export Dashboard
+
+Allow users to export their dashboard as PNG/PDF.
+
+📦 Technical Notes
+Use Express.js in /server/
+
+Organize backend files in /routes, /controllers, and /middleware
+
+Maintain user state securely via cookies or headers
+
+Ensure all file operations are scoped per user (use their email as folder key)
+
+Frontend already exists; update the React MyAccount component to use these API endpoints
+
