@@ -104,7 +104,7 @@ const Auth = ({ onClose }) => {
       });
 
       const data = await response.json();
-      
+
       if (response.ok) {
         setError('');
         // Auto-login after successful registration
@@ -115,7 +115,7 @@ const Auth = ({ onClose }) => {
           },
           body: JSON.stringify({ username, password })
         });
-        
+
         if (loginResponse.ok) {
           window.location.reload();
         } else {
@@ -148,7 +148,7 @@ const Auth = ({ onClose }) => {
           <button onClick={() => setShowOptions(true)} className="login-btn">
             Login
           </button>
-          <button onClick={() => {setShowOptions(true); setIsRegistering(true);}} className="register-btn">
+          <button onClick={() => { setShowOptions(true); setIsRegistering(true); }} className="register-btn">
             Register
           </button>
         </div>
@@ -188,8 +188,8 @@ const Auth = ({ onClose }) => {
               {isRegistering ? 'Register' : 'Sign in with Username'}
             </button>
           </form>
-          <button 
-            onClick={() => setIsRegistering(!isRegistering)} 
+          <button
+            onClick={() => setIsRegistering(!isRegistering)}
             className="toggle-auth-btn"
           >
             {isRegistering ? 'Already have an account? Login' : 'Need an account? Register'}
