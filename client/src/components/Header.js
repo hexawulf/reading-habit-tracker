@@ -36,9 +36,16 @@ const Header = ({ toggleSidebar }) => {
           <div className="auth-button">
             <button 
               className="login-btn" 
-              onClick={() => setShowOptions(true)}
+              onClick={() => {
+                if (!localStorage.getItem('isAuthenticated')) {
+                  setShowOptions(true);
+                } else {
+                  // Handle account menu
+                  console.log('Show account menu');
+                }
+              }}
             >
-              {(localStorage.getItem('userName') || localStorage.getItem('userPicture')) ? (
+              {localStorage.getItem('isAuthenticated') ? (
                 <>
                   <span className="user-avatar">
                     {localStorage.getItem('userPicture') && 

@@ -229,6 +229,11 @@ app.post('/api/auth/google', async (req, res) => {
 
     const userId = decodedToken.uid;
     console.log('Decoded token:', decodedToken);
+    
+    // Store additional user info in session
+    req.session.userPicture = decodedToken.picture;
+    req.session.userEmail = decodedToken.email;
+    req.session.userName = decodedToken.name;
 
     let user = await User.findOne({ googleId: userId });
     if (!user) {
@@ -267,15 +272,33 @@ app.post('/api/auth/google', async (req, res) => {
   }
 });
 
-app.get('/api/auth/user', async (req, res) => {
+app.get('/api/auth/status', async (req, res) => {
   try {
     if (!req.session.userId) {
-      return res.status(401).json({ error: 'Not authenticated' });
+      return res.status(401).json({ 
+        isAuthenticated: false 
+      });
     }
 
     const user = await User.findById(req.session.userId);
-    res.json({ user });
+    if (!user) {
+      return res.status(401).json({ 
+        isAuthenticated: false 
+      });
+    }
+
+    res.json({
+      isAuthenticated: true,
+      user: {
+        id: user._id,
+        name: user.username,
+        email: user.email,
+        picture: req.session.userPicture || null,
+        googleId: user.googleId || null
+      }
+    });
   } catch (error) {
+    console.error('Auth status error:', error);
     res.status(500).json({ error: error.message });
   }
 });
