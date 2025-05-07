@@ -307,14 +307,19 @@ app.get('/api/auth/status', async (req, res) => {
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, 'uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir);
+    if (!req.session.userEmail) {
+      return cb(new Error('User not authenticated'));
     }
-    cb(null, uploadDir);
+    const userDir = path.join(__dirname, 'uploads', req.session.userEmail);
+    if (!fs.existsSync(userDir)) {
+      fs.mkdirSync(userDir, { recursive: true });
+    }
+    cb(null, userDir);
   },
   filename: (req, file, cb) => {
-    cb(null, `goodreads-${Date.now()}${path.extname(file.originalname)}`);
+    const timestamp = Date.now();
+    const safeFilename = `goodreads-${timestamp}${path.extname(file.originalname)}`;
+    cb(null, safeFilename);
   }
 });
 
@@ -346,12 +351,23 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     // Generate stats before cleaning up
     const stats = generateStats(results);
 
-    // Clean up the uploaded file
-    try {
-      await fs.promises.unlink(req.file.path);
-    } catch (err) {
-      console.error('Error deleting file:', err);
-      // Continue execution even if cleanup fails
+    // Save stats for the user if authenticated
+    if (req.session.userEmail) {
+      const userStatsDir = path.join(__dirname, 'user_data', req.session.userEmail);
+      if (!fs.existsSync(userStatsDir)) {
+        fs.mkdirSync(userStatsDir, { recursive: true });
+      }
+
+      const statsPath = path.join(userStatsDir, 'stats.json');
+      await fs.promises.writeFile(statsPath, JSON.stringify(stats, null, 2));
+
+      // Update user in database
+      if (req.session.userId) {
+        await User.findByIdAndUpdate(req.session.userId, {
+          'readingData.stats': stats,
+          'readingData.books': results
+        });
+      }
     }
 
     return res.json({ 
@@ -379,6 +395,62 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 });
 
 // API endpoint to get reading stats without uploading
+// File listing endpoint
+app.get('/api/files/list', async (req, res) => {
+  try {
+    if (!req.session.userEmail) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const userDir = path.join(__dirname, 'uploads', req.session.userEmail);
+    if (!fs.existsSync(userDir)) {
+      return res.json({ files: [] });
+    }
+
+    const files = await fs.promises.readdir(userDir);
+    const fileStats = await Promise.all(
+      files.map(async (filename) => {
+        const filePath = path.join(userDir, filename);
+        const stats = await fs.promises.stat(filePath);
+        return {
+          name: filename,
+          size: stats.size,
+          uploadDate: stats.mtime
+        };
+      })
+    );
+
+    res.json({ files: fileStats });
+  } catch (error) {
+    console.error('Error listing files:', error);
+    res.status(500).json({ error: 'Failed to list files' });
+  }
+});
+
+// File deletion endpoint
+app.delete('/api/files/delete/:filename', async (req, res) => {
+  try {
+    if (!req.session.userEmail) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const filename = req.params.filename;
+    const userDir = path.join(__dirname, 'uploads', req.session.userEmail);
+    const filePath = path.join(userDir, filename);
+
+    // Check if file exists and is in user's directory
+    if (!fs.existsSync(filePath) || !filePath.startsWith(userDir)) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    await fs.promises.unlink(filePath);
+    res.json({ message: 'File deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    res.status(500).json({ error: 'Failed to delete file' });
+  }
+});
+
 app.get('/api/stats', async (req, res) => {
   // In a production app, this would retrieve data from a database
   // For now, we'll just use the most recent upload if available
