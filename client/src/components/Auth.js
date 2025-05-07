@@ -47,6 +47,7 @@ const Auth = ({ onClose }) => {
         body: JSON.stringify({ token: result.user.accessToken })
       });
       if (response.ok) {
+        localStorage.setItem('userPicture', result.user.photoURL);
         window.location.reload();
       } else {
         const data = await response.json();

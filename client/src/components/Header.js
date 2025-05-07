@@ -38,7 +38,16 @@ const Header = ({ toggleSidebar }) => {
               className="login-btn" 
               onClick={() => setShowOptions(true)}
             >
-              {localStorage.getItem('userId') || sessionStorage.getItem('userId') ? 'My Account' : 'Login'}
+              {localStorage.getItem('userId') || sessionStorage.getItem('userId') ? (
+                <>
+                  <span className="user-avatar">
+                    {localStorage.getItem('userPicture') && 
+                      <img src={localStorage.getItem('userPicture')} alt="User" />
+                    }
+                  </span>
+                  <span>My Account</span>
+                </>
+              ) : 'Login'}
             </button>
           </div>
         </nav>
