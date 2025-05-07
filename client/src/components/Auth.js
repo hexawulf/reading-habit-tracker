@@ -48,6 +48,7 @@ const Auth = ({ onClose }) => {
       });
       if (response.ok) {
         localStorage.setItem('userPicture', result.user.photoURL);
+        localStorage.setItem('userName', result.user.displayName);
         window.location.reload();
       } else {
         const data = await response.json();
