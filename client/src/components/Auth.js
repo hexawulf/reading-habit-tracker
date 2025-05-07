@@ -12,13 +12,14 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
-// Initialize Firebase only if not already initialized
-if (!getAuth()?.app) {
-  try {
+try {
+  // Check if Firebase is already initialized
+  if (!getAuth().app) {
     initializeApp(firebaseConfig);
-  } catch (error) {
-    console.error("Firebase initialization error:", error);
   }
+} catch {
+  // If getAuth() fails, it means no app exists, so initialize
+  initializeApp(firebaseConfig);
 }
 
 const auth = getAuth();
