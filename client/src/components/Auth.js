@@ -12,20 +12,20 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
-let app;
-let auth;
-let googleProvider;
-
-try {
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  googleProvider = new GoogleAuthProvider();
-  googleProvider.setCustomParameters({
-    prompt: 'select_account'
-  });
-} catch (error) {
-  console.error("Firebase initialization error:", error);
+// Initialize Firebase only if not already initialized
+if (!getAuth()?.app) {
+  try {
+    initializeApp(firebaseConfig);
+  } catch (error) {
+    console.error("Firebase initialization error:", error);
+  }
 }
+
+const auth = getAuth();
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 
 const Auth = ({ onClose }) => {
   const [showOptions, setShowOptions] = useState(false);
