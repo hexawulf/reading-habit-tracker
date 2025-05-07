@@ -232,9 +232,18 @@ app.post('/api/auth/google', async (req, res) => {
 
     let user = await User.findOne({ googleId: userId });
     if (!user) {
+      // Generate unique username by appending random digits if needed
+      let username = decodedToken.name || decodedToken.email;
+      let uniqueUsername = username;
+      let counter = 1;
+      while (await User.findOne({ username: uniqueUsername })) {
+        uniqueUsername = `${username}${counter}`;
+        counter++;
+      }
+      
       user = await User.create({
         googleId: userId,
-        username: decodedToken.name || decodedToken.email,
+        username: uniqueUsername,
         email: decodedToken.email,
         readingData: {
           books: [],
