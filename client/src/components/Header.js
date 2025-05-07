@@ -45,7 +45,9 @@ const Header = ({ toggleSidebar }) => {
                       <img src={localStorage.getItem('userPicture')} alt="User" />
                     }
                   </span>
-                  <span>My Account</span>
+                  <span className="user-name">
+                    {localStorage.getItem('userName') || 'My Account'}
+                  </span>
                 </>
               ) : 'Login'}
             </button>
