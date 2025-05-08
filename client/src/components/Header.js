@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Header.css';
@@ -6,6 +5,17 @@ import Auth from './Auth';
 
 const Header = ({ toggleSidebar }) => {
   const [showOptions, setShowOptions] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userPicture');
+    window.location.href = '/'; // Redirect to home after logout
+  };
+
+  const userName = localStorage.getItem('userName');
+  const userPhoto = localStorage.getItem('userPicture');
+
   return (
     <header className="app-header">
       <div className="header-content">
@@ -33,34 +43,28 @@ const Header = ({ toggleSidebar }) => {
           >
             GitHub
           </a>
-          <div className="auth-button">
-            <button 
-              className="login-btn" 
-              onClick={() => {
-                if (!localStorage.getItem('isAuthenticated')) {
-                  setShowOptions(true);
-                } else {
-                  window.location.href = '/account';
-                }
-              }}
-            >
-              {localStorage.getItem('isAuthenticated') ? (
-                <>
-                  <span className="user-avatar">
-                    {localStorage.getItem('userPicture') && 
-                      <img src={localStorage.getItem('userPicture')} alt="User" />
-                    }
-                  </span>
-                  <span className="user-name">
-                    {localStorage.getItem('userName') || 'My Account'}
-                  </span>
-                </>
-              ) : 'Login'}
-            </button>
+          <div className="user-menu" onClick={() => setShowOptions(!showOptions)}>
+            <div className="user-avatar">
+              {userPhoto ? <img src={userPhoto} alt="User" /> : '👤'}
+            </div>
+            <span className="user-name">{userName || 'My Account'}</span>
           </div>
+          {showOptions && localStorage.getItem('isAuthenticated') && (
+            <div className="dropdown-menu">
+              <a href="/account" className="dropdown-item">
+                <span>📊</span> My Data
+              </a>
+              <a href="/settings" className="dropdown-item">
+                <span>⚙️</span> Settings
+              </a>
+              <div className="dropdown-item" onClick={handleLogout} style={{cursor: 'pointer'}}>
+                <span>🚪</span> Logout
+              </div>
+            </div>
+          )}
         </nav>
       </div>
-    {showOptions && (
+      {showOptions && (
         <div className="auth-modal-overlay" onClick={() => setShowOptions(false)}>
           <div className="auth-modal" onClick={e => e.stopPropagation()}>
             <Auth onClose={() => setShowOptions(false)} />
