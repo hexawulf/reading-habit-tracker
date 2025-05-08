@@ -1,5 +1,5 @@
-
 /* client/src/components/Header.css */
+
 .app-header {
   background: #ECE6D3;
   color: #2D3748;
@@ -17,9 +17,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-right: 16px;
-  padding-left: 0;
+  padding: 0 24px;
+  margin-left: 240px;
+  width: calc(100% - 240px);
 }
+
 
 .logo {
   display: flex;
@@ -28,7 +30,8 @@
   text-decoration: none;
   font-weight: 600;
   gap: 12px;
-  padding-left: 32px;
+  padding-left: 0;
+  /* ✅ Ensures flush alignment */
   margin-left: 0;
 }
 
@@ -42,7 +45,8 @@
 .logo h1 {
   font-size: 1.25rem;
   margin: 0;
-  padding-left: 4px;
+  padding-left: 0;
+  /* ✅ No inner shift */
 }
 
 .nav-links {
@@ -131,8 +135,13 @@
   .nav-links {
     display: none;
   }
-  
+
   .user-menu {
     margin-left: 0;
+  }
+
+  .header-content {
+    margin: 0;
+    padding: 0 16px;
   }
 }
