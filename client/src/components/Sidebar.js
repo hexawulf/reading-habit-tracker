@@ -22,25 +22,25 @@ const Sidebar = () => {
       <aside className={`sidebar ${isOpen ? 'active' : ''}`}>
         <nav className="sidebar-nav">
           <NavLink to="/" className="nav-item" end>
-            Dashboard
+            <span className="icon">📊</span> Dashboard
           </NavLink>
           <NavLink to="/yearly-progress" className="nav-item">
-            Yearly Progress
+            <span className="icon">📈</span> Yearly Progress
           </NavLink>
           <NavLink to="/monthly-progress" className="nav-item">
-            Monthly Progress
+            <span className="icon">📅</span> Monthly Progress
           </NavLink>
           <NavLink to="/reading-stats" className="nav-item">
-            Reading Stats
+            <span className="icon">📊</span> Reading Stats
           </NavLink>
           <NavLink to="/recent-books" className="nav-item">
-            Recent Books
+            <span className="icon">📚</span> Recent Books
           </NavLink>
           <NavLink to="/top-authors" className="nav-item">
-            Top Authors
+            <span className="icon">👥</span> Top Authors
           </NavLink>
           <NavLink to="/data-management" className="nav-item">
-            Data Management
+            <span className="icon">⚙️</span> Data Management
           </NavLink>
         </nav>
       </aside>
