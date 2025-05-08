@@ -40,8 +40,7 @@ const Header = ({ toggleSidebar }) => {
                 if (!localStorage.getItem('isAuthenticated')) {
                   setShowOptions(true);
                 } else {
-                  // Handle account menu
-                  console.log('Show account menu');
+                  window.location.href = '/account';
                 }
               }}
             >
