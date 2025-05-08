@@ -1,0 +1,29 @@
+
+.settings-page {
+  padding: 2rem;
+}
+
+.settings-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.settings-card {
+  background: white;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.upcoming-features {
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0;
+}
+
+.upcoming-features li {
+  margin: 1rem 0;
+  font-size: 1.1rem;
+  color: #666;
+}

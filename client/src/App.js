@@ -20,6 +20,7 @@ import TopAuthors from './pages/TopAuthors';
 import ReadingStats from './pages/ReadingStats';
 import DataManagement from './pages/DataManagement';
 import Account from './components/Account';
+import Settings from './pages/Settings';
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -46,6 +47,7 @@ function App() {
               <Route path="/data-management" element={<DataManagement />} />
               <Route path="/upload" element={<FileUpload />} />
               <Route path="/account" element={<Account />} />
+              <Route path="/settings" element={<Settings />} />
             </Routes>
           </div>
         </div>
