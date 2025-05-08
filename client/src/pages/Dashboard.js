@@ -230,7 +230,7 @@ const Dashboard = () => {
               </li>
             ))}
           </ul>
-          <Link to="/authors" className="see-more-link">See More Authors</Link>
+          <Link to="/top-authors" className="see-more-link">See More Authors</Link>
         </div>
       </div>
       
@@ -252,7 +252,7 @@ const Dashboard = () => {
             </div>
           ))}
         </div>
-        <Link to="/recent" className="see-more-link">See All Recent Books</Link>
+        <Link to="/recent-books" className="see-more-link">See All Recent Books</Link>
       </div>
       
       <div className="reading-insights">
