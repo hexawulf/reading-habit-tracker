@@ -15,6 +15,17 @@ const Header = ({ toggleSidebar }) => {
 
   const userName = localStorage.getItem('userName');
   const userPhoto = localStorage.getItem('userPicture');
+  const isAuthenticated = localStorage.getItem('isAuthenticated');
+
+  const handleAvatarClick = () => {
+    // If NOT logged in, just open the Auth modal
+    if (!isAuthenticated) {
+      setShowOptions(true);
+      return;
+    }
+    // If logged in, toggle the dropdown
+    setShowOptions(prev => !prev);
+  };
 
   return (
     <header className="app-header">
@@ -43,7 +54,7 @@ const Header = ({ toggleSidebar }) => {
           >
             GitHub
           </a>
-          <div className="user-menu" onClick={() => setShowOptions(!showOptions)}>
+          <div className="user-menu" onClick={handleAvatarClick}>
             <div className="user-avatar">
               {userPhoto ? <img src={userPhoto} alt="User" /> : '👤'}
             </div>
