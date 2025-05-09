@@ -307,14 +307,16 @@ app.get('/api/auth/status', async (req, res) => {
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    if (!req.session.userEmail) {
-      return cb(new Error('User not authenticated'));
+    const isAuthenticated = req.session.userEmail;
+    const baseDir = path.join(__dirname, 'uploads');
+    const uploadDir = isAuthenticated ? 
+      path.join(baseDir, req.session.userEmail) : 
+      path.join(baseDir, 'guest');
+    
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
     }
-    const userDir = path.join(__dirname, 'uploads', req.session.userEmail);
-    if (!fs.existsSync(userDir)) {
-      fs.mkdirSync(userDir, { recursive: true });
-    }
-    cb(null, userDir);
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const timestamp = Date.now();
@@ -348,11 +350,11 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     const results = await parseGoodreadsCSV(req.file.path);
     console.log('File processed successfully');
 
-    // Generate stats before cleaning up
+    // Generate stats
     const stats = generateStats(results);
 
-    // Save stats for the user if authenticated
-    if (req.session.userEmail) {
+    // If authenticated, save to MongoDB and user_data directory
+    if (req.session.userEmail && req.session.userId) {
       const userStatsDir = path.join(__dirname, 'user_data', req.session.userEmail);
       if (!fs.existsSync(userStatsDir)) {
         fs.mkdirSync(userStatsDir, { recursive: true });
@@ -362,14 +364,13 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
       await fs.promises.writeFile(statsPath, JSON.stringify(stats, null, 2));
 
       // Update user in database
-      if (req.session.userId) {
-        await User.findByIdAndUpdate(req.session.userId, {
-          'readingData.stats': stats,
-          'readingData.books': results
-        });
-      }
+      await User.findByIdAndUpdate(req.session.userId, {
+        'readingData.stats': stats,
+        'readingData.books': results
+      });
     }
 
+    // For both guest and authenticated users, return the processed data
     return res.json({ 
       success: true, 
       stats: stats,
