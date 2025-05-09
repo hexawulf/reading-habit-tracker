@@ -1,5 +1,4 @@
 
-// client/src/services/storageService.js
 const STORAGE_KEY = 'reading-habit-tracker-data';
 
 const storageService = {
@@ -9,19 +8,19 @@ const storageService = {
 
   saveData: async (payload) => {
     try {
-      // payload now { readingData: booksArray, stats }
-      localStorage.setItem('readingData', JSON.stringify(payload.readingData));
+      // Ensure readingData is always an array
+      const readingData = Array.isArray(payload.readingData) ? payload.readingData : [];
+      localStorage.setItem('readingData', JSON.stringify(readingData));
       localStorage.setItem('stats', JSON.stringify(payload.stats));
       
       if (storageService.isLoggedIn()) {
-        // Also save to server if logged in
         await fetch('/api/user/data', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           credentials: 'include',
-          body: JSON.stringify(payload)
+          body: JSON.stringify({ readingData, stats: payload.stats })
         });
       }
       return true;
@@ -34,29 +33,35 @@ const storageService = {
   loadData: async () => {
     try {
       if (storageService.isLoggedIn()) {
-        // Try to load from server first
         const response = await fetch('/api/user/data', {
           credentials: 'include'
         });
         if (response.ok) {
           const data = await response.json();
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          return data;
+          return {
+            readingData: Array.isArray(data.readingData) ? data.readingData : [],
+            stats: data.stats || {}
+          };
         }
       }
       
-      // Fall back to local storage
-      const serializedData = localStorage.getItem(STORAGE_KEY);
-      return serializedData ? JSON.parse(serializedData) : null;
+      const readingData = localStorage.getItem('readingData');
+      const stats = localStorage.getItem('stats');
+      
+      return {
+        readingData: readingData ? JSON.parse(readingData) : [],
+        stats: stats ? JSON.parse(stats) : {}
+      };
     } catch (error) {
       console.error('Error loading data:', error);
-      return null;
+      return { readingData: [], stats: {} };
     }
   },
 
   clearData: () => {
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem('readingData');
+      localStorage.removeItem('stats');
       if (storageService.isLoggedIn()) {
         fetch('/api/user/data', {
           method: 'DELETE',

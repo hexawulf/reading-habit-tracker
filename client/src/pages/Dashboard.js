@@ -82,9 +82,24 @@ const Dashboard = () => {
   
   const RATING_COLORS = ['#FF5252', '#FF7B25', '#FFC107', '#8BC34A', '#4CAF50'];
   
-  // Recent books for display
+  if (!stats || !readingData) {
+    return (
+      <div className="loading">
+        <div className="spinner"></div>
+        <p>Loading dashboard data...</p>
+      </div>
+    );
+  }
+
+  // Ensure we have arrays and objects
   const safeData = Array.isArray(readingData) ? readingData : [];
   const recentBooks = safeData.slice(0, 5);
+  
+  // Initialize missing stats objects to prevent errors
+  stats.readingPace = stats.readingPace || {};
+  stats.pageStats = stats.pageStats || {};
+  stats.readingByGenre = stats.readingByGenre || {};
+  stats.topAuthors = stats.topAuthors || [];
   
   return (
     <div className="dashboard">
