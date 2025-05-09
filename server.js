@@ -151,7 +151,7 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const replitId = req.headers['x-replit-user-id'];
     const replitName = req.headers['x-replit-user-name'];
-    
+
     if (replitId && replitName) {
       // Replit login: find or create user by Replit ID
       let user = await User.findOne({ replitId });
@@ -213,7 +213,7 @@ app.post('/api/auth/google', async (req, res) => {
 
     const userId = decodedToken.uid;
     console.log('Decoded token:', decodedToken);
-    
+
     // Store additional user info in session
     req.session.userPicture = decodedToken.picture;
     req.session.userEmail = decodedToken.email;
@@ -229,7 +229,7 @@ app.post('/api/auth/google', async (req, res) => {
         uniqueUsername = `${username}${counter}`;
         counter++;
       }
-      
+
       user = await User.create({
         googleId: userId,
         username: uniqueUsername,
@@ -332,26 +332,28 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     const results = await parseGoodreadsCSV(req.file.path);
     console.log('File processed successfully');
 
-    // Generate stats
     const stats = generateStats(results);
 
-    // If authenticated, save to MongoDB and user_data directory
-    if (req.session?.userEmail && req.session?.userId) {
-      const userStatsDir = path.join(__dirname, 'user_data', req.session.userEmail);
-      if (!fs.existsSync(userStatsDir)) {
-        fs.mkdirSync(userStatsDir, { recursive: true });
-      }
+    // Persist only for authenticated users
+    if (req.session?.userId) {
+      // Save to user_data directory if email is available
+      if (req.session.userEmail) {
+        const userStatsDir = path.join(__dirname, 'user_data', req.session.userEmail);
+        if (!fs.existsSync(userStatsDir)) {
+          fs.mkdirSync(userStatsDir, { recursive: true });
+        }
 
-      const statsPath = path.join(userStatsDir, 'stats.json');
-      await fs.promises.writeFile(statsPath, JSON.stringify(stats, null, 2));
+        const statsPath = path.join(userStatsDir, 'stats.json');
+        await fs.promises.writeFile(statsPath, JSON.stringify(stats, null, 2));
+      }
 
       // Update user in database
       await User.findByIdAndUpdate(req.session.userId, {
-        'readingData.stats': stats,
-        'readingData.books': results
+        'readingData.books': results,
+        'readingData.stats': stats
       });
     }
-    // For guests, we only process the file and return results without saving
+    // Skip DB write for guests
 
     // For both guest and authenticated users, return the processed data
     return res.json({ 
@@ -458,7 +460,7 @@ app.post('/api/user/data', async (req, res) => {
     if (!req.session.userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    
+
     const { books, stats, goals } = req.body;
     const user = await User.findById(req.session.userId);
     if (!user) {
@@ -470,7 +472,7 @@ app.post('/api/user/data', async (req, res) => {
       stats: stats || user.readingData.stats,
       goals: goals || user.readingData.goals
     };
-    
+
     await user.save();
     res.json({ success: true, data: user.readingData });
   } catch (err) {
@@ -485,7 +487,7 @@ app.delete('/api/user/data', async (req, res) => {
     if (!req.session.userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    
+
     const user = await User.findById(req.session.userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -496,7 +498,7 @@ app.delete('/api/user/data', async (req, res) => {
       stats: {},
       goals: { yearly: 52, monthly: 4 }
     };
-    
+
     await user.save();
     res.json({ success: true });
   } catch (err) {
