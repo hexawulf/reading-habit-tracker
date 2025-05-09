@@ -481,24 +481,59 @@ app.post('/api/user/data', async (req, res) => {
   }
 });
 
-// Delete reading data for logged-in user
+// ===== User Data Routes =====
+app.get('/api/user/data', async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const user = await User.findById(req.session.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(user.readingData);
+  } catch (err) {
+    console.error('GET /api/user/data error:', err);
+    res.status(500).json({ error: 'Failed to fetch user data' });
+  }
+});
+
+app.post('/api/user/data', async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const user = await User.findById(req.session.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const { readingData, stats, goalProgress } = req.body;
+    if (readingData) user.readingData.books = readingData;
+    if (stats) user.readingData.stats = stats;
+    if (goalProgress?.yearly?.target) user.readingData.goals.yearly = goalProgress.yearly.target;
+    if (goalProgress?.monthly?.target) user.readingData.goals.monthly = goalProgress.monthly.target;
+    await user.save();
+    res.json({ success: true });
+  } catch (err) {
+    console.error('POST /api/user/data error:', err);
+    res.status(500).json({ error: 'Failed to save user data' });
+  }
+});
+
 app.delete('/api/user/data', async (req, res) => {
   try {
     if (!req.session.userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-
     const user = await User.findById(req.session.userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-
     user.readingData = {
       books: [],
       stats: {},
       goals: { yearly: 52, monthly: 4 }
     };
-
     await user.save();
     res.json({ success: true });
   } catch (err) {
