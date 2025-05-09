@@ -83,7 +83,8 @@ const Dashboard = () => {
   const RATING_COLORS = ['#FF5252', '#FF7B25', '#FFC107', '#8BC34A', '#4CAF50'];
   
   // Recent books for display
-  const recentBooks = readingData.slice(0, 5);
+  const safeData = Array.isArray(readingData) ? readingData : [];
+  const recentBooks = safeData.slice(0, 5);
   
   return (
     <div className="dashboard">
