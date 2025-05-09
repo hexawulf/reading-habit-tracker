@@ -58,26 +58,15 @@ export const ReadingDataProvider = ({ children }) => {
     loadLocalData();
   }, []);
 
-  const processReadingData = (data) => {
-    try {
-      setLoading(true);
-      const calculatedStats = calculateStats(data);
-      const calculatedGoals = calculateGoalProgress(data);
+  const processReadingData = ({ readingData, stats }) => {
+    const calculatedStats = calculateStats(readingData);
+    const calculatedGoalProgress = calculateGoalProgress(readingData);
 
-      setReadingData(data);
-      setStats(calculatedStats);
-      setGoalProgress(calculatedGoals);
+    setReadingData(readingData);
+    setStats(calculatedStats);
+    setGoalProgress(calculatedGoalProgress);
 
-      storageService.saveData({
-        readingData: data,
-        stats: calculatedStats,
-        goalProgress: calculatedGoals
-      });
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    storageService.saveData({ readingData, stats: calculatedStats, goalProgress: calculatedGoalProgress });
   };
 
   const updateGoals = (yearlyGoal, monthlyGoal) => {
@@ -123,17 +112,17 @@ export const ReadingDataProvider = ({ children }) => {
 
     const currentYear = new Date().getFullYear().toString();
     const currentMonth = new Date().getMonth();
-    
+
     // Group books by year and month
     const readingByYear = {};
     const readingByMonth = {};
-    
+
     books.forEach(book => {
       const year = new Date(book.dateRead).getFullYear().toString();
       const month = new Date(book.dateRead).getMonth();
-      
+
       readingByYear[year] = (readingByYear[year] || 0) + 1;
-      
+
       if (!readingByMonth[year]) readingByMonth[year] = Array(12).fill(0);
       readingByMonth[year][month]++;
     });
@@ -190,7 +179,7 @@ export const ReadingDataProvider = ({ children }) => {
 
     const currentYear = new Date().getFullYear().toString();
     const currentMonth = new Date().getMonth();
-    
+
     const booksThisYear = books.filter(book => 
       new Date(book.dateRead).getFullYear().toString() === currentYear
     ).length;
