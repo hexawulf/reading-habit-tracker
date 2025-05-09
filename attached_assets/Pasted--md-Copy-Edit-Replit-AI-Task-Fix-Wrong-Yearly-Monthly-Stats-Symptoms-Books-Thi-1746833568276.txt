@@ -1,0 +1,124 @@
+
+md
+Copy
+Edit
+### 🛠️ Replit AI Task — Fix Wrong Yearly / Monthly Stats
+
+**Symptoms**  
+• “Books This Year” shows 0.  
+• “Books per Month” and “Books Read By Year” are nonsense.  
+Root cause is bad date parsing + wrong aggregation logic.
+
+**Goal**  
+1. Parse Goodreads dates in *all* common formats.  
+2. Count books per year / month correctly.  
+3. Compute bestYear, worstYear, avgPerYear, avgPerMonth safely.  
+
+---
+
+#### 1 ▪️ Install & import Day.js (top of `server.js`)
+```bash
+npm install dayjs
+js
+Copy
+Edit
+const dayjs = require('dayjs');
+const customParse = require('dayjs/plugin/customParseFormat');
+dayjs.extend(customParse);
+2 ▪️ Fix parseGoodreadsCsv (still in server.js)
+diff
+Copy
+Edit
+@@
+-  dateRead: data['Date Read'] ? new Date(data['Date Read']) : null,
++  // robust parse for YYYY/MM/DD, DD/MM/YYYY, etc.
++  dateRead: (() => {
++    const str = (data['Date Read'] || '').trim();
++    if (!str) return null;
++    const d = dayjs(str, ['YYYY/MM/DD','MM/DD/YYYY','DD/MM/YYYY','YYYY-MM-DD'], true);
++    return d.isValid() ? d.toDate() : null;
++  })(),
+Remove the date required filter:
+
+diff
+Copy
+Edit
+-if (book.exclusiveShelf === 'read' && book.dateRead) books.push(book);
++if (book.exclusiveShelf === 'read') books.push(book);
+3 ▪️ Rewrite yearly/monthly aggregation inside generateStats
+diff
+Copy
+Edit
+@@
+-// ===== existing aggregation block =====
++// Group books by year & month
++const readingByYear = {};
++const readingByMonth = {}; /* key: `${year}-${month}` */
++books.forEach(b => {
++  if (!b.dateRead) return;
++  const y = b.dateRead.getFullYear();
++  const m = b.dateRead.getMonth();          // 0-11
++  // yearly
++  readingByYear[y] = (readingByYear[y] || 0) + 1;
++  // monthly
++  const ym = `${y}-${m}`;
++  readingByMonth[ym] = (readingByMonth[ym] || 0) + 1;
++});
++
++// Derived stats
++const years = Object.keys(readingByYear).map(Number);
++const bestYear = years.length ? years.reduce((a,b)=>readingByYear[a]>=readingByYear[b]?a:b) : null;
++const worstYear = years.length ? years.reduce((a,b)=>readingByYear[a]<=readingByYear[b]?a:b) : null;
++const averagePerYear = years.length ? Number((books.length / years.length).toFixed(1)) : 0;
++const averagePerMonth = years.length ? Number((books.length / (years.length*12)).toFixed(2)) : 0;
++
++stats.readingByYear = readingByYear;
++stats.readingByMonth = readingByMonth;
++stats.bestYear = bestYear;
++stats.worstYear = worstYear;
++stats.averagePerYear = averagePerYear;
++stats.averagePerMonth = averagePerMonth;
+(Leave existing totalBooks, topAuthors, etc. intact.)
+
+4 ▪️ Safeguard average rating
+diff
+Copy
+Edit
+ const rated = books.filter(b => b.myRating > 0);
+ stats.averageRating = rated.length
+-  ? rated.reduce((s,b)=>s+b.myRating,0)/rated.length
+-  : 0;
++  ? Number((rated.reduce((s,b)=>s+b.myRating,0)/rated.length).toFixed(2))
++  : 0;
+5 ▪️ Update front-end loader (optional but safe)
+File: client/src/context/ReadingDataContext.js
+Ensure stats.readingByYear and stats.readingByMonth fall back to {} so charts don’t crash:
+
+diff
+Copy
+Edit
+const [stats, setStats] = useState({
+  totalBooks: 0,
+  averageRating: 0,
++ readingByYear: {},
++ readingByMonth: {},
+  // …other defaults
+});
+▶️ 6 ▪️ Run & verify
+Restart server → Upload the Goodreads CSV.
+
+Dashboard / Yearly Progress now shows correct counts (non-zero “Books This Year”, realistic Avg per Year, Best/Worst Year).
+
+Monthly chart has bars where dates exist.
+
+bash
+Copy
+Edit
+git add server.js client/src/context/ReadingDataContext.js
+git commit -m "fix: robust date parsing + correct yearly/monthly stats"
+git push
+csharp
+Copy
+Edit
+
+Paste the entire block (including the triple-backticks) into Replit AI and let it apply the patch
