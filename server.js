@@ -318,82 +318,110 @@ const upload = multer({
 });
 
 // API endpoint for uploading Goodreads CSV
-app.post('/api/upload', upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    if (!req.file.path || !fs.existsSync(req.file.path)) {
-      return res.status(400).json({ error: 'Upload failed - file not saved' });
-    }
-
-    console.log('Processing file:', req.file.path);
-
+app.post('/api/upload', (req, res, next) => {
+  upload.single('file')(req, res, async (err) => {
     try {
-      await fs.promises.access(req.file.path, fs.constants.R_OK);
-    } catch (err) {
-      return res.status(400).json({ error: 'File is not readable' });
-    }
-
-    let results;
-    try {
-      results = await parseGoodreadsCsv(req.file.path);
-      if (!results || !results.length) {
-        return res.status(400).json({ error: 'No valid reading data found in file' });
+      // Handle Multer errors
+      if (err) {
+        console.error('Multer error:', err);
+        return res.status(400).json({ error: 'File upload failed: ' + err.message });
       }
-    } catch (err) {
-      return res.status(400).json({ error: err.message || 'Failed to parse CSV file' });
-    }
 
-    console.log('File processed successfully');
-    const stats = generateStats(results);
+      // Validate file upload
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
 
-    // Persist for authenticated users
-    if (req.session?.userId) {
+      if (!req.file.path || !fs.existsSync(req.file.path)) {
+        return res.status(400).json({ error: 'Upload failed - file not saved' });
+      }
+
+      console.log('Processing file:', req.file.path);
+
+      // Validate file permissions
       try {
-        // Save to user_data directory if email is available
-        if (req.session.userEmail) {
-          const userStatsDir = path.join(__dirname, 'user_data', req.session.userEmail);
-          await fs.promises.mkdir(userStatsDir, { recursive: true });
-          const statsPath = path.join(userStatsDir, 'stats.json');
-          await fs.promises.writeFile(statsPath, JSON.stringify(stats, null, 2));
+        await fs.promises.access(req.file.path, fs.constants.R_OK);
+      } catch (err) {
+        await cleanupFile(req.file.path);
+        return res.status(400).json({ error: 'File is not readable' });
+      }
+
+      // Parse CSV
+      let results;
+      try {
+        results = await parseGoodreadsCsv(req.file.path);
+        if (!results || !results.length) {
+          await cleanupFile(req.file.path);
+          return res.status(400).json({ error: 'No valid reading data found in file' });
         }
-
-        // Update user in database
-        await User.findByIdAndUpdate(req.session.userId, {
-          'readingData.books': results,
-          'readingData.stats': stats
-        });
       } catch (err) {
-        console.error('Error saving user data:', err);
-        // Continue anyway - we'll return the processed data
+        await cleanupFile(req.file.path);
+        return res.status(400).json({ error: err.message || 'Failed to parse CSV file' });
       }
-    }
 
-    return res.json({ 
-      success: true, 
-      stats: stats,
-      data: results
-    });
-  } catch (error) {
-    console.error('Error processing file:', error);
-
-    // Clean up the uploaded file on error
-    if (req.file && req.file.path) {
+      // Generate stats
+      let stats;
       try {
-        await fs.promises.unlink(req.file.path);
+        stats = generateStats(results);
       } catch (err) {
-        console.error('Error deleting file during error handling:', err);
+        console.error('Stats generation error:', err);
+        await cleanupFile(req.file.path);
+        return res.status(400).json({ error: 'Failed to analyze reading data' });
       }
-    }
 
-    return res.status(500).json({ 
-      error: 'Error processing file',
-      details: error.message || 'Unknown error occurred'
-    });
-  }
+      console.log('File processed successfully');
+
+      // Persist for authenticated users
+      if (req.session?.userId) {
+        try {
+          // Save to user_data directory if email is available
+          if (req.session.userEmail) {
+            const userStatsDir = path.join(__dirname, 'user_data', req.session.userEmail);
+            await fs.promises.mkdir(userStatsDir, { recursive: true });
+            const statsPath = path.join(userStatsDir, 'stats.json');
+            await fs.promises.writeFile(statsPath, JSON.stringify(stats, null, 2));
+          }
+
+          // Update user in database
+          await User.findByIdAndUpdate(req.session.userId, {
+            'readingData.books': results,
+            'readingData.stats': stats
+          });
+        } catch (err) {
+          console.error('Error saving user data:', err);
+          // Non-critical error, continue
+        }
+      }
+
+      // Clean up uploaded file
+      await cleanupFile(req.file.path);
+
+      return res.json({ 
+        success: true, 
+        stats: stats,
+        data: results
+      });
+    } catch (error) {
+      console.error('Unhandled error:', error);
+      await cleanupFile(req.file?.path);
+      return res.status(400).json({ 
+        error: 'Failed to process upload',
+        details: error.message || 'Unknown error occurred'
+      });
+    }
+  });
 });
+
+// Helper function to safely clean up uploaded files
+async function cleanupFile(filePath) {
+  if (filePath && fs.existsSync(filePath)) {
+    try {
+      await fs.promises.unlink(filePath);
+    } catch (err) {
+      console.error('Error cleaning up file:', err);
+    }
+  }
+}
 
 // API endpoint to get reading stats without uploading
 // File listing endpoint
