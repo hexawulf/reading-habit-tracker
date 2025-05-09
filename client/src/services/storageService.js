@@ -7,10 +7,11 @@ const storageService = {
     return !!localStorage.getItem('user');
   },
 
-  saveData: async (data) => {
+  saveData: async (payload) => {
     try {
-      const serializedData = JSON.stringify(data);
-      localStorage.setItem(STORAGE_KEY, serializedData);
+      // payload now { readingData: booksArray, stats }
+      localStorage.setItem('readingData', JSON.stringify(payload.readingData));
+      localStorage.setItem('stats', JSON.stringify(payload.stats));
       
       if (storageService.isLoggedIn()) {
         // Also save to server if logged in
@@ -20,7 +21,7 @@ const storageService = {
             'Content-Type': 'application/json',
           },
           credentials: 'include',
-          body: serializedData
+          body: JSON.stringify(payload)
         });
       }
       return true;
