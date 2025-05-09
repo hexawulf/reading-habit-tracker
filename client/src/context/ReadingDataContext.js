@@ -19,6 +19,10 @@ export const ReadingDataProvider = ({ children }) => {
     readingByYear: {},
     readingByMonth: {},
     ratingDistribution: {},
+    bestYear: null,
+    worstYear: null,
+    averagePerYear: 0,
+    averagePerMonth: 0,
     readingPace: {
       booksPerMonth: 0,
       booksPerYear: 0,
