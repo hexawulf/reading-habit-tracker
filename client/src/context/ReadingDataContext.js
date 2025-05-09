@@ -155,7 +155,13 @@ export const ReadingDataProvider = ({ children }) => {
       averageRating: books.reduce((sum, book) => sum + (book.myRating || 0), 0) / books.length,
       readingByYear,
       readingByMonth,
-      ratingDistribution: {},
+      ratingDistribution: books.reduce((dist, book) => {
+        const rating = Number(book.myRating);
+        if (rating >= 1 && rating <= 5) {
+          dist[rating] = (dist[rating] || 0) + 1;
+        }
+        return dist;
+      }, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }),
       readingPace: {
         booksPerMonth: books.length / 12,
         booksPerYear: books.length,
