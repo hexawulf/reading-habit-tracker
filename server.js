@@ -570,66 +570,7 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
-// Helper: parses Goodreads CSV → Promise<books[]>
-const parseGoodreadsCsv = (filePath) =>
-  new Promise((resolve, reject) => {
-    if (!fs.existsSync(filePath)) {
-      return reject(new Error('File not found'));
-    }
 
-    const books = [];
-    const stream = fs.createReadStream(filePath)
-      .on('error', (err) => reject(new Error(`File read error: ${err.message}`)))
-      .pipe(csv())
-      .on('data', (data) => {
-        try {
-          const transformedData = {
-            bookId: data['Book Id'] || '',
-            title: data['Title'] || '',
-            author: data['Author'] || '',
-            authorLastFirst: data['Author l-f'] || '',
-            additionalAuthors: data['Additional Authors'] || '',
-            isbn: data['ISBN'] || '',
-            isbn13: data['ISBN13'] || '',
-            myRating: parseInt(data['My Rating']) || 0,
-            averageRating: parseFloat(data['Average Rating']) || 0,
-            publisher: data['Publisher'] || '',
-            binding: data['Binding'] || '',
-            pages: parseInt(data['Number of Pages']) || 0,
-            yearPublished: parseInt(data['Year Published']) || 0,
-            originalPublicationYear: parseInt(data['Original Publication Year']) || 0,
-            dateRead: data['Date Read'] ? new Date(data['Date Read']) : null,
-            dateAdded: data['Date Added'] ? new Date(data['Date Added']) : null,
-            bookshelves: data['Bookshelves'] || '',
-            bookshelvesWithPositions: data['Bookshelves with positions'] || '',
-            exclusiveShelf: data['Exclusive Shelf'] || '',
-            myReview: data['My Review'] || '',
-            spoiler: data['Spoiler'] || '',
-            privateNotes: data['Private Notes'] || '',
-            readCount: parseInt(data['Read Count']) || 0,
-            ownedCopies: parseInt(data['Owned Copies']) || 0
-          };
-
-          // Only include books that have been read
-          if (transformedData.exclusiveShelf === 'read' && transformedData.dateRead) {
-            books.push(transformedData);
-          }
-        } catch (err) {
-          stream.destroy();
-          reject(new Error(`Row processing error: ${err.message}`));
-        }
-      })
-      .on('error', (err) => reject(new Error(`CSV parse error: ${err.message}`)))
-      .on('end', () => {
-        // Sort books by date read (most recent first)
-        books.sort((a, b) => {
-          if (!a.dateRead) return 1;
-          if (!b.dateRead) return -1;
-          return b.dateRead - a.dateRead;
-        });
-        resolve(books);
-      });
-  });
 
 // Function to generate reading statistics
 function generateStats(books) {
