@@ -1,0 +1,34 @@
+
+## 4. Persist User Data to Database for Logged-In Users
+
+**Issue:** The app currently saves reading data and stats to local storage (and claims not to store anything on the server), but it also sets up a MongoDB `User` model with `readingData` and even tries to sync data via `storageService`. However, the API routes to actually persist or fetch a logged-in user’s data are missing. For example, the front-end’s `storageService.saveData` attempts a `POST /api/user/data` call, but no such endpoint exists in the backend. This means user data isn’t actually being saved to their account after upload or changes, leading to potential data loss when they switch devices or simply log out. It’s partially implemented functionality that needs completion.
+
+**Why it needs improvement:** For maintainability and a better user experience, if users go through the trouble of logging in or registering, the app should preserve their uploaded data and settings to their account. Implementing the missing endpoints will allow reading data to be stored/retrieved from the database, enabling true cross-device persistence and making the “Login” feature meaningful. It also cleans up dangling code (calls made with no corresponding route).
+
+**Implementation Prompt:**  
+```markdown
+**File:** `server.js` (backend) and `client/src/services/storageService.js` (frontend)  
+
+**A. Add API endpoints for user data in `server.js`:**  
+1. Open **`server.js`** and scroll to where other API routes are defined (after auth and upload routes). We will add three routes: GET, POST, and DELETE for `/api/user/data`. These will require the user to be logged in (session active).  
+
+2. **Implement GET `/api/user/data`:** This should retrieve the current user’s reading data from the database. Add the following route:  
+
+   ```js
+   // Get saved reading data for logged-in user
+   app.get('/api/user/data', async (req, res) => {
+     try {
+       if (!req.session.userId) {
+         return res.status(401).json({ error: 'Unauthorized' });
+       }
+       const user = await User.findById(req.session.userId);
+       if (!user) {
+         return res.status(404).json({ error: 'User not found' });
+       }
+       // Return the readingData object (books, stats, goals) for the user
+       res.json(user.readingData);
+     } catch (err) {
+       console.error('GET /api/user/data error:', err);
+       res.status(500).json({ error: 'Failed to fetch user data' });
+     }
+   });
