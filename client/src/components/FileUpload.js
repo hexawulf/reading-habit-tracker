@@ -48,11 +48,11 @@ const FileUpload = () => {
         }
       });
       
-      if (response.data && response.data.data) {
-        processReadingData(response.data.data);
+      if (response.data?.data?.books && response.data?.data?.stats) {
+        processReadingData({ books: response.data.data.books, stats: response.data.data.stats });
         navigate('/');
       } else {
-        throw new Error('Invalid response from server');
+        throw new Error('Invalid response format from server');
       }
     } catch (err) {
       const msg = err.response?.data?.error || 'Upload failed. Please try again.';

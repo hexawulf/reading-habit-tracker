@@ -328,17 +328,17 @@ const uploadSingle = multer({ storage }).single('file');
 // API endpoint for uploading Goodreads CSV
 app.post('/api/upload', (req, res) => {
   uploadSingle(req, res, async (multerErr) => {
-    if (multerErr) {
-      console.error('Multer error:', multerErr);
-      return res.status(400).json({ error: 'File upload failed. ' + multerErr.message });
-    }
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    if (!req.file.path || !fs.existsSync(req.file.path)) {
-      console.error('File not saved:', req.file);
-      return res.status(400).json({ error: 'Upload failed – file not saved' });
-    }
-
     try {
+      if (multerErr) {
+        console.error('Multer error:', multerErr);
+        return res.status(400).json({ error: 'File upload failed. ' + multerErr.message });
+      }
+      if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+      if (!req.file.path || !fs.existsSync(req.file.path)) {
+        console.error('File not saved:', req.file);
+        return res.status(400).json({ error: 'Upload failed – file not saved' });
+      }
+
       const books = await parseGoodreadsCsv(req.file.path);
       const stats = generateStats(books);
 
@@ -346,16 +346,17 @@ app.post('/api/upload', (req, res) => {
         await User.updateOne(
           { _id: req.session.userId },
           { $set: { 'readingData.books': books, 'readingData.stats': stats } }
-        );
+        ).exec();
       }
-      return res.json({ books, stats });
+
+      return res.json({ data: { books, stats } });
     } catch (err) {
-      console.error('Processing error:', err);
+      console.error('Upload processing error:', err);
+      await cleanupFile(req.file?.path);
       return res.status(400).json({
-        error:
-          err.message?.startsWith('CSV parse') || err.message?.startsWith('File read')
-            ? 'Invalid CSV format. Please upload a valid Goodreads export.'
-            : err.message || 'Failed to process file'
+        error: err.message?.includes('CSV') ? 
+          'Invalid CSV format. Please upload a valid Goodreads export.' : 
+          'Failed to process file. Please try again.'
       });
     }
   });
