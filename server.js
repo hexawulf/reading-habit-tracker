@@ -436,6 +436,76 @@ app.delete('/api/files/delete/:filename', async (req, res) => {
   }
 });
 
+// Get saved reading data for logged-in user
+app.get('/api/user/data', async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const user = await User.findById(req.session.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(user.readingData);
+  } catch (err) {
+    console.error('GET /api/user/data error:', err);
+    res.status(500).json({ error: 'Failed to fetch user data' });
+  }
+});
+
+// Save reading data for logged-in user
+app.post('/api/user/data', async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    const { books, stats, goals } = req.body;
+    const user = await User.findById(req.session.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.readingData = {
+      books: books || user.readingData.books,
+      stats: stats || user.readingData.stats,
+      goals: goals || user.readingData.goals
+    };
+    
+    await user.save();
+    res.json({ success: true, data: user.readingData });
+  } catch (err) {
+    console.error('POST /api/user/data error:', err);
+    res.status(500).json({ error: 'Failed to save user data' });
+  }
+});
+
+// Delete reading data for logged-in user
+app.delete('/api/user/data', async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    const user = await User.findById(req.session.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.readingData = {
+      books: [],
+      stats: {},
+      goals: { yearly: 52, monthly: 4 }
+    };
+    
+    await user.save();
+    res.json({ success: true });
+  } catch (err) {
+    console.error('DELETE /api/user/data error:', err);
+    res.status(500).json({ error: 'Failed to delete user data' });
+  }
+});
+
 app.get('/api/stats', async (req, res) => {
   // In a production app, this would retrieve data from a database
   // For now, we'll just use the most recent upload if available
