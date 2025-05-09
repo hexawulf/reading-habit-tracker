@@ -40,16 +40,26 @@ export const ReadingDataProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    const loadLocalData = () => {
+    const loadLocalData = async () => {
       try {
-        const localData = storageService.loadData();
-        if (localData) {
-          setReadingData(localData.readingData || []);
-          setStats(localData.stats || stats);
-          setGoalProgress(localData.goalProgress || goalProgress);
+        const saved = await storageService.loadData();
+        if (Array.isArray(saved?.readingData)) {
+          setReadingData(saved.readingData);
+        } else if (saved?.readingData?.books) {
+          // migrate old shape { books, stats }
+          setReadingData(saved.readingData.books);
+        } else {
+          setReadingData([]);
+        }
+        if (saved?.stats) {
+          setStats(saved.stats);
+        }
+        if (saved?.goalProgress) {
+          setGoalProgress(saved.goalProgress);
         }
       } catch (err) {
         setError(err.message);
+        setReadingData([]);
       } finally {
         setLoading(false);
       }
