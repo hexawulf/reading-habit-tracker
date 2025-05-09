@@ -319,43 +319,58 @@ const upload = multer({
 
 // API endpoint for uploading Goodreads CSV
 app.post('/api/upload', upload.single('file'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
-
   try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    if (!req.file.path || !fs.existsSync(req.file.path)) {
+      return res.status(400).json({ error: 'Upload failed - file not saved' });
+    }
+
     console.log('Processing file:', req.file.path);
 
-    // Check if file exists and is readable
-    await fs.promises.access(req.file.path, fs.constants.R_OK);
+    try {
+      await fs.promises.access(req.file.path, fs.constants.R_OK);
+    } catch (err) {
+      return res.status(400).json({ error: 'File is not readable' });
+    }
 
-    const results = await parseGoodreadsCSV(req.file.path);
+    let results;
+    try {
+      results = await parseGoodreadsCsv(req.file.path);
+      if (!results || !results.length) {
+        return res.status(400).json({ error: 'No valid reading data found in file' });
+      }
+    } catch (err) {
+      return res.status(400).json({ error: err.message || 'Failed to parse CSV file' });
+    }
+
     console.log('File processed successfully');
-
     const stats = generateStats(results);
 
-    // Persist only for authenticated users
+    // Persist for authenticated users
     if (req.session?.userId) {
-      // Save to user_data directory if email is available
-      if (req.session.userEmail) {
-        const userStatsDir = path.join(__dirname, 'user_data', req.session.userEmail);
-        if (!fs.existsSync(userStatsDir)) {
-          fs.mkdirSync(userStatsDir, { recursive: true });
+      try {
+        // Save to user_data directory if email is available
+        if (req.session.userEmail) {
+          const userStatsDir = path.join(__dirname, 'user_data', req.session.userEmail);
+          await fs.promises.mkdir(userStatsDir, { recursive: true });
+          const statsPath = path.join(userStatsDir, 'stats.json');
+          await fs.promises.writeFile(statsPath, JSON.stringify(stats, null, 2));
         }
 
-        const statsPath = path.join(userStatsDir, 'stats.json');
-        await fs.promises.writeFile(statsPath, JSON.stringify(stats, null, 2));
+        // Update user in database
+        await User.findByIdAndUpdate(req.session.userId, {
+          'readingData.books': results,
+          'readingData.stats': stats
+        });
+      } catch (err) {
+        console.error('Error saving user data:', err);
+        // Continue anyway - we'll return the processed data
       }
-
-      // Update user in database
-      await User.findByIdAndUpdate(req.session.userId, {
-        'readingData.books': results,
-        'readingData.stats': stats
-      });
     }
-    // Skip DB write for guests
 
-    // For both guest and authenticated users, return the processed data
     return res.json({ 
       success: true, 
       stats: stats,
@@ -578,62 +593,66 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
-// Function to parse Goodreads CSV
-function parseGoodreadsCSV(filePath) {
-  return new Promise((resolve, reject) => {
-    const results = [];
+// Helper: parses Goodreads CSV → Promise<books[]>
+const parseGoodreadsCsv = (filePath) =>
+  new Promise((resolve, reject) => {
+    if (!fs.existsSync(filePath)) {
+      return reject(new Error('File not found'));
+    }
 
-    fs.createReadStream(filePath)
+    const books = [];
+    const stream = fs.createReadStream(filePath)
+      .on('error', (err) => reject(new Error(`File read error: ${err.message}`)))
       .pipe(csv())
       .on('data', (data) => {
-        // Transform and clean data
-        const transformedData = {
-          bookId: data['Book Id'] || '',
-          title: data['Title'] || '',
-          author: data['Author'] || '',
-          authorLastFirst: data['Author l-f'] || '',
-          additionalAuthors: data['Additional Authors'] || '',
-          isbn: data['ISBN'] || '',
-          isbn13: data['ISBN13'] || '',
-          myRating: parseInt(data['My Rating']) || 0,
-          averageRating: parseFloat(data['Average Rating']) || 0,
-          publisher: data['Publisher'] || '',
-          binding: data['Binding'] || '',
-          pages: parseInt(data['Number of Pages']) || 0,
-          yearPublished: parseInt(data['Year Published']) || 0,
-          originalPublicationYear: parseInt(data['Original Publication Year']) || 0,
-          dateRead: data['Date Read'] ? new Date(data['Date Read']) : null,
-          dateAdded: data['Date Added'] ? new Date(data['Date Added']) : null,
-          bookshelves: data['Bookshelves'] || '',
-          bookshelvesWithPositions: data['Bookshelves with positions'] || '',
-          exclusiveShelf: data['Exclusive Shelf'] || '',
-          myReview: data['My Review'] || '',
-          spoiler: data['Spoiler'] || '',
-          privateNotes: data['Private Notes'] || '',
-          readCount: parseInt(data['Read Count']) || 0,
-          ownedCopies: parseInt(data['Owned Copies']) || 0
-        };
+        try {
+          const transformedData = {
+            bookId: data['Book Id'] || '',
+            title: data['Title'] || '',
+            author: data['Author'] || '',
+            authorLastFirst: data['Author l-f'] || '',
+            additionalAuthors: data['Additional Authors'] || '',
+            isbn: data['ISBN'] || '',
+            isbn13: data['ISBN13'] || '',
+            myRating: parseInt(data['My Rating']) || 0,
+            averageRating: parseFloat(data['Average Rating']) || 0,
+            publisher: data['Publisher'] || '',
+            binding: data['Binding'] || '',
+            pages: parseInt(data['Number of Pages']) || 0,
+            yearPublished: parseInt(data['Year Published']) || 0,
+            originalPublicationYear: parseInt(data['Original Publication Year']) || 0,
+            dateRead: data['Date Read'] ? new Date(data['Date Read']) : null,
+            dateAdded: data['Date Added'] ? new Date(data['Date Added']) : null,
+            bookshelves: data['Bookshelves'] || '',
+            bookshelvesWithPositions: data['Bookshelves with positions'] || '',
+            exclusiveShelf: data['Exclusive Shelf'] || '',
+            myReview: data['My Review'] || '',
+            spoiler: data['Spoiler'] || '',
+            privateNotes: data['Private Notes'] || '',
+            readCount: parseInt(data['Read Count']) || 0,
+            ownedCopies: parseInt(data['Owned Copies']) || 0
+          };
 
-        // Only include books that have been read
-        if (transformedData.exclusiveShelf === 'read' && transformedData.dateRead) {
-          results.push(transformedData);
+          // Only include books that have been read
+          if (transformedData.exclusiveShelf === 'read' && transformedData.dateRead) {
+            books.push(transformedData);
+          }
+        } catch (err) {
+          stream.destroy();
+          reject(new Error(`Row processing error: ${err.message}`));
         }
       })
+      .on('error', (err) => reject(new Error(`CSV parse error: ${err.message}`)))
       .on('end', () => {
         // Sort books by date read (most recent first)
-        results.sort((a, b) => {
+        books.sort((a, b) => {
           if (!a.dateRead) return 1;
           if (!b.dateRead) return -1;
           return b.dateRead - a.dateRead;
         });
-
-        resolve(results);
-      })
-      .on('error', (error) => {
-        reject(error);
+        resolve(books);
       });
   });
-}
 
 // Function to generate reading statistics
 function generateStats(books) {
