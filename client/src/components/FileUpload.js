@@ -55,8 +55,8 @@ const FileUpload = () => {
         throw new Error('Invalid response from server');
       }
     } catch (err) {
-      console.error('Upload failed:', err);
-      setError(err.response?.data?.error || 'Failed to upload file. Please try again.');
+      const msg = err.response?.data?.error || 'Upload failed. Please try again.';
+      setError(msg);
     } finally {
       setUploading(false);
     }
