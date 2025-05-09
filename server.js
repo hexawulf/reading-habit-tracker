@@ -291,16 +291,14 @@ app.get('/api/auth/status', async (req, res) => {
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const isAuthenticated = req.session.userEmail;
     const baseDir = path.join(__dirname, 'uploads');
-    const uploadDir = isAuthenticated ? 
-      path.join(baseDir, req.session.userEmail) : 
-      path.join(baseDir, 'guest');
-    
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
+    fs.mkdirSync(baseDir, { recursive: true });
+    const dest =
+      req.session?.userEmail
+        ? path.join(baseDir, req.session.userEmail)
+        : path.join(baseDir, 'guest');
+    fs.mkdirSync(dest, { recursive: true });
+    cb(null, dest);
   },
   filename: (req, file, cb) => {
     const timestamp = Date.now();
@@ -338,7 +336,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     const stats = generateStats(results);
 
     // If authenticated, save to MongoDB and user_data directory
-    if (req.session.userEmail && req.session.userId) {
+    if (req.session?.userEmail && req.session?.userId) {
       const userStatsDir = path.join(__dirname, 'user_data', req.session.userEmail);
       if (!fs.existsSync(userStatsDir)) {
         fs.mkdirSync(userStatsDir, { recursive: true });
@@ -353,6 +351,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
         'readingData.books': results
       });
     }
+    // For guests, we only process the file and return results without saving
 
     // For both guest and authenticated users, return the processed data
     return res.json({ 
