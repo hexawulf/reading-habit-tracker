@@ -102,46 +102,6 @@ const requireAuth = (req, res, next) => {
 };
 
 // Auth endpoints
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const userId = req.headers['x-replit-user-id'];
-    const username = req.headers['x-replit-user-name'];
-
-    if (!userId || !username) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    let user = await User.findOne({ replitId: userId });
-
-    if (!user) {
-      user = await User.create({
-        replitId: userId,
-        username: username,
-        readingData: {
-          books: [],
-          stats: {},
-          goals: {
-            yearly: 52,
-            monthly: 4
-          }
-        }
-      });
-    }
-
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
-
-    req.session.userId = user._id;
-    req.session.replitId = userId;
-    res.json({ user });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Google Auth endpoint
-// Register endpoint
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -189,9 +149,33 @@ app.post('/api/auth/register', async (req, res) => {
 // Login endpoint
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const replitId = req.headers['x-replit-user-id'];
+    const replitName = req.headers['x-replit-user-name'];
+    
+    if (replitId && replitName) {
+      // Replit login: find or create user by Replit ID
+      let user = await User.findOne({ replitId });
+      if (!user) {
+        user = await User.create({
+          replitId,
+          username: replitName,
+          readingData: {
+            books: [],
+            stats: {},
+            goals: { yearly: 52, monthly: 4 }
+          }
+        });
+      }
+      // Update last login time and save session info
+      user.lastLogin = new Date();
+      await user.save();
+      req.session.userId = user._id;
+      req.session.replitId = replitId;
+      return res.json({ user });
+    }
 
-    // Find user
+    // Username/password login
+    const { username, password } = req.body;
     const user = await User.findOne({ username });
     if (!user || !user.password) {
       return res.status(401).json({ error: 'Invalid credentials' });
