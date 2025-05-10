@@ -342,17 +342,26 @@ app.post('/api/upload', (req, res) => {
         return res.status(400).json({ error: 'Upload failed – file not saved' });
       }
 
-      const books = await parseGoodreadsCsv(req.file.path);
-      const stats = generateStats(books);
+      try {
+        const books = await parseGoodreadsCsv(req.file.path);
+        if (!Array.isArray(books)) {
+          throw new Error('Failed to parse books data');
+        }
+        
+        const stats = generateStats(books);
+        
+        if (req.session?.userId) {
+          await User.updateOne(
+            { _id: req.session.userId },
+            { $set: { 'readingData.books': books, 'readingData.stats': stats } }
+          ).exec();
+        }
 
-      if (req.session?.userId) {
-        await User.updateOne(
-          { _id: req.session.userId },
-          { $set: { 'readingData.books': books, 'readingData.stats': stats } }
-        ).exec();
+        return res.json({ data: { books, stats } });
+      } catch (parseError) {
+        console.error('Error parsing CSV:', parseError);
+        return res.status(400).json({ error: 'Failed to parse CSV file. Please ensure it is a valid Goodreads export.' });
       }
-
-      return res.json({ data: { books, stats } });
     } catch (err) {
       console.error('Upload processing error:', err);
       await cleanupFile(req.file?.path);
