@@ -1,142 +1,58 @@
 // Utility functions for parsing and analyzing Goodreads CSV data
 // File: utils/goodreadsParser.js
 
-const fs = require('fs');
 const csv = require('csv-parser');
+const fs = require('fs');
 const dayjs = require('dayjs');
-const customParseFormat = require('dayjs/plugin/customParseFormat');
+const customParse = require('dayjs/plugin/customParseFormat');
+dayjs.extend(customParse);
 
-// Extend dayjs with custom parse format
-dayjs.extend(customParseFormat);
+const parseDateStr = (dateStr) => {
+  if (!dateStr || !dateStr.trim()) return null;
+  const parsed = dayjs(dateStr.trim(), [
+    'YYYY/MM/DD', 'MM/DD/YYYY', 'YYYY-MM-DD', 'DD/MM/YYYY'
+  ]);
+  return parsed.isValid() ? parsed.toDate() : null;
+};
 
-/**
- * Parse a Goodreads CSV export file
- * @param {string} filePath - Path to the CSV file
- * @returns {Promise<Array>} - Promise resolving to an array of book objects
- */
-function parseGoodreadsCSV(filePath) {
-  return new Promise((resolve, reject) => {
-    const results = [];
-
+const parseGoodreadsCsv = (filePath) =>
+  new Promise((resolve, reject) => {
+    const books = [];
     fs.createReadStream(filePath)
+      .on('error', (e) => reject(new Error('File read failed: ' + e.message)))
       .pipe(csv())
-      .on('data', (data) => {
-        try {
-          // Validate the CSV format by checking for required fields
-          if (!validateGoodreadsCSV(data)) {
-            throw new Error('Invalid Goodreads CSV format');
-          }
-
-          // Process dates with proper format handling
-          let dateRead = null;
-          if (data['Date Read'] && data['Date Read'].trim() !== '') {
-            // Goodreads date format is typically YYYY/MM/DD
-            dateRead = parseGoodreadsDate(data['Date Read']);
-          }
-
-          let dateAdded = null;
-          if (data['Date Added'] && data['Date Added'].trim() !== '') {
-            dateAdded = parseGoodreadsDate(data['Date Added']);
-          }
-
-          // Handle numeric fields, providing defaults if parsing fails
-          const myRating = parseInt(data['My Rating']) || 0;
-          const averageRating = parseFloat(data['Average Rating']) || 0;
-          const pages = parseInt(data['Number of Pages']) || 0;
-          const yearPublished = parseInt(data['Year Published']) || null;
-          const originalYear = parseInt(data['Original Publication Year']) || null;
-          const readCount = parseInt(data['Read Count']) || 0;
-          const ownedCopies = parseInt(data['Owned Copies']) || 0;
-
-          // Create the transformed book object
-          const book = {
-            bookId: data['Book Id'] || '',
-            title: data['Title'] || '',
-            author: data['Author'] || '',
-            authorLastFirst: data['Author l-f'] || '',
-            additionalAuthors: data['Additional Authors'] || '',
-            isbn: data['ISBN'] || '',
-            isbn13: data['ISBN13'] || '',
-            myRating,
-            averageRating,
-            publisher: data['Publisher'] || '',
-            binding: data['Binding'] || '',
-            pages,
-            yearPublished,
-            originalPublicationYear: originalYear,
-            dateRead,
-            dateAdded,
-            bookshelves: data['Bookshelves'] || '',
-            bookshelvesWithPositions: data['Bookshelves with positions'] || '',
-            exclusiveShelf: data['Exclusive Shelf'] || '',
-            myReview: data['My Review'] || '',
-            readCount,
-            ownedCopies
-          };
-
-          // Only include books that have been marked as read
-          if (book.exclusiveShelf === 'read') {
-            results.push(book);
-          }
-        } catch (error) {
-          console.error('Error processing row:', error);
-          // Continue processing other rows instead of rejecting the entire promise
+      .on('data', (row) => {
+        const book = {
+          bookId: row['Book Id'] || '',
+          title: row['Title'] || '',
+          author: row['Author'] || '',
+          authorLastFirst: row['Author l-f'] || '',
+          additionalAuthors: row['Additional Authors'] || '',
+          isbn: row['ISBN'] || '',
+          isbn13: row['ISBN13'] || '',
+          exclusiveShelf: row['Exclusive Shelf'] || '',
+          myRating: parseInt(row['My Rating']) || 0,
+          averageRating: parseFloat(row['Average Rating']) || 0,
+          pages: parseInt(row['Number of Pages']) || 0,
+          yearPublished: parseInt(row['Year Published']) || null,
+          originalPublicationYear: parseInt(row['Original Publication Year']) || null,
+          readCount: parseInt(row['Read Count']) || 0,
+          ownedCopies: parseInt(row['Owned Copies']) || 0,
+          dateRead: parseDateStr(row['Date Read']),
+          dateAdded: parseDateStr(row['Date Added']),
+          bookshelves: row['Bookshelves'] || '',
+          bookshelvesWithPositions: row['Bookshelves with positions'] || '',
+          myReview: row['My Review'] || '',
+          spoiler: row['Spoiler'] || '',
+          privateNotes: row['Private Notes'] || ''
+        };
+        if (book.exclusiveShelf === 'read') {
+          books.push(book);
         }
       })
-      .on('end', () => {
-        // Sort books by date read (most recent first)
-        results.sort((a, b) => {
-          if (!a.dateRead) return 1;
-          if (!b.dateRead) return -1;
-          return new Date(b.dateRead) - new Date(a.dateRead);
-        });
-
-        resolve(results);
-      })
-      .on('error', (error) => {
-        reject(error);
-      });
+      .on('error', (e) => reject(new Error('CSV parse failed: ' + e.message)))
+      .on('end', () => resolve(books));
   });
-}
-
-/**
- * Validates that the CSV row has the expected Goodreads format
- * @param {Object} row - CSV row object
- * @returns {boolean} - True if valid, false otherwise
- */
-function validateGoodreadsCSV(row) {
-  // Check for minimum required fields
-  const requiredFields = ['Book Id', 'Title', 'Author', 'Exclusive Shelf'];
-  return requiredFields.every(field => field in row);
-}
-
-/**
- * Parse a date string from Goodreads format
- * @param {string} dateString - Date string in Goodreads format
- * @returns {string} - ISO formatted date string
- */
-function parseGoodreadsDate(dateString) {
-  if (!dateString) return null;
-
-  // Goodreads uses multiple date formats, try to handle the common ones
-  const formats = [
-    'YYYY/MM/DD', // Standard Goodreads export format
-    'MM/DD/YYYY', // Alternative format sometimes used
-    'YYYY-MM-DD', // ISO format
-    'DD/MM/YYYY'  // European format
-  ];
-
-  for (const format of formats) {
-    const parsedDate = dayjs(dateString, format);
-    if (parsedDate.isValid()) {
-      return parsedDate.format('YYYY-MM-DD');
-    }
-  }
-
-  // If none of the formats work, return the original string
-  console.warn(`Could not parse date: ${dateString}`);
-  return null;
-}
 
 /**
  * Generate comprehensive reading statistics from book data
@@ -237,7 +153,7 @@ function calculateReadingByYear(books) {
   books.forEach(book => {
     if (book.dateRead) {
       // Extract year from ISO date string
-      const year = book.dateRead.split('-')[0];
+      const year = book.dateRead.getFullYear();
       byYear[year] = (byYear[year] || 0) + 1;
     }
   });
@@ -261,9 +177,8 @@ function calculateReadingByMonth(books) {
 
   books.forEach(book => {
     if (book.dateRead) {
-      const dateParts = book.dateRead.split('-');
-      const year = parseInt(dateParts[0]);
-      const month = parseInt(dateParts[1]) - 1; // JavaScript months are 0-indexed
+      const year = book.dateRead.getFullYear();
+      const month = book.dateRead.getMonth();
 
       if (byMonth[year]) {
         byMonth[year][month] += 1;
@@ -471,6 +386,6 @@ function calculateReadingStreaks(books) {
 }
 
 module.exports = {
-  parseGoodreadsCSV,
+  parseGoodreadsCsv,
   generateReadingStats
 };
