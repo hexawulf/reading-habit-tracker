@@ -347,9 +347,9 @@ app.post('/api/upload', (req, res) => {
         if (!Array.isArray(books)) {
           throw new Error('Failed to parse books data');
         }
-        
+
         const stats = generateStats(books);
-        
+
         if (req.session?.userId) {
           await User.updateOne(
             { _id: req.session.userId },
@@ -609,7 +609,7 @@ function generateStats(books) {
 
   const totalBooks = books.length;
   const totalPages = books.reduce((sum, book) => sum + (book.pages || 0), 0);
-  
+
   // Calculate average rating
   const ratedBooks = books.filter(b => b.myRating && b.myRating > 0);
   const averageRating = ratedBooks.length 
