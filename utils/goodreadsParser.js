@@ -27,9 +27,14 @@ const parseGoodreadsCsv = (filePath) =>
           if (row['Date Read']) {
             const dateStr = row['Date Read'].trim();
             if (dateStr) {
-              const parsed = dayjs(dateStr, ['YYYY/MM/DD', 'MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD'], true);
-              if (parsed.isValid()) {
-                dateRead = parsed.toDate();
+              // Try multiple date formats
+              const formats = ['YYYY/MM/DD', 'MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD', 'M/D/YYYY', 'D/M/YYYY'];
+              for (const format of formats) {
+                const parsed = dayjs(dateStr, format, true);
+                if (parsed.isValid()) {
+                  dateRead = parsed.toDate();
+                  break;
+                }
               }
             }
           }
