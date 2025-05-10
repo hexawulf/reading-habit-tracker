@@ -4,16 +4,8 @@
 const csv = require('csv-parser');
 const fs = require('fs');
 const dayjs = require('dayjs');
-const customParse = require('dayjs/plugin/customParseFormat');
-dayjs.extend(customParse);
-
-const parseDateStr = (dateStr) => {
-  if (!dateStr || !dateStr.trim()) return null;
-  const parsed = dayjs(dateStr.trim(), [
-    'YYYY/MM/DD', 'MM/DD/YYYY', 'YYYY-MM-DD', 'DD/MM/YYYY'
-  ]);
-  return parsed.isValid() ? parsed.toDate() : null;
-};
+const customParseFormat = require('dayjs/plugin/customParseFormat');
+dayjs.extend(customParseFormat);
 
 const parseGoodreadsCsv = (filePath) =>
   new Promise((resolve, reject) => {
@@ -22,32 +14,17 @@ const parseGoodreadsCsv = (filePath) =>
       .on('error', (e) => reject(new Error('File read failed: ' + e.message)))
       .pipe(csv())
       .on('data', (row) => {
-        const book = {
-          bookId: row['Book Id'] || '',
-          title: row['Title'] || '',
-          author: row['Author'] || '',
-          authorLastFirst: row['Author l-f'] || '',
-          additionalAuthors: row['Additional Authors'] || '',
-          isbn: row['ISBN'] || '',
-          isbn13: row['ISBN13'] || '',
-          exclusiveShelf: row['Exclusive Shelf'] || '',
-          myRating: parseInt(row['My Rating']) || 0,
-          averageRating: parseFloat(row['Average Rating']) || 0,
-          pages: parseInt(row['Number of Pages']) || 0,
-          yearPublished: parseInt(row['Year Published']) || null,
-          originalPublicationYear: parseInt(row['Original Publication Year']) || null,
-          readCount: parseInt(row['Read Count']) || 0,
-          ownedCopies: parseInt(row['Owned Copies']) || 0,
-          dateRead: parseDateStr(row['Date Read']),
-          dateAdded: parseDateStr(row['Date Added']),
-          bookshelves: row['Bookshelves'] || '',
-          bookshelvesWithPositions: row['Bookshelves with positions'] || '',
-          myReview: row['My Review'] || '',
-          spoiler: row['Spoiler'] || '',
-          privateNotes: row['Private Notes'] || ''
-        };
-        if (book.exclusiveShelf === 'read') {
-          books.push(book);
+        if (row['Exclusive Shelf']?.trim() === 'read') {
+          const dateRead = row['Date Read'] ? dayjs(row['Date Read'], ['YYYY/MM/DD', 'YYYY-MM-DD']).toDate() : null;
+          books.push({
+            title: row['Title']?.trim(),
+            author: row['Author']?.trim(),
+            dateRead,
+            myRating: parseInt(row['My Rating']) || 0,
+            pages: parseInt(row['Number of Pages']) || 0,
+            isbn: row['ISBN13'] || row['ISBN'] || '',
+            shelf: row['Exclusive Shelf']?.trim()
+          });
         }
       })
       .on('error', (e) => reject(new Error('CSV parse failed: ' + e.message)))

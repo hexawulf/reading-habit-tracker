@@ -48,9 +48,9 @@ const FileUpload = () => {
         }
       });
       
-      if (response.data?.data?.books && response.data?.data?.stats) {
+      if (response.data?.data) {
         const { books, stats } = response.data.data;
-        processReadingData({ readingData: books, stats });
+        await processReadingData({ readingData: books || [], stats: stats || {} });
         navigate('/');
       } else {
         throw new Error('Invalid response format from server');
