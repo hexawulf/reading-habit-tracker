@@ -9,6 +9,10 @@ dayjs.extend(customParseFormat);
 
 const parseGoodreadsCsv = (filePath) =>
   new Promise((resolve, reject) => {
+    if (!fs.existsSync(filePath)) {
+      reject(new Error('File not found'));
+      return;
+    }
     const books = [];
     fs.createReadStream(filePath)
       .on('error', (e) => reject(new Error('File read failed: ' + e.message)))

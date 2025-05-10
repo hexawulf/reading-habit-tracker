@@ -659,10 +659,6 @@ function generateStats(books) {
     }
   });
 
-  // Total books and pages
-  const totalBooks = books.length;
-  const totalPages = books.reduce((sum, book) => sum + (book.pages || 0), 0);
-
   // Calculate average rating
   const ratingsSum = books.reduce((sum, book) => sum + (book.myRating || 0), 0);
   const averageRating = ratingsSum / books.filter(book => book.myRating > 0).length;
