@@ -610,12 +610,6 @@ function generateStats(books) {
   const totalBooks = books.length;
   const totalPages = books.reduce((sum, book) => sum + (book.pages || 0), 0);
 
-  // Calculate average rating
-  const ratedBooks = books.filter(b => b.myRating && b.myRating > 0);
-  const averageRating = ratedBooks.length 
-    ? parseFloat((ratedBooks.reduce((sum, b) => sum + b.myRating, 0) / ratedBooks.length).toFixed(2))
-    : 0;
-
   // Reading by year and month
   const readingByYear = {};
   const readingByMonth = {};
