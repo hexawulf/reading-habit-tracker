@@ -72,7 +72,21 @@ export const ReadingDataProvider = ({ children }) => {
     loadLocalData();
   }, []);
 
-  const processReadingData = ({ readingData, stats }) => {
+  const processReadingData = (data) => {
+    setLoading(true);
+    try {
+      // Handle backend response with both books and stats
+      if (data && !Array.isArray(data) && data.books && data.stats) {
+        const { books, stats } = data;
+        setReadingData(books);
+        setStats(stats);
+        const goalsObj = calculateGoalProgress(books);
+        setGoalProgress(goalsObj);
+        storageService.saveData({ readingData: books, stats, goalProgress: goalsObj });
+        setLoading(false);
+        return;
+      }
+
     const calculatedStats = calculateStats(readingData);
     const calculatedGoalProgress = calculateGoalProgress(readingData);
 
@@ -81,6 +95,11 @@ export const ReadingDataProvider = ({ children }) => {
     setGoalProgress(calculatedGoalProgress);
 
     storageService.saveData({ readingData, stats: calculatedStats, goalProgress: calculatedGoalProgress });
+    } catch (error) {
+      setError(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateGoals = (yearlyGoal, monthlyGoal) => {

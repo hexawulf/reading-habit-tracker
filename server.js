@@ -581,15 +581,74 @@ function generateStats(books) {
   if (!books || books.length === 0) {
     return {
       totalBooks: 0,
-      averageRating: 0,
       totalPages: 0,
-      averagePagesPerBook: 0,
+      averageRating: 0,
       readingByYear: {},
       readingByMonth: {},
+      readingByGenre: {},
       topAuthors: [],
-      ratingDistribution: {}
+      ratingDistribution: {1:0, 2:0, 3:0, 4:0, 5:0},
+      readingPace: { booksPerYear: 0, booksPerMonth: 0, pagesPerDay: 0 },
+      pageStats: { averageLength: 0, longestBook: { title: '', pages: 0 } }
     };
   }
+
+  const totalBooks = books.length;
+  const totalPages = books.reduce((sum, book) => sum + (book.pages || 0), 0);
+  
+  // Calculate average rating
+  const ratedBooks = books.filter(b => b.myRating && b.myRating > 0);
+  const averageRating = ratedBooks.length 
+    ? parseFloat((ratedBooks.reduce((sum, b) => sum + b.myRating, 0) / ratedBooks.length).toFixed(2))
+    : 0;
+
+  // Reading by year and month
+  const readingByYear = {};
+  const readingByMonth = {};
+  books.forEach(book => {
+    if (book.dateRead) {
+      const year = book.dateRead.getFullYear();
+      const month = book.dateRead.getMonth();
+      readingByYear[year] = (readingByYear[year] || 0) + 1;
+      const ym = `${year}-${month}`;
+      readingByMonth[ym] = (readingByMonth[ym] || 0) + 1;
+    }
+  });
+
+  // Find longest book
+  let longestBook = { title: '', pages: 0 };
+  books.forEach(b => {
+    if ((b.pages || 0) > (longestBook.pages || 0)) {
+      longestBook = { title: b.title || '(Unknown)', pages: b.pages || 0 };
+    }
+  });
+
+  // Calculate reading pace
+  const readingPace = {
+    booksPerYear: totalBooks,
+    booksPerMonth: parseFloat((totalBooks / 12).toFixed(2)),
+    pagesPerDay: parseFloat((totalPages / 365).toFixed(2))
+  };
+
+  // Top authors
+  const authorCounts = {};
+  books.forEach(book => {
+    if (book.author) {
+      authorCounts[book.author] = (authorCounts[book.author] || 0) + 1;
+    }
+  });
+  const topAuthors = Object.entries(authorCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([author, count]) => ({ author, count }));
+
+  // Rating distribution
+  const ratingDistribution = {1:0, 2:0, 3:0, 4:0, 5:0};
+  books.forEach(book => {
+    if (book.myRating > 0) {
+      ratingDistribution[book.myRating] = (ratingDistribution[book.myRating] || 0) + 1;
+    }
+  });
 
   // Total books and pages
   const totalBooks = books.length;
