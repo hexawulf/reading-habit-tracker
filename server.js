@@ -660,14 +660,17 @@ function generateStats(books) {
 
   // Calculate average rating
   const ratingsSum = books.reduce((sum, book) => sum + (book.myRating || 0), 0);
-  const averageRating = ratingsSum / books.filter(book => book.myRating > 0).length;
+  const ratedBooksCount = books.filter(book => book.myRating > 0).length;
+  const averageRating = ratedBooksCount > 0 ? ratingsSum / ratedBooksCount : 0;
 
-  // Reading history by year
-  const readingByYear = {};
+  // Reading history by year and month
+  const readingHistory = { byYear: {}, byMonth: {} };
   books.forEach(book => {
     if (book.dateRead) {
       const year = book.dateRead.getFullYear();
-      readingByYear[year] = (readingByYear[year] || 0) + 1;
+      const month = book.dateRead.getMonth();
+      readingHistory.byYear[year] = (readingHistory.byYear[year] || 0) + 1;
+      readingHistory.byMonth[`${year}-${month}`] = (readingHistory.byMonth[`${year}-${month}`] || 0) + 1;
     }
   });
 
