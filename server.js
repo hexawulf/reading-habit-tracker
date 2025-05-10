@@ -596,9 +596,14 @@ function generateStats(books) {
       readingByMonth: {},
       readingByGenre: {},
       topAuthors: [],
-      ratingDistribution: {1:0, 2:0, 3:0, 4:0, 5:0},
+      ratingDistribution: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
       readingPace: { booksPerYear: 0, booksPerMonth: 0, pagesPerDay: 0 },
-      pageStats: { averageLength: 0, longestBook: { title: '', pages: 0 } }
+      pageStats: {
+        totalPages: 0,
+        averageLength: 0,
+        longestBook: { title: '', author: '', pages: 0 },
+        shortestBook: { title: '', author: '', pages: 0 }
+      }
     };
   }
 

@@ -18,17 +18,22 @@ const parseGoodreadsCsv = (filePath) =>
       .on('error', (e) => reject(new Error('File read failed: ' + e.message)))
       .pipe(csv())
       .on('data', (row) => {
-        if (row['Exclusive Shelf']?.trim() === 'read') {
-          const dateRead = row['Date Read'] ? dayjs(row['Date Read'], ['YYYY/MM/DD', 'YYYY-MM-DD']).toDate() : null;
-          books.push({
-            title: row['Title']?.trim(),
-            author: row['Author']?.trim(),
-            dateRead,
-            myRating: parseInt(row['My Rating']) || 0,
-            pages: parseInt(row['Number of Pages']) || 0,
-            isbn: row['ISBN13'] || row['ISBN'] || '',
-            shelf: row['Exclusive Shelf']?.trim()
-          });
+        if (row['Exclusive Shelf']?.trim().toLowerCase() === 'read') {
+          const title = row['Title']?.trim() || '(Untitled)';
+          const author = row['Author']?.trim() || 'Unknown';
+          const myRating = parseInt(row['My Rating'] || '', 10) || 0;
+          const pages = parseInt(row['Number of Pages'] || '', 10) || 0;
+          let dateRead = null;
+          if (row['Date Read']) {
+            const dateStr = row['Date Read'].trim();
+            if (dateStr) {
+              const parsed = dayjs(dateStr, ['YYYY/MM/DD', 'MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD'], true);
+              if (parsed.isValid()) {
+                dateRead = parsed.toDate();
+              }
+            }
+          }
+          books.push({ title, author, pages, myRating, dateRead });
         }
       })
       .on('error', (e) => reject(new Error('CSV parse failed: ' + e.message)))
