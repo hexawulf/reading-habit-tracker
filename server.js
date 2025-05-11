@@ -1,3 +1,6 @@
+Applying the provided changes to server.js to fix duplicate variables, align stats shape, add a robust CSV parser, and update the CSV parser implementation.
+```
+```replit_final_file
 // Backend for Reading Habit Tracker
 // File: server.js
 
@@ -56,24 +59,38 @@ mongoose.connect(mongoURI, {
     // Continue without DB for now
     console.log('Continuing without database connection...');
   });
-const csv = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
 const net = require('net'); // Add this for the port finder
 
 const csvParser = require('csv-parser');
+const dayjs = require('dayjs');
+const customParse = require('dayjs/plugin/customParseFormat');
+dayjs.extend(customParse);
+
+const parseDate = (s)=>{ if(!s||!s.trim())return null;
+  const d=dayjs(s.trim(),['YYYY/MM/DD','MM/DD/YYYY','DD/MM/YYYY','YYYY-MM-DD'],true);
+  return d.isValid()?d.toDate():null; };
+
 const parseGoodreadsCsv = (filePath) =>
-  new Promise((resolve, reject) => {
-    const books = [];
-    fs.createReadStream(filePath)
-      .on('error', (e) => reject(new Error('File read failed: ' + e.message)))
-      .pipe(csvParser())
-      .on('data', (row) => {
-        if (row['Exclusive Shelf']?.trim() === 'read') books.push(row);
-      })
-      .on('error', (e) => reject(new Error('CSV parse failed: ' + e.message)))
-      .on('end', () => resolve(books));
-  });
+ new Promise((res,rej)=>{
+  const books=[];
+  fs.createReadStream(filePath)
+   .on('error',e=>rej(new Error('File read failed: '+e.message)))
+   .pipe(csvParser())
+   .on('data',row=>{
+     if((row['Exclusive Shelf']||'').trim().toLowerCase()!=='read')return;
+     books.push({
+       title: row['Title']?.trim()||'(Untitled)',
+       author: row['Author']?.trim()||'Unknown',
+       myRating: parseInt(row['My Rating']||'0',10)||0,
+       pages: parseInt(row['Number of Pages']||'0',10)||0,
+       dateRead: parseDate(row['Date Read'])
+     });
+   })
+   .on('error',e=>rej(new Error('CSV parse failed: '+e.message)))
+   .on('end',()=>res(books));
+});
 
 const app = express();
 // We'll determine the port dynamically below
@@ -571,7 +588,7 @@ app.get('/api/stats', async (req, res) => {
   }
 
   try {
-    const results = await parseGoodreadsCSV(path.join(uploadDir, mostRecentFile));
+    const results = await parseGoodreadsCsv(path.join(uploadDir, mostRecentFile));
     return res.json({ 
       success: true, 
       stats: generateStats(results),
@@ -587,30 +604,16 @@ app.get('/api/stats', async (req, res) => {
 
 // Function to generate reading statistics
 function generateStats(books) {
-  if (!books || books.length === 0) {
-    return {
-      totalBooks: 0,
-      totalPages: 0,
-      averageRating: 0,
-      readingByYear: {},
-      readingByMonth: {},
-      readingByGenre: {},
-      topAuthors: [],
-      ratingDistribution: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
-      readingPace: { booksPerYear: 0, booksPerMonth: 0, pagesPerDay: 0 },
-      pageStats: {
-        totalPages: 0,
-        averageLength: 0,
-        longestBook: { title: '', author: '', pages: 0 },
-        shortestBook: { title: '', author: '', pages: 0 }
-      }
-    };
-  }
-
   const totalBooks = books.length;
   const totalPages = books.reduce((sum, book) => sum + (book.pages || 0), 0);
 
-  // Reading by year and month
+  // Calculate average rating
+  const ratedBooks = books.filter(b => b.myRating && b.myRating > 0);
+  const averageRating = ratedBooks.length 
+    ? parseFloat((ratedBooks.reduce((sum, b) => sum + b.myRating, 0) / ratedBooks.length).toFixed(2))
+    : 0;
+
+  // Reading history
   const readingByYear = {};
   const readingByMonth = {};
   books.forEach(book => {
@@ -618,25 +621,10 @@ function generateStats(books) {
       const year = book.dateRead.getFullYear();
       const month = book.dateRead.getMonth();
       readingByYear[year] = (readingByYear[year] || 0) + 1;
-      const ym = `${year}-${month}`;
-      readingByMonth[ym] = (readingByMonth[ym] || 0) + 1;
+      if (!readingByMonth[year]) readingByMonth[year] = Array(12).fill(0);
+      readingByMonth[year][month]++;
     }
   });
-
-  // Find longest book
-  let longestBook = { title: '', pages: 0 };
-  books.forEach(b => {
-    if ((b.pages || 0) > (longestBook.pages || 0)) {
-      longestBook = { title: b.title || '(Unknown)', pages: b.pages || 0 };
-    }
-  });
-
-  // Calculate reading pace
-  const readingPace = {
-    booksPerYear: totalBooks,
-    booksPerMonth: parseFloat((totalBooks / 12).toFixed(2)),
-    pagesPerDay: parseFloat((totalPages / 365).toFixed(2))
-  };
 
   // Top authors
   const authorCounts = {};
@@ -646,105 +634,57 @@ function generateStats(books) {
     }
   });
   const topAuthors = Object.entries(authorCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([author, count]) => ({ author, count }));
+    .map(([author, count]) => ({ author, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
 
   // Rating distribution
   const ratingDistribution = {1:0, 2:0, 3:0, 4:0, 5:0};
   books.forEach(book => {
     if (book.myRating > 0) {
-      ratingDistribution[book.myRating] = (ratingDistribution[book.myRating] || 0) + 1;
+      ratingDistribution[book.myRating]++;
     }
   });
 
-  // Calculate average rating
-  const ratingsSum = books.reduce((sum, book) => sum + (book.myRating || 0), 0);
-  const ratedBooksCount = books.filter(book => book.myRating > 0).length;
-  const averageRating = ratedBooksCount > 0 ? ratingsSum / ratedBooksCount : 0;
-
-  // Reading history by year and month
-  const readingHistory = { byYear: {}, byMonth: {} };
-  books.forEach(book => {
-    if (book.dateRead) {
-      const year = book.dateRead.getFullYear();
-      const month = book.dateRead.getMonth();
-      readingHistory.byYear[year] = (readingHistory.byYear[year] || 0) + 1;
-      readingHistory.byMonth[`${year}-${month}`] = (readingHistory.byMonth[`${year}-${month}`] || 0) + 1;
-    }
-  });
-
-  // Reading history by month (for the current and previous year)
-  const currentYear = new Date().getFullYear();
-  const readingByMonth = {};
-
-  // Initialize all months for current and previous year
-  [currentYear, currentYear - 1].forEach(year => {
-    readingByMonth[year] = Array(12).fill(0);
-  });
-
-  // Count books by month
-  books.forEach(book => {
-    if (book.dateRead) {
-      const year = book.dateRead.getFullYear();
-      const month = book.dateRead.getMonth();
-
-      if (year === currentYear || year === currentYear - 1) {
-        readingByMonth[year][month] += 1;
-      }
-    }
-  });
-
-  // Top authors
-  const authorCounts = {};
-  books.forEach(book => {
-    if (book.author) {
-      authorCounts[book.author] = (authorCounts[book.author] || 0) + 1;
-    }
-  });
-
-  const topAuthors = Object.entries(authorCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([author, count]) => ({ author, count }));
-
-  // Rating distribution
-  const ratingDistribution = {};
-  for (let i = 1; i <= 5; i++) {
-    ratingDistribution[i] = books.filter(book => book.myRating === i).length;
-  }
-
-  // Calculate reading pace
+  // Reading pace
   const readingPace = {
-    currentYear: readingByYear[currentYear] || 0,
-    previousYear: readingByYear[currentYear - 1] || 0,
-    currentMonth: readingByMonth[currentYear][new Date().getMonth()] || 0,
-    averageBooksPerMonth: calculateAverageBooksPerMonth(books)
+    booksPerYear: books.length,
+    booksPerMonth: parseFloat((books.length / 12).toFixed(2)),
+    pagesPerDay: parseFloat((totalPages / 365).toFixed(2))
   };
 
-  // Recently read books
-  const recentBooks = books.slice(0, 30);
-
-  // Goal progress (assuming a goal of 52 books per year)
-  const yearlyGoal = 52;
-  const goalProgress = {
-    target: yearlyGoal,
-    current: readingByYear[currentYear] || 0,
-    percentage: Math.round(((readingByYear[currentYear] || 0) / yearlyGoal) * 100)
-  };
+  // Page statistics
+  let longestBook = { title: '', author: '', pages: 0 };
+  let shortestBook = { title: '', author: '', pages: Number.MAX_SAFE_INTEGER };
+  books.forEach(book => {
+    if (book.pages > longestBook.pages) {
+      longestBook = { title: book.title, author: book.author, pages: book.pages };
+    }
+    if (book.pages > 0 && book.pages < shortestBook.pages) {
+      shortestBook = { title: book.title, author: book.author, pages: book.pages };
+    }
+  });
+  if (shortestBook.pages === Number.MAX_SAFE_INTEGER) {
+    shortestBook = { title: '', author: '', pages: 0 };
+  }
+  const averageLength = books.length ? Math.round(totalPages / books.length) : 0;
 
   return {
     totalBooks,
-    averageRating,
     totalPages,
-    averagePagesPerBook: Math.round(totalPages / totalBooks),
+    averageRating,
     readingByYear,
     readingByMonth,
+    readingByGenre: {},
     topAuthors,
     ratingDistribution,
     readingPace,
-    recentBooks,
-    goalProgress
+    pageStats: {
+      totalPages,
+      averageLength,
+      longestBook,
+      shortestBook
+    }
   };
 }
 
