@@ -35,14 +35,21 @@ const TopAuthors = () => {
         </div>
       ) : (
         <div className="authors-grid">
-          {topAuthors.map((authorData, index) => (
-            <div key={authorData.author} className="author-card">
-              <div className="author-name">{authorData.author}</div>
-              <span className="author-count">
-                {authorData.count} book{authorData.count !== 1 ? 's' : ''}
-              </span>
-            </div>
-          ))}
+          {stats?.topAuthors?.map((authorData) => {
+            const slug = encodeURIComponent(authorData.author);
+            return (
+              <Link
+                to={`/author/${slug}`}
+                key={authorData.author}
+                className="author-card"
+              >
+                <div className="author-name">{authorData.author}</div>
+                <span className="author-count">
+                  {authorData.count} book{authorData.count !== 1 ? 's' : ''}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

@@ -21,6 +21,7 @@ import ReadingStats from './pages/ReadingStats';
 import DataManagement from './pages/DataManagement';
 import Account from './components/Account';
 import Settings from './pages/Settings';
+import AuthorBooks from './pages/AuthorBooks';
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -39,15 +40,15 @@ function App() {
             <div className="content">
             <Routes>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/yearly-progress" element={<YearlyProgress />} />
               <Route path="/monthly-progress" element={<MonthlyProgress />} />
-              <Route path="/reading-stats" element={<ReadingStats />} />
+              <Route path="/yearly-progress" element={<YearlyProgress />} />
               <Route path="/recent-books" element={<RecentBooks />} />
               <Route path="/top-authors" element={<TopAuthors />} />
               <Route path="/data-management" element={<DataManagement />} />
               <Route path="/upload" element={<FileUpload />} />
               <Route path="/account" element={<Account />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/author/:name" element={<AuthorBooks />} />
             </Routes>
           </div>
         </div>
