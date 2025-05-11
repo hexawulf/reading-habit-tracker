@@ -25,19 +25,25 @@ const TopAuthors = () => {
   }
 
   return (
-    <div className="page top-authors">
-      <h2 className="text-2xl font-bold mb-4">Top Authors</h2>
+    <div className="p-6">
+      <h2 className="text-3xl font-semibold mb-6">Top Authors</h2>
+
       {topAuthors.length === 0 ? (
-        <p>No author data available yet. Upload a Goodreads CSV to see stats.</p>
+        <p>No author data yet. Upload a Goodreads CSV to see stats.</p>
       ) : (
-        <ul className="space-y-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {topAuthors.map(({ author, count }) => (
-            <li key={author} className="flex justify-between border-b pb-1">
-              <span>{author}</span>
-              <span>{count} book{count !== 1 && 's'}</span>
-            </li>
+            <div
+              key={author}
+              className="flex items-center justify-between bg-white rounded-xl shadow hover:shadow-lg transition-shadow p-4"
+            >
+              <span className="font-medium truncate">{author}</span>
+              <span className="ml-4 inline-block bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded-full">
+                {count}&nbsp;book{count !== 1 && 's'}
+              </span>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
