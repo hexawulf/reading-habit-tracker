@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useReadingData } from '../context/ReadingDataContext';
 import './TopAuthors.css';
@@ -25,21 +26,20 @@ const TopAuthors = () => {
   }
 
   return (
-    <div className="p-6">
-      <h2 className="text-3xl font-semibold mb-6">Top Authors</h2>
-
+    <div className="top-authors-page">
+      <h1>Top Authors</h1>
+      
       {topAuthors.length === 0 ? (
-        <p>No author data yet. Upload a Goodreads CSV to see stats.</p>
+        <div className="no-data-message">
+          <p>No author data available yet. Upload your reading history to see stats.</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {topAuthors.map(({ author, count }) => (
-            <div
-              key={author}
-              className="flex items-center justify-between bg-white rounded-xl shadow hover:shadow-lg transition-shadow p-4"
-            >
-              <span className="font-medium truncate">{author}</span>
-              <span className="ml-4 inline-block bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded-full">
-                {count}&nbsp;book{count !== 1 && 's'}
+        <div className="authors-grid">
+          {topAuthors.map((authorData, index) => (
+            <div key={authorData.author} className="author-card">
+              <div className="author-name">{authorData.author}</div>
+              <span className="author-count">
+                {authorData.count} book{authorData.count !== 1 ? 's' : ''}
               </span>
             </div>
           ))}
