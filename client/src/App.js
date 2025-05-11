@@ -48,6 +48,7 @@ function App() {
               <Route path="/upload" element={<FileUpload />} />
               <Route path="/account" element={<Account />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/reading-stats" element={<ReadingStats />} />
               <Route path="/author/:name" element={<AuthorBooks />} />
             </Routes>
           </div>

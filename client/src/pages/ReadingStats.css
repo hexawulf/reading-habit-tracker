@@ -1,204 +1,102 @@
-/* client/src/pages/ReadingStats.css */
 .reading-stats-page {
-  padding: 1.5rem;
-}
-
-.reading-stats-page h1 {
-  margin-bottom: 1.5rem;
-  color: #333;
-  font-size: 2rem;
-  font-weight: 700;
+  padding: 2rem;
 }
 
 .reading-stats-page h2 {
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  color: #333;
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 600;
+  margin-bottom: 2rem;
 }
 
 .reading-stats-page h3 {
-  margin-top: 0;
-  margin-bottom: 0.75rem;
-  color: #333;
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
 }
 
 .stats-overview {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
 }
 
 .stat-card {
+  background: white;
+  border-radius: 0.75rem;
   padding: 1.5rem;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+.card-title {
+  font-size: 0.875rem;
+  color: #6b7280;
 }
 
-.stat-value {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 0.25rem;
+.card-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
 }
 
-.total-books .stat-value {
-  color: #4CAF50;
-}
-
-.total-pages .stat-value {
-  color: #3F51B5;
-}
-
-.avg-pages .stat-value {
-  color: #FF9800;
-}
-
-.avg-rating .stat-value {
-  color: #FFC107;
-}
-
-.rating-stars {
-  color: #FFC107;
-  font-size: 1.2rem;
-}
-
-.stat-sections {
+.charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
   margin-bottom: 2rem;
 }
 
-.stat-section {
-  background-color: #fff;
-  border-radius: 10px;
+.chart-container {
+  background: white;
+  border-radius: 0.75rem;
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.stat-container {
-  width: 100%;
-}
-
-.stat-insight {
-  margin-top: 1rem;
-  padding: 1rem;
-  background-color: #f9f9f9;
-  border-radius: 6px;
-  border-left: 4px solid #4CAF50;
-}
-
-.stat-insight p {
-  margin: 0;
-  color: #666;
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-
-.interesting-facts {
-  background-color: #fff;
-  border-radius: 10px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.facts-grid {
+.book-highlights {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
 }
 
-.fact-card {
-  padding: 1rem;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  border-top: 4px solid #4CAF50;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.book-highlight {
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.fact-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+.highlight-purple {
+  background: #f3e8ff;
+  color: #6b21a8;
 }
 
-.fact-card:nth-child(2) {
-  border-top-color: #3F51B5;
+.highlight-pink {
+  background: #fce7f3;
+  color: #be185d;
 }
 
-.fact-card:nth-child(3) {
-  border-top-color: #FF9800;
+.book-title {
+  font-weight: 500;
+  margin: 0.5rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.fact-card:nth-child(4) {
-  border-top-color: #9C27B0;
+.book-details {
+  font-size: 0.875rem;
+  opacity: 0.8;
 }
 
-.fact-card h3 {
-  color: #333;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-top: 0;
-  margin-bottom: 0.75rem;
-}
-
-.fact-title {
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 0.25rem;
-  font-size: 1rem;
-}
-
-.fact-subtitle {
-  font-style: italic;
-  color: #666;
-  margin: 0 0 0.25rem;
-  font-size: 0.9rem;
-}
-
-.fact-detail {
-  color: #888;
-  margin: 0;
-  font-size: 0.85rem;
-}
-
-@media (max-width: 768px) {
-  .stat-sections {
-    grid-template-columns: 1fr;
-  }
-  
-  .facts-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 480px) {
+@media (max-width: 640px) {
   .reading-stats-page {
     padding: 1rem;
   }
-  
-  .stat-card {
-    padding: 1rem;
-  }
-  
-  .stat-value {
-    font-size: 2rem;
-  }
-  
-  .stat-section,
-  .interesting-facts {
-    padding: 1rem;
+
+  .charts-grid {
+    grid-template-columns: 1fr;
   }
 }
