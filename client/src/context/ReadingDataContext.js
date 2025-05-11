@@ -75,15 +75,16 @@ export const ReadingDataProvider = ({ children }) => {
   const processReadingData = (data) => {
     setLoading(true);
     try {
-      // Handle backend response with both books and stats
-      if (data && !Array.isArray(data) && data.books && data.stats) {
-        const { books, stats } = data;
-        setReadingData(books);
-        setStats(stats);
-        const goalsObj = calculateGoalProgress(books);
-        setGoalProgress(goalsObj);
-        storageService.saveData({ readingData: books, stats, goalProgress: goalsObj });
-        setLoading(false);
+      if (data && data.books && data.stats) {
+        setReadingData(data.books);
+        setStats(data.stats);
+        const gp = calculateGoalProgress(data.books);
+        setGoalProgress(gp);
+        storageService.saveData({ 
+          readingData: data.books,
+          stats: data.stats,
+          goalProgress: gp 
+        });
         return;
       }
 

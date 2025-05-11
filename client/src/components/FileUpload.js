@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -38,7 +37,7 @@ const FileUpload = () => {
     try {
       setUploading(true);
       setError('');
-      
+
       const response = await axios.post('/api/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -47,7 +46,7 @@ const FileUpload = () => {
           return status >= 200 && status < 300;
         }
       });
-      
+
       if (response.data?.data) {
         const { books, stats } = response.data.data;
         // Process and store the received books and stats
