@@ -1,0 +1,119 @@
+### 🛠️ Replit AI Task — Make “Top Authors” Clickable
+
+**Goal**  
+1. Author cards link to `/author/<slug>`  
+2. New **AuthorBooks** page lists all read books by that author, sorted by date read.
+
+---
+
+## 1 ▪️ Add route & page component
+
+**Create** `client/src/pages/AuthorBooks.jsx`
+
+```jsx
+import React, { useContext } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import ReadingDataContext from '../context/ReadingDataContext';
+
+export default function AuthorBooks() {
+  const { name } = useParams();            // slugged name
+  const { readingData } = useContext(ReadingDataContext);
+
+  // slug→display util
+  const displayName = decodeURIComponent(name);
+
+  const books = readingData
+    .filter(b => b.author && b.author.toLowerCase() === displayName.toLowerCase())
+    .sort((a, b) => (b.dateRead ? new Date(b.dateRead) : 0) - (a.dateRead ? new Date(a.dateRead) : 0));
+
+  return (
+    <div className="p-6">
+      <Link to="/top-authors" className="text-blue-600 hover:underline">&larr; Back to Top Authors</Link>
+      <h2 className="text-3xl font-semibold mb-4 mt-2">{displayName}</h2>
+
+      {books.length === 0 ? (
+        <p>No books found for this author.</p>
+      ) : (
+        <ul className="space-y-3">
+          {books.map((b, idx) => (
+            <li key={idx} className="border rounded-lg p-4 shadow-sm flex flex-col">
+              <span className="font-medium">{b.title}</span>
+              <span className="text-sm text-gray-500">
+                {b.dateRead ? new Date(b.dateRead).toLocaleDateString() : 'Date unknown'} &middot; {b.pages || '?'} pages
+              </span>
+              {b.myRating > 0 && (
+                <span className="mt-1 inline-block bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs">
+                  {b.myRating} ★
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+2 ▪️ Register route
+File: client/src/App.js (or wherever routes live)
+
+diff
+Copy
+Edit
++import AuthorBooks from './pages/AuthorBooks';
+@@
+ <Routes>
+   …
++  <Route path="/author/:name" element={<AuthorBooks />} />
+ </Routes>
+3 ▪️ Link cards in TopAuthors.jsx
+diff
+Copy
+Edit
+-import React, { useContext } from 'react';
+-import { Link } from 'react-router-dom';
++import React, { useContext } from 'react';
++import { Link } from 'react-router-dom';
+ import ReadingDataContext from '../context/ReadingDataContext';
+@@
+-  {topAuthors.map(({ author, count }) => (
+-    <div key={author} …>
++  {topAuthors.map(({ author, count }) => {
++      const slug = encodeURIComponent(author);
++      return (
++        <Link
++          to={`/author/${slug}`}
++          key={author}
++          className="flex items-center justify-between bg-white rounded-xl shadow hover:shadow-lg transition-shadow p-4"
++        >
+           <span className="font-medium truncate">{author}</span>
+           <span className="ml-4 inline-block bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full">
+             {count}&nbsp;book{count !== 1 && 's'}
+           </span>
+-    </div>
+-  ))}
++        </Link>
++      );
++  })}
+(Link tag wraps the whole card; hover effect still works.)
+
+4 ▪️ Ensure readingData dates are JS Dates
+parseGoodreadsCsv already sets dateRead as Date objects; nothing else to do.
+
+▶️ 5 ▪️ Run & test
+Upload CSV → Top Authors grid appears.
+
+Click “Stephen King” → navigates to /author/Stephen%20King.
+
+List shows every book by Stephen King with date & pages.
+
+bash
+Copy
+Edit
+git add client/src/pages/AuthorBooks.jsx client/src/pages/TopAuthors.jsx client/src/App.js
+git commit -m "feat: author cards clickable -> AuthorBooks page"
+git push
+csharp
+Copy
+Edit
+
+Paste the whole block (triple-backticks included) into Replit AI and let it apply the patch.
