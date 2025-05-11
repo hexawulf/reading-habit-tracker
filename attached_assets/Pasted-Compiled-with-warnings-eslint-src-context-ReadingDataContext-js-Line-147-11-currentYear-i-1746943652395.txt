@@ -1,0 +1,36 @@
+Compiled with warnings.
+
+[eslint] 
+src/context/ReadingDataContext.js
+  Line 147:11:  'currentYear' is assigned a value but never used   no-unused-vars
+  Line 148:11:  'currentMonth' is assigned a value but never used  no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/context/ReadingDataContext.js
+  Line 147:11:  'currentYear' is assigned a value but never used   no-unused-vars
+  Line 148:11:  'currentMonth' is assigned a value but never used  no-unused-vars
+
+webpack compiled with 1 warning
+Proxy error: Could not proxy request /api/upload from 69c0205b-ebaf-488d-b0aa-c446e1a7f53e-00-3r0pmcx0o0tv4.sisko.replit.dev to http://0.0.0.0:5000.
+See https://nodejs.org/api/errors.html#errors_common_system_errors for more information (ECONNREFUSED).
+
+Proxy error: Could not proxy request /api/upload from 69c0205b-ebaf-488d-b0aa-c446e1a7f53e-00-3r0pmcx0o0tv4.sisko.replit.dev to http://0.0.0.0:5000.
+See https://nodejs.org/api/errors.html#errors_common_system_errors for more information (ECONNREFUSED).
+
+Proxy error: Could not proxy request /api/files/list from 69c0205b-ebaf-488d-b0aa-c446e1a7f53e-00-3r0pmcx0o0tv4.sisko.replit.dev to http://0.0.0.0:5000.
+See https://nodejs.org/api/errors.html#errors_common_system_errors for more information (ECONNREFUSED).
+
+Proxy error: Could not proxy request /api/files/list from 69c0205b-ebaf-488d-b0aa-c446e1a7f53e-00-3r0pmcx0o0tv4.sisko.replit.dev to http://0.0.0.0:5000.
+See https://nodejs.org/api/errors.html#errors_common_system_errors for more information (ECONNREFUSED).
+
+Proxy error: Could not proxy request /api/upload from 69c0205b-ebaf-488d-b0aa-c446e1a7f53e-00-3r0pmcx0o0tv4.sisko.replit.dev to http://0.0.0.0:5000.
+See https://nodejs.org/api/errors.html#errors_common_system_errors for more information (ECONNREFUSED).
+
+Proxy error: Could not proxy request /api/upload from 69c0205b-ebaf-488d-b0aa-c446e1a7f53e-00-3r0pmcx0o0tv4.sisko.replit.dev to http://0.0.0.0:5000.
+See https://nodejs.org/api/errors.html#errors_common_system_errors for more information (ECONNREFUSED).
+
+Proxy error: Could not proxy request /api/upload from 69c0205b-ebaf-488d-b0aa-c446e1a7f53e-00-3r0pmcx0o0tv4.sisko.replit.dev to http://0.0.0.0:5000.
+See https://nodejs.org/api/errors.html#errors_common_system_errors for more information (ECONNREFUSED).
