@@ -48,17 +48,17 @@
 }
 
 .author-card {
-  padding: 1rem;
-  margin-bottom: 0.75rem;
-  background-color: #f9f9f9;
-  border-radius: 8px;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .author-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .author-card.selected {
@@ -69,7 +69,8 @@
 .author-name {
   font-weight: 600;
   color: #333;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
 }
 
 .author-book-count {
@@ -226,6 +227,32 @@
   color: #333;
 }
 
+.authors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.author-count {
+  display: inline-block;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  margin: 2rem 0;
+}
+
 @media (max-width: 992px) {
   .authors-container {
     grid-template-columns: 1fr;
@@ -239,6 +266,14 @@
 @media (max-width: 768px) {
   .books-grid {
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+
+  .top-authors-page {
+    padding: 1rem;
+  }
+
+  .authors-grid {
+    grid-template-columns: 1fr;
   }
 }
 
