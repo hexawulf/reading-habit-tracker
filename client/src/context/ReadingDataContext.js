@@ -144,8 +144,7 @@ export const ReadingDataProvider = ({ children }) => {
   const calculateStats = (books) => {
     if (!books || !books.length) return stats;
 
-    const currentYear = new Date().getFullYear().toString();
-    const currentMonth = new Date().getMonth();
+    // Time variables removed as they're not currently used
 
     // Group books by year and month
     const readingByYear = {};
@@ -210,6 +209,8 @@ export const ReadingDataProvider = ({ children }) => {
         monthly: { current: 0, target: 4, percentage: 0 }
       };
     }
+
+    // Time variables removed as they're not currently used
 
     const currentYear = new Date().getFullYear().toString();
     const currentMonth = new Date().getMonth();

@@ -1,9 +1,3 @@
-Applying the provided changes to server.js to fix duplicate variables, align stats shape, add a robust CSV parser, and update the CSV parser implementation.
-```
-```replit_final_file
-// Backend for Reading Habit Tracker
-// File: server.js
-
 const express = require('express');
 const multer = require('multer');
 const dayjs = require('dayjs');
@@ -16,6 +10,20 @@ const MongoStore = require('connect-mongo');
 const bcrypt = require('bcrypt');
 const admin = require('firebase-admin');
 const User = require('./models/User');
+const fs = require('fs');
+const path = require('path');
+const csvParser = require('csv-parser');
+
+// Backend for Reading Habit Tracker
+// File: server.js
+
+const net = require('net'); // Add this for the port finder
+
+dayjs.extend(customParse);
+
+const parseDate = (s)=>{ if(!s||!s.trim())return null;
+  const d=dayjs(s.trim(),['YYYY/MM/DD','MM/DD/YYYY','DD/MM/YYYY','YYYY-MM-DD'],true);
+  return d.isValid()?d.toDate():null; };
 
 // Initialize Firebase Admin
 try {
@@ -59,18 +67,6 @@ mongoose.connect(mongoURI, {
     // Continue without DB for now
     console.log('Continuing without database connection...');
   });
-const fs = require('fs');
-const path = require('path');
-const net = require('net'); // Add this for the port finder
-
-const csvParser = require('csv-parser');
-const dayjs = require('dayjs');
-const customParse = require('dayjs/plugin/customParseFormat');
-dayjs.extend(customParse);
-
-const parseDate = (s)=>{ if(!s||!s.trim())return null;
-  const d=dayjs(s.trim(),['YYYY/MM/DD','MM/DD/YYYY','DD/MM/YYYY','YYYY-MM-DD'],true);
-  return d.isValid()?d.toDate():null; };
 
 const parseGoodreadsCsv = (filePath) =>
  new Promise((res,rej)=>{
