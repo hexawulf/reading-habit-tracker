@@ -145,3 +145,30 @@
     padding: 0 16px;
   }
 }
+
+.about-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; /* Adjust size as needed */
+  height: 28px; /* Adjust size as needed */
+  border-radius: 50%;
+  background-color: #4F46E5; /* Default primary color */
+  color: white; /* Contrasting color for the text */
+  font-size: 16px; /* Adjust size of 'i' as needed */
+  font-weight: bold;
+  cursor: pointer;
+  margin-right: 10px; /* Spacing between icon and Dashboard link */
+  transition: background-color 0.3s ease;
+  text-decoration: none; /* Override default link underline if any */
+}
+
+.about-icon:hover {
+  background-color: #F59E0B; /* Default accent color */
+  text-decoration: none; /* Ensure no underline on hover */
+}
+
+/* Optional: Adjust alignment with other nav links if needed */
+.nav-links .about-icon {
+  vertical-align: middle; /* Helps align with text links */
+}
