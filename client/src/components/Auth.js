@@ -1,21 +1,12 @@
 import React, { useState } from 'react';
 import './Auth.css';
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+// Import only the necessary auth instance from firebase.js
+import { auth } from '../firebase'; 
+// Keep GoogleAuthProvider and signInWithPopup if they are used directly with the imported auth
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth'; 
 
-// ✅ Firebase config using Vite env vars
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
-};
+// Firebase is NOT initialized here anymore. It's done in firebase.js
 
-// ✅ Initialize Firebase (only if not already initialized)
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
@@ -28,7 +19,8 @@ const Auth = ({ onClose }) => {
 
   const handleGoogleLogin = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      // 'auth' is now the imported auth instance from firebase.js
+      const result = await signInWithPopup(auth, googleProvider); 
       if (!result?.user?.accessToken) {
         setError('Google login failed - no access token received');
         return;
@@ -56,6 +48,8 @@ const Auth = ({ onClose }) => {
       } else if (['auth/popup-closed-by-user', 'auth/cancelled-popup-request'].includes(error.code)) {
         setError('');
       } else {
+        // Log the detailed error for better debugging if it's not a user cancellation
+        console.error("Google login error:", error); 
         setError('Unable to login with Google. Please try username/password instead.');
       }
     }
@@ -131,6 +125,13 @@ const Auth = ({ onClose }) => {
     });
     window.open(`https://replit.com/auth_with_repl_site?domain=${window.location.host}`, "_blank");
   };
+
+  // The error "Cannot read properties of undefined (reading 'VITE_FIREBASE_API_KEY')"
+  // was occurring at Auth.js:8:11 in the original error.
+  // Line 8 was the old firebaseConfig: `apiKey: import.meta.env.VITE_FIREBASE_API_KEY,`
+  // This line is now removed. The critical point is whether the imported 'auth' object
+  // from 'firebase.js' is correctly initialized, which depends on firebase.js
+  // successfully reading the environment variables.
 
   return (
     <div className="auth-container">
