@@ -1,0 +1,119 @@
+.about-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.about-modal {
+  background-color: #f9fafb; /* Light theme background color */
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Dark mode styles for the modal */
+.dark .about-modal {
+  background-color: #1f2937; /* Dark theme background color (e.g., gray-800) */
+  color: #f9fafb; /* Light text color for dark mode */
+}
+
+.about-modal h2 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.dark .about-modal h2 {
+  color: #fff; /* White text for h2 in dark mode */
+}
+
+.about-modal h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #555;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.3rem;
+}
+
+.dark .about-modal h3 {
+  color: #ccc; /* Lighter gray for h3 in dark mode */
+  border-bottom-color: #444; /* Darker border for h3 in dark mode */
+}
+
+.about-modal p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  color: #4B5563;
+}
+
+.dark .about-modal p {
+  color: #d1d5db; /* Lighter gray for p in dark mode (e.g., gray-300) */
+}
+
+.about-modal ul {
+  list-style-type: disc;
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.dark .about-modal ul {
+  color: #d1d5db; /* Ensure list items are also visible in dark mode */
+}
+
+.about-modal li {
+  margin-bottom: 0.5rem;
+}
+
+.about-modal-close-button {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 1.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: #777;
+}
+
+.about-modal-close-button:hover {
+  color: #333;
+}
+
+.dark .about-modal-close-button {
+  color: #ccc; /* Lighter color for close button in dark mode */
+}
+
+.dark .about-modal-close-button:hover {
+  color: #fff; /* White hover color for close button in dark mode */
+}
+
+/* Styling for links within the modal */
+.about-modal a {
+  color: #2563eb; /* Blue-600 for links */
+  text-decoration: underline;
+}
+
+.about-modal a:hover {
+  color: #1d4ed8; /* Blue-700 for link hover */
+}
+
+.dark .about-modal a {
+  color: #3b82f6; /* Lighter blue for links in dark mode */
+}
+
+.dark .about-modal a:hover {
+  color: #60a5fa; /* Even lighter blue for link hover in dark mode */
+}

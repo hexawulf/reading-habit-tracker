@@ -2,9 +2,15 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Header.css';
 import Auth from './Auth';
+import AboutModal from './AboutModal';
 
 const Header = ({ toggleSidebar }) => {
   const [showOptions, setShowOptions] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
+
+  const toggleAboutModal = () => {
+    setShowAboutModal(prev => !prev);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
@@ -44,9 +50,12 @@ const Header = ({ toggleSidebar }) => {
           <h1>Reading Habit Tracker</h1>
         </Link>
         <nav className="nav-links">
+          <span className="nav-link about-icon" onClick={toggleAboutModal} title="About TableTamer">
+            i
+          </span>
           <Link to="/" className="nav-link">Dashboard</Link>
           <Link to="/upload" className="nav-link">Upload Data</Link>
-          <a 
+          <a
             href="https://github.com/hexawulf/reading-habit-tracker" 
             target="_blank" 
             rel="noopener noreferrer" 
@@ -81,6 +90,9 @@ const Header = ({ toggleSidebar }) => {
             <Auth onClose={() => setShowOptions(false)} />
           </div>
         </div>
+      )}
+      {showAboutModal && (
+        <AboutModal onClose={toggleAboutModal} />
       )}
     </header>
   );
