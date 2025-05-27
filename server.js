@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const multer = require('multer');
 const dayjs = require('dayjs');
@@ -24,6 +26,14 @@ dayjs.extend(customParse);
 const parseDate = (s)=>{ if(!s||!s.trim())return null;
   const d=dayjs(s.trim(),['YYYY/MM/DD','MM/DD/YYYY','DD/MM/YYYY','YYYY-MM-DD'],true);
   return d.isValid()?d.toDate():null; };
+
+console.log('🔎 DEBUG Firebase env vars:');
+console.log({
+  FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
+  FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
+  FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY ? '(exists)' : '(missing)',
+});
+
 
 // Initialize Firebase Admin
 try {
@@ -734,12 +744,14 @@ function findAvailablePort(startPort, callback) {
   });
 }
 
-// Start server with fixed port for Replit
-const PORT = 5000;
+// Start server with fixed port for piapps.dev
+const PORT = process.env.PORT || 5003;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`✅ Server started successfully!`);
 });
+
+
+
 
 // Global error handler
 app.use((err, req, res, next) => {
