@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './Auth.css';
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApp } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -147,7 +147,7 @@ const Auth = ({ onClose }) => {
         window.location.reload();
       }
     });
-    window.open("https://replit.com/auth_with_repl_site?domain=" + location.host, "_blank");
+    window.open("https://replit.com/auth_with_repl_site?domain=" + window.location.host, "_blank");
   };
 
   return (
