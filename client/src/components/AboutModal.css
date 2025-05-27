@@ -1,119 +1,142 @@
+/* === About Modal Styling === */
+
+/* Overlay: Dims the background and centers the modal */
 .about-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.75); /* Darkened background */
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1050; /* High z-index to ensure it's on top */
 }
 
+/* Modal Box: The main container for the "About" content */
 .about-modal {
-  background-color: #f9fafb; /* Light theme background color */
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative; /* Centered by the overlay */
   width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
+  max-width: 600px; /* Common max-width for modals */
+  max-height: 90vh; /* Limits height to 90% of viewport height */
+  overflow-y: auto; /* Allows scrolling for content that exceeds max-height */
+  
+  background-color: #F9FAFB; /* Light mode background (Tailwind gray-50) */
+  color: #111827; /* Light mode text (Tailwind gray-900) */
+  
+  border-radius: 0.75rem; /* Tailwind 'rounded-lg' (12px) */
+  padding: 1.5rem; /* Tailwind 'p-6' (24px) */
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Tailwind 'shadow-xl' */
 }
 
-/* Dark mode styles for the modal */
-.dark .about-modal {
-  background-color: #1f2937; /* Dark theme background color (e.g., gray-800) */
-  color: #f9fafb; /* Light text color for dark mode */
+/* Close Button: Positioned at the top-right corner of the modal */
+.about-modal-close-button {
+  position: absolute;
+  top: 1rem; /* Adjusted to be within the new padding */
+  right: 1rem; /* Adjusted to be within the new padding */
+  
+  background: transparent;
+  border: none;
+  
+  color: #6B7280; /* Light mode icon color (Tailwind gray-500) */
+  font-size: 1.5rem; /* Adjust as needed */
+  font-weight: bold; /* Makes the 'X' or symbol more prominent */
+  line-height: 1; /* Ensures consistent vertical alignment */
+  
+  cursor: pointer;
+  padding: 0.25rem; /* Small padding to increase click area */
+  transition: color 0.2s ease-in-out;
 }
 
+.about-modal-close-button:hover {
+  color: #111827; /* Light mode hover color (Tailwind gray-900) */
+}
+
+/* Headings */
 .about-modal h2 {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  color: #333;
-}
-
-.dark .about-modal h2 {
-  color: #fff; /* White text for h2 in dark mode */
+  font-size: 1.5rem; /* Tailwind 'text-2xl' */
+  font-weight: 600; /* Tailwind 'font-semibold' */
+  color: #111827; /* Tailwind gray-900 */
+  margin-top: 0; /* Remove default margin if any */
+  margin-bottom: 0.75rem; /* Space below the main title */
 }
 
 .about-modal h3 {
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-  color: #555;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0.3rem;
+  font-size: 1.25rem; /* Tailwind 'text-xl' */
+  font-weight: 600; /* Tailwind 'font-semibold' */
+  color: #1F2937; /* Tailwind gray-800 */
+  margin-top: 1.5rem; /* Space above section titles */
+  margin-bottom: 0.5rem; /* Space below section titles */
+  padding-bottom: 0.25rem; /* Space for the border */
+  border-bottom: 1px solid #E5E7EB; /* Tailwind gray-200 */
 }
 
-.dark .about-modal h3 {
-  color: #ccc; /* Lighter gray for h3 in dark mode */
-  border-bottom-color: #444; /* Darker border for h3 in dark mode */
-}
-
-.about-modal p {
-  margin-bottom: 1rem;
-  line-height: 1.6;
-  color: #4B5563;
-}
-
-.dark .about-modal p {
-  color: #d1d5db; /* Lighter gray for p in dark mode (e.g., gray-300) */
+/* Paragraphs and Lists */
+.about-modal p,
+.about-modal li {
+  font-size: 0.875rem; /* Tailwind 'text-sm' */
+  line-height: 1.6; /* Improved readability */
+  color: #374151; /* Tailwind gray-700 */
+  margin-bottom: 0.75rem;
 }
 
 .about-modal ul {
   list-style-type: disc;
-  margin-left: 1.5rem;
+  margin-left: 1.25rem; /* Indentation for lists */
   margin-bottom: 1rem;
 }
 
-.dark .about-modal ul {
-  color: #d1d5db; /* Ensure list items are also visible in dark mode */
-}
-
-.about-modal li {
-  margin-bottom: 0.5rem;
-}
-
-.about-modal-close-button {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  background: transparent;
-  border: none;
-  font-size: 1.8rem;
-  font-weight: bold;
-  cursor: pointer;
-  color: #777;
-}
-
-.about-modal-close-button:hover {
-  color: #333;
-}
-
-.dark .about-modal-close-button {
-  color: #ccc; /* Lighter color for close button in dark mode */
-}
-
-.dark .about-modal-close-button:hover {
-  color: #fff; /* White hover color for close button in dark mode */
-}
-
-/* Styling for links within the modal */
+/* Links */
 .about-modal a {
-  color: #2563eb; /* Blue-600 for links */
-  text-decoration: underline;
+  color: #2563EB; /* Tailwind blue-600 */
+  text-decoration: none; /* Modern look, can underline on hover if desired */
+  transition: color 0.2s ease-in-out;
 }
 
 .about-modal a:hover {
-  color: #1d4ed8; /* Blue-700 for link hover */
+  color: #1D4ED8; /* Tailwind blue-700 */
+  text-decoration: underline;
+}
+
+/* --- Dark Mode Specific Styles --- */
+/* Applied when a '.dark' class is on a parent element (e.g., body.dark) */
+
+.dark .about-modal {
+  background-color: #1F2937; /* Dark background (Tailwind gray-800) */
+  color: #F9FAFB; /* Dark mode text (Tailwind gray-50) */
+}
+
+.dark .about-modal h2 {
+  color: #F9FAFB; /* Tailwind gray-50 */
+}
+
+.dark .about-modal h3 {
+  color: #F3F4F6; /* Tailwind gray-100 */
+  border-bottom-color: #4B5563; /* Tailwind gray-600 */
+}
+
+.dark .about-modal p,
+.dark .about-modal li {
+  color: #D1D5DB; /* Tailwind gray-300 */
+}
+
+.dark .about-modal ul {
+  color: #D1D5DB; /* Ensure list items are also visible in dark mode */
 }
 
 .dark .about-modal a {
-  color: #3b82f6; /* Lighter blue for links in dark mode */
+  color: #60A5FA; /* Tailwind blue-400, accessible on dark backgrounds */
 }
 
 .dark .about-modal a:hover {
-  color: #60a5fa; /* Even lighter blue for link hover in dark mode */
+  color: #3B82F6; /* Tailwind blue-500 */
+}
+
+.dark .about-modal-close-button {
+  color: #9CA3AF; /* Dark mode icon color (Tailwind gray-400) */
+}
+
+.dark .about-modal-close-button:hover {
+  color: #F9FAFB; /* Dark mode hover color (Tailwind gray-50) */
 }
