@@ -27,5 +27,6 @@ const firebaseConfig = {
 };
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+console.log("🔥 ENV CHECK", import.meta.env.VITE_FIREBASE_API_KEY);
 
 export default app;
