@@ -6,11 +6,12 @@
 }
 
 .files-section {
-  background-color: #fff;
+  background-color: var(--current-card-background); /* Themed */
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Shadow theming can be addressed later */
   margin-top: 20px;
+  border: 1px solid var(--current-border); /* Themed */
 }
 
 .files-list {
@@ -22,7 +23,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--current-border); /* Themed */
 }
 
 .file-item:last-child {
@@ -36,12 +37,13 @@
 
 .file-name {
   font-weight: 500;
-  color: #333;
+  color: var(--current-text); /* Themed */
 }
 
 .file-date {
   font-size: 0.9em;
-  color: #666;
+  color: var(--current-text); /* Themed */
+  opacity: 0.7; /* Make less prominent */
   margin-top: 4px;
 }
 
