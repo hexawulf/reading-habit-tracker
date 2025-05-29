@@ -1,9 +1,9 @@
 /* client/src/components/Header.css */
 
 .app-header {
-  background: var(--night-owl-card-background);
-  color: var(--night-owl-text);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); /* Adjusted shadow for dark theme */
+  background: var(--current-card-background); /* Themed */
+  color: var(--current-text); /* Themed */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); /* Adjusted shadow for dark theme - consider theming shadows later */
   position: fixed;
   top: 0;
   left: 0;
@@ -13,6 +13,7 @@
   display: flex; /* Use flex directly on app-header */
   align-items: center; /* Vertically align content */
   padding: 0 1rem; /* Horizontal padding */
+  transition: background-color 0.3s ease, color 0.3s ease; /* Theme transition */
 }
 
 .header-content {
@@ -25,7 +26,7 @@
 .logo {
   display: flex;
   align-items: center;
-  color: var(--night-owl-text);
+  color: var(--current-text); /* Themed */
   text-decoration: none;
   font-weight: 600;
   gap: 0.5rem; /* Reduced gap */
@@ -38,7 +39,7 @@
 .logo h1 { /* Will inherit font-family */
   font-size: 1.05rem; /* Adjusted for Fira Code (base 15px, this is ~15.75px -> default h3 is 1.4rem*15=21px) */
   margin: 0;
-  color: var(--night-owl-text);
+  color: var(--current-text); /* Themed */
   font-weight: 600; /* Ensure logo title is prominent */
 }
 
@@ -49,7 +50,7 @@
 }
 
 .nav-link { /* Will inherit font-family */
-  color: var(--night-owl-text);
+  color: var(--current-text); /* Themed */
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease, background-color 0.2s ease;
@@ -68,8 +69,8 @@
 
 
 .nav-link:hover {
-  color: var(--night-owl-accent1);
-  background-color: var(--night-owl-border);
+  color: var(--night-owl-accent1); /* Accent color for text on hover */
+  background-color: var(--current-border); /* Themed: Subtle background hover */
 }
 
 .user-menu {
@@ -83,7 +84,7 @@
   align-items: center;
   background-color: transparent;
   border: none;
-  color: var(--night-owl-text);
+  color: var(--current-text); /* Themed */
   padding: 0.3rem 0.6rem; 
   border-radius: var(--border-radius, 15px); 
   cursor: pointer;
@@ -92,8 +93,8 @@
 }
 
 .user-avatar-button:hover {
-  background-color: var(--night-owl-border);
-  color: var(--night-owl-accent1);
+  background-color: var(--current-border); /* Themed: Subtle background hover */
+  color: var(--night-owl-accent1); /* Accent color for text on hover */
 }
 
 .user-avatar-img {
@@ -117,8 +118,8 @@
   position: absolute;
   top: calc(100% + 10px); 
   right: 0;
-  background: var(--night-owl-card-background);
-  border: 1px solid var(--night-owl-border);
+  background: var(--current-card-background); /* Themed */
+  border: 1px solid var(--current-border); /* Themed */
   border-radius: var(--border-radius, 8px);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3); 
   min-width: 180px; 
@@ -126,11 +127,12 @@
   z-index: 1002; 
   display: flex;
   flex-direction: column;
+  transition: background-color 0.3s ease, border-color 0.3s ease; /* Theme transition */
 }
 
 .dropdown-item { /* Will inherit font-family */
   padding: 0.6rem 0.8rem; 
-  color: var(--night-owl-text);
+  color: var(--current-text); /* Themed */
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -144,8 +146,8 @@
 }
 
 .dropdown-item:hover {
-  background-color: var(--night-owl-border);
-  color: var(--night-owl-accent1);
+  background-color: var(--current-border); /* Themed: Subtle background hover */
+  color: var(--night-owl-accent1); /* Accent color for text on hover */
 }
 
 /* Remove hamburger menu toggle styles */
@@ -177,11 +179,11 @@
 }
 
 .auth-modal {
-  background-color: var(--night-owl-card-background);
+  background-color: var(--current-card-background); /* Themed */
   padding: 2rem;
   border-radius: var(--border-radius, 8px);
   box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-  border: 1px solid var(--night-owl-border);
+  border: 1px solid var(--current-border); /* Themed */
 }
 
 @media (max-width: 768px) {

@@ -17,7 +17,6 @@ import './Sidebar.css';
 
 const navItems = [
   { to: "/", title: "Dashboard", icon: <FiGrid />, end: true },
-  { to: "/goals", title: "Goals", icon: <FiTarget /> }, // Assuming a /goals route
   { to: "/yearly-progress", title: "Yearly Progress", icon: <FiTrendingUp /> },
   { to: "/monthly-progress", title: "Monthly Progress", icon: <FiCalendar /> },
   { to: "/reading-stats", title: "Reading Stats", icon: <FiBarChart2 /> },
