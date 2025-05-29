@@ -15,7 +15,6 @@ import Dashboard from './pages/Dashboard';
 import YearlyProgress from './pages/YearlyProgress';
 import MonthlyProgress from './pages/MonthlyProgress';
 import RecentBooks from './pages/RecentBooks';
-import Goals from './pages/Goals';
 import TopAuthors from './pages/TopAuthors';
 import ReadingStats from './pages/ReadingStats';
 import DataManagement from './pages/DataManagement';
