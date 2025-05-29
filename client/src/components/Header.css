@@ -1,174 +1,221 @@
 /* client/src/components/Header.css */
 
 .app-header {
-  background: #ECE6D3;
-  color: #2D3748;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: var(--night-owl-card-background);
+  color: var(--night-owl-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); /* Adjusted shadow for dark theme */
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   height: 60px;
-  z-index: 1000;
+  z-index: 1001; /* Ensure header is above sidebar */
+  display: flex; /* Use flex directly on app-header */
+  align-items: center; /* Vertically align content */
+  padding: 0 1rem; /* Horizontal padding */
 }
 
 .header-content {
-  height: 100%;
+  width: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Logo left, nav items right */
   align-items: center;
-  padding: 0 24px;
-  margin-left: 240px;
-  width: calc(100% - 240px);
 }
-
 
 .logo {
   display: flex;
   align-items: center;
-  color: #2D3748;
+  color: var(--night-owl-text);
   text-decoration: none;
   font-weight: 600;
-  gap: 12px;
-  padding-left: 0;
-  /* ✅ Ensures flush alignment */
-  margin-left: 0;
+  gap: 0.5rem; /* Reduced gap */
 }
 
 .header-logo {
-  max-height: 40px;
-  width: auto;
-  height: auto;
-  display: block;
+  max-height: 32px; /* Slightly smaller logo */
 }
 
-.logo h1 {
-  font-size: 1.25rem;
+.logo h1 { /* Will inherit font-family */
+  font-size: 1.05rem; /* Adjusted for Fira Code (base 15px, this is ~15.75px -> default h3 is 1.4rem*15=21px) */
   margin: 0;
-  padding-left: 0;
-  /* ✅ No inner shift */
+  color: var(--night-owl-text);
+  font-weight: 600; /* Ensure logo title is prominent */
 }
 
-.nav-links {
+.header-nav-items { 
   display: flex;
-  gap: 20px;
+  gap: 0.75rem; 
   align-items: center;
 }
 
-.nav-link {
-  color: #4A5568;
+.nav-link { /* Will inherit font-family */
+  color: var(--night-owl-text);
   text-decoration: none;
   font-weight: 500;
-  transition: all 0.2s ease;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+  padding: 0.4rem 0.6rem; 
+  border-radius: var(--border-radius, 6px);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem; 
+}
+.nav-link svg { 
+  font-size: 1.3rem; 
+}
+.nav-link .nav-link-text { /* For text like "GitHub" */
+  font-size: 0.875rem; /* Adjusted for Fira Code (14px / 16px base) */
 }
 
+
 .nav-link:hover {
-  color: #2D3748;
-  background: rgba(0, 0, 0, 0.05);
-  transform: translateY(-1px);
+  color: var(--night-owl-accent1);
+  background-color: var(--night-owl-border);
 }
 
 .user-menu {
+  position: relative; 
   display: flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.05);
-  padding: 0.5rem 1rem;
-  border-radius: 9999px;
+}
+
+.user-avatar-button { /* Will inherit font-family */
+  display: flex;
+  align-items: center;
+  background-color: transparent;
+  border: none;
+  color: var(--night-owl-text);
+  padding: 0.3rem 0.6rem; 
+  border-radius: var(--border-radius, 15px); 
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-left: 16px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  gap: 0.5rem;
 }
 
-.user-menu:hover {
-  background: rgba(0, 0, 0, 0.1);
+.user-avatar-button:hover {
+  background-color: var(--night-owl-border);
+  color: var(--night-owl-accent1);
 }
 
-.user-avatar {
-  width: 40px;
-  height: 40px;
+.user-avatar-img {
+  width: 30px; 
+  height: 30px;
   border-radius: 50%;
-  margin-right: 12px;
-  overflow: hidden;
-}
-
-.user-avatar img {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
 }
+.user-avatar-icon {
+  font-size: 1.5rem; 
+}
 
-.user-name {
+.user-name-display { /* Will inherit font-family */
   font-weight: 500;
-  color: white;
+  font-size: 0.875rem; /* Adjusted for Fira Code */
+  margin-left: 0.25rem; 
 }
 
-.dropdown-menu {
+
+.dropdown-menu { /* Will inherit font-family */
   position: absolute;
-  top: calc(100% + 8px);
-  right: 16px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  min-width: 200px;
+  top: calc(100% + 10px); 
+  right: 0;
+  background: var(--night-owl-card-background);
+  border: 1px solid var(--night-owl-border);
+  border-radius: var(--border-radius, 8px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3); 
+  min-width: 180px; 
   padding: 0.5rem;
-  z-index: 1001;
+  z-index: 1002; 
+  display: flex;
+  flex-direction: column;
 }
 
-.dropdown-item {
-  padding: 0.75rem 1rem;
-  color: #333;
+.dropdown-item { /* Will inherit font-family */
+  padding: 0.6rem 0.8rem; 
+  color: var(--night-owl-text);
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  gap: 0.6rem; 
+  border-radius: var(--border-radius, 4px);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-size: 0.875rem; /* Adjusted for Fira Code */
+}
+.dropdown-item svg {
+  font-size: 1.1rem; 
 }
 
 .dropdown-item:hover {
-  background: #f3f4f6;
+  background-color: var(--night-owl-border);
+  color: var(--night-owl-accent1);
+}
+
+/* Remove hamburger menu toggle styles */
+.menu-toggle {
+  display: none; 
+}
+
+
+.about-icon { /* Specific styling for about icon if needed, using nav-link base */
+  font-size: 1.5rem; /* Adjust icon size if needed */
+}
+.about-icon:hover {
+  /* inherits from .nav-link:hover */
+}
+
+
+/* Auth Modal Overlay - ensure it's themed */
+.auth-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7); /* Darker overlay */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000; /* Highest z-index */
+}
+
+.auth-modal {
+  background-color: var(--night-owl-card-background);
+  padding: 2rem;
+  border-radius: var(--border-radius, 8px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  border: 1px solid var(--night-owl-border);
 }
 
 @media (max-width: 768px) {
-  .nav-links {
+  .header-content {
+    padding: 0 0.75rem; /* Reduce padding on smaller screens */
+  }
+  .logo h1 {
+    font-size: 1rem; /* Smaller title on mobile */
+  }
+  .header-logo {
+    max-height: 28px;
+  }
+  .nav-link .nav-link-text { /* Hide text part of nav links on mobile */
     display: none;
   }
-
-  .user-menu {
-    margin-left: 0;
+  .user-name-display { /* Hide user name next to avatar on mobile */
+    display: none;
   }
-
-  .header-content {
-    margin: 0;
-    padding: 0 16px;
+  .header-nav-items {
+    gap: 0.3rem; /* Tighter gap for icons */
+  }
+  .nav-link {
+    padding: 0.4rem; /* Smaller padding for icon-only links */
+  }
+  .user-avatar-button {
+    padding: 0.3rem;
   }
 }
 
-.about-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px; /* Adjust size as needed */
-  height: 28px; /* Adjust size as needed */
-  border-radius: 50%;
-  background-color: #4F46E5; /* Default primary color */
-  color: white; /* Contrasting color for the text */
-  font-size: 16px; /* Adjust size of 'i' as needed */
-  font-weight: bold;
-  cursor: pointer;
-  margin-right: 10px; /* Spacing between icon and Dashboard link */
-  transition: background-color 0.3s ease;
-  text-decoration: none; /* Override default link underline if any */
-}
-
-.about-icon:hover {
-  background-color: #F59E0B; /* Default accent color */
-  text-decoration: none; /* Ensure no underline on hover */
-}
-
-/* Optional: Adjust alignment with other nav links if needed */
-.nav-links .about-icon {
-  vertical-align: middle; /* Helps align with text links */
+@media (max-width: 480px) {
+  .logo h1 {
+    display: none; /* Hide title completely on very small screens */
+  }
+   .header-logo {
+    max-height: 24px;
+  }
 }

@@ -1,17 +1,8 @@
 /* client/src/App.css */
-:root {
-  --primary-color: #4F46E5;
-  --accent-color: #F59E0B;
-  --background-light: #F9FAFB;
-  --text-primary: #111827;
-  --text-secondary: #4B5563;
-  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --border-radius: 12px;
-  --transition: all 0.3s ease;
-}
+/* :root and body font-family are defined in index.css */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* Remove Inter font import, as Fira Code is now the base */
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'); */
 
 * {
   margin: 0;
@@ -19,194 +10,225 @@
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'Inter', sans-serif;
-  background-color: var(--background-light);
-  color: var(--text-primary);
-  line-height: 1.6;
-}
+/* Body styles are in index.css */
 
 a {
   text-decoration: none;
-  color: var(--primary-color);
+  color: var(--night-owl-accent1); /* Use Night Owl accent for links */
+  /* font-family: var(--font-base); /* Explicitly set if needed, but should inherit */
 }
 
 a:hover {
   text-decoration: underline;
 }
 
-button {
+button, .btn { /* Apply base font to buttons */
+  font-family: var(--font-base);
   cursor: pointer;
+  /* Basic button styling, can be extended with classes */
+  background-color: var(--night-owl-accent1);
+  color: var(--night-owl-text);
+  border: 1px solid var(--night-owl-border);
+  padding: 0.5em 1em; /* Base padding for default buttons */
+  border-radius: 4px;
+  font-size: 0.9rem; /* Adjusted button font size */
+}
+
+button:hover, .btn:hover {
+  background-color: var(--night-owl-accent2); /* Slightly different accent on hover */
 }
 
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background-color: var(--night-owl-background); /* Ensure app background is set */
 }
 
 .main-container {
   display: flex;
   flex: 1;
-  padding-top: 60px;
+  padding-top: 60px; /* Assuming this is for a fixed header */
 }
 
 .content {
   flex: 1;
   padding: 2rem;
-  margin-left: 240px;
+  margin-left: 65px; /* Default collapsed sidebar width */
+  color: var(--night-owl-text); /* Ensure content text color is set */
+  transition: margin-left 0.3s ease; /* Smooth transition for content margin */
 }
 
+/* This rule will be applied when the sidebar is hovered (expanded) */
+/* It assumes .sidebar and .content are siblings under a common parent like .main-container or .app */
+/* This is handled by Sidebar.css using ~ selector, keeping App.css simpler. */
+/* However, if direct sibling selector in Sidebar.css is not effective due to React structure, */
+/* a class toggled on .app or .main-container might be needed. */
+/* For now, relying on Sidebar.css logic. */
+
 .stat-card {
-  background: white;
-  border-radius: var(--border-radius);
+  background: var(--night-owl-card-background); /* Use Night Owl card background */
+  border-radius: var(--border-radius, 12px); /* Keep border-radius or use a default */
   padding: 1.5rem;
-  box-shadow: var(--card-shadow);
-  transition: var(--transition);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4); /* Adjusted shadow for dark theme */
+  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  background: linear-gradient(135deg, #fff 0%, #f3f4f6 100%);
+  border: 1px solid var(--night-owl-border); /* Add border */
 }
 
 .stat-card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--hover-shadow);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); /* Adjusted shadow for dark theme */
 }
 
 .stat-value {
-  font-size: 2.5rem;
+  font-size: 2rem; /* Reduced font size */
   font-weight: 700;
-  color: var(--primary-color);
-  margin: 0.5rem 0;
+  color: var(--night-owl-accent2); 
+  margin: 0.3rem 0;
 }
 
 .stat-label {
-  font-size: 1rem;
-  color: var(--text-secondary);
+  font-size: 0.85rem; /* Reduced font size */
+  color: var(--night-owl-text); 
   font-weight: 500;
 }
 
-.btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 9999px;
+.btn { /* .btn specific styles, inherits font-family from button, .btn rule above */
+  padding: 0.6rem 1.2rem; /* Adjusted padding */
+  border-radius: 9999px; 
   font-weight: 600;
-  transition: var(--transition);
-  cursor: pointer;
-  border: none;
+  transition: all 0.3s ease;
+  /* border: none; /* This was here, but general button rule adds border. Decide if .btn should be borderless */
+  border: 1px solid var(--night-owl-accent1); /* Example: make .btn have accent border */
 }
 
-.btn-primary {
-  background-color: var(--primary-color);
-  color: white;
+.btn-primary { /* This will override the base button, .btn styles */
+  background-color: var(--night-owl-accent1);
+  border-color: var(--night-owl-accent1); /* Ensure border matches */
+  color: var(--night-owl-text);
 }
 
 .btn-primary:hover {
-  background-color: #4338CA;
+  background-color: var(--night-owl-accent2);
+  border-color: var(--night-owl-accent2);
 }
 
 .btn-secondary {
-  background-color: var(--secondary-color);
-  color: white;
+  background-color: var(--night-owl-accent2); 
+  border-color: var(--night-owl-accent2);
+  color: var(--night-owl-text);
 }
 
 .btn-secondary:hover {
-  background-color: #303f9f;
+  background-color: var(--night-owl-accent1); 
+  border-color: var(--night-owl-accent1);
 }
 
 .btn-lg {
-  padding: 0.75rem 1.5rem;
-  font-size: 1.1rem;
+  padding: 0.7rem 1.4rem; /* Adjusted padding */
+  font-size: 1rem; /* Adjusted font size */
 }
 
 .rating-stars {
-  color: #FFC107;
+  color: #FFC107; 
+  font-size: 1.1rem; /* Slightly adjusted */
 }
 
 .progress-container {
-  margin: 0.5rem 0;
+  margin: 0.4rem 0; /* Adjusted margin */
 }
 
 .progress-bar {
-  height: 12px;
-  background-color: #e0e0e0;
-  border-radius: 6px;
+  height: 10px; /* Slimmer bar */
+  background-color: var(--night-owl-border); 
+  border-radius: 5px; /* Adjusted radius */
   overflow: hidden;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem; /* Adjusted margin */
 }
 
 .progress-fill {
   height: 100%;
-  background-color: var(--primary-color);
-  border-radius: 6px;
+  background-color: var(--night-owl-accent1); 
+  border-radius: 5px; /* Adjusted radius */
 }
 
 .progress-text {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
+  font-size: 0.8rem; /* Reduced font size */
+  color: var(--night-owl-text);
 }
 
 .upload-container {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background-color: var(--background-white);
-  border-radius: var(--border-radius);
-  box-shadow: var(--container-shadow);
+  max-width: 700px; /* Slightly reduced width */
+  margin: 1.5rem auto; /* Adjusted margin */
+  padding: 1.5rem; /* Adjusted padding */
+  background-color: var(--night-owl-card-background); 
+  border-radius: var(--border-radius, 10px); /* Adjusted radius */
+  box-shadow: var(--card-shadow, 0 3px 5px rgba(0,0,0,0.3)); 
   text-align: center;
+  border: 1px solid var(--night-owl-border);
 }
 
-.upload-container h1 {
+.upload-container h1 { /* Will inherit from index.css h1, or override here */
   margin-bottom: 1rem;
-  color: var(--text-primary);
+  font-size: var(--h2-font-size, 1.8rem); /* Example: use h2 size */
+  color: var(--night-owl-text);
 }
 
 .upload-container p {
-  margin-bottom: 2rem;
-  color: var(--text-secondary);
+  margin-bottom: 1.5rem; /* Adjusted margin */
+  font-size: 0.9rem; /* Adjusted font size */
+  color: var(--night-owl-text); 
 }
 
-.card {
-  background-color: var(--background-white);
-  border-radius: var(--border-radius);
-  box-shadow: var(--card-shadow);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
+.card { /* General card styling, already themed */
+  background-color: var(--night-owl-card-background);
+  border-radius: var(--border-radius, 10px); /* Adjusted radius */
+  box-shadow: var(--card-shadow, 0 3px 5px rgba(0,0,0,0.3));
+  padding: 1.2rem; /* Adjusted padding */
+  margin-bottom: 1rem; /* Adjusted margin */
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--night-owl-border);
 }
 
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--hover-shadow);
+  transform: translateY(-3px); /* Adjusted hover effect */
+  box-shadow: var(--hover-shadow, 0 6px 10px rgba(0,0,0,0.4)); /* Adjusted shadow */
 }
 
-.card-title {
+.card-title { /* For titles within cards */
   margin-top: 0;
-  margin-bottom: 1rem;
-  color: var(--text-primary);
-  font-size: 1.2rem;
+  margin-bottom: 0.8rem; /* Adjusted margin */
+  color: var(--night-owl-text);
+  font-size: 1.1rem; /* Adjusted font size, consider using var(--h3-font-size) or similar */
   font-weight: 600;
 }
 
-.loading {
+.loading { /* Loading message container */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-  min-height: 300px;
+  min-height: 250px; /* Reduced height */
+  color: var(--night-owl-text); 
+}
+.loading p {
+  font-size: 0.95rem; /* Font size for loading text */
 }
 
 .spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid var(--primary-light);
-  border-top: 5px solid var(--primary-color);
+  width: 45px; /* Slightly smaller spinner */
+  height: 45px;
+  border: 4px solid var(--night-owl-accent2); 
+  border-top: 4px solid var(--night-owl-accent1); 
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem; /* Adjusted margin */
 }
 
 @keyframes spin {
@@ -214,29 +236,49 @@ button {
   100% { transform: rotate(360deg); }
 }
 
-.error-container {
-  padding: 2rem;
-  background-color: #ffebee;
-  border-left: 4px solid #f44336;
-  border-radius: var(--border-radius);
+.error-container { /* Error message container */
+  padding: 1.5rem; /* Adjusted padding */
+  background-color: #2c0000; 
+  color: #ff8a80; 
+  border-left: 3px solid #f44336; /* Adjusted border */
+  border-radius: var(--border-radius, 8px); /* Adjusted radius */
   margin: 1rem 0;
 }
+.error-container h2 {
+  font-size: var(--h3-font-size, 1.3rem); /* Example: use h3 size */
+  margin-top: 0;
+}
+.error-container p {
+  font-size: 0.9rem;
+}
 
-.no-data {
+.no-data { /* "No data" message container */
   text-align: center;
-  padding: 2rem;
-  background-color: var(--background-white);
-  border-radius: var(--border-radius);
-  box-shadow: var(--card-shadow);
+  padding: 1.5rem; /* Adjusted padding */
+  background-color: var(--night-owl-card-background);
+  border-radius: var(--border-radius, 10px); /* Adjusted radius */
+  box-shadow: var(--card-shadow, 0 3px 5px rgba(0,0,0,0.3));
   margin: 1rem;
+  color: var(--night-owl-text);
+  border: 1px solid var(--night-owl-border);
+}
+.no-data h2 {
+  font-size: var(--h3-font-size, 1.3rem);
+  margin-top: 0;
+}
+.no-data p {
+  font-size: 0.9rem;
 }
 
 
 @media (max-width: 768px) {
-  .content {
-    margin-left: 0;
+  .content { /* Adjust content padding for tablets, margin is handled by Sidebar.css */
+    margin-left: 60px !important; /* Ensure it matches sidebar width on mobile */
     padding: 1rem;
   }
+  .stat-value { font-size: 1.8rem; }
+  .stat-label { font-size: 0.8rem; }
+  .card-title { font-size: 1rem; }
 }
 
 @media (max-width: 480px) {
@@ -244,4 +286,11 @@ button {
     padding: 1rem;
     margin: 1rem;
   }
+  .content { /* Adjust content padding for mobile */
+    padding: 0.5rem; 
+  }
+  .stat-value { font-size: 1.6rem; }
+  .stat-label { font-size: 0.75rem; }
+  .btn, button { font-size: 0.85rem; padding: 0.4em 0.8em; }
+  .btn-lg { font-size: 0.95rem; }
 }
