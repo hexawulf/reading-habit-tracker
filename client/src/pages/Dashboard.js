@@ -11,8 +11,8 @@ import './Dashboard.css';
 // Night Owl theme colors for charts (examples)
 const NIGHT_OWL_ACCENT_1 = "var(--night-owl-accent1)"; // #7e57c2
 const NIGHT_OWL_ACCENT_2 = "var(--night-owl-accent2)"; // #82aaff
-const NIGHT_OWL_TEXT = "var(--night-owl-text)";       // #d6deeb
-const NIGHT_OWL_BORDER = "var(--night-owl-border)";   // #011220
+// const NIGHT_OWL_TEXT = "var(--night-owl-text)";       // #d6deeb // Replaced by CSS var(--current-text)
+// const NIGHT_OWL_BORDER = "var(--night-owl-border)";   // #011220 // Replaced by CSS var(--current-border)
 
 const Dashboard = () => {
   const { stats, readingData, loading, error, goalProgress } = useReadingData();
@@ -138,55 +138,17 @@ const Dashboard = () => {
         </div>
       </div>
       
-      <div className="goal-progress"> {/* This is already a card-like container */}
-        <h2>Reading Goals Progress</h2>
-        <div className="goal-cards">
-          <div className="goal-card">
-            <h3>Yearly Goal</h3>
-            <div className="progress-container">
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill"
-                  style={{ width: `${Math.min(100, (goalProgress?.yearly?.percentage || 0))}%`, backgroundColor: NIGHT_OWL_ACCENT_1 }}
-                ></div>
-              </div>
-              <div className="progress-text">
-                {goalProgress?.yearly?.current || 0} of {goalProgress?.yearly?.target || 'N/A'} books
-                ({(goalProgress?.yearly?.percentage || 0).toFixed(1)}%)
-              </div>
-            </div>
-          </div>
-          
-          <div className="goal-card">
-            <h3>Monthly Goal</h3>
-            <div className="progress-container">
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill"
-                  style={{ width: `${Math.min(100, (goalProgress?.monthly?.percentage || 0))}%`, backgroundColor: NIGHT_OWL_ACCENT_1 }}
-                ></div>
-              </div>
-              <div className="progress-text">
-                {goalProgress?.monthly?.current || 0} of {goalProgress?.monthly?.target || 'N/A'} books
-                ({(goalProgress?.monthly?.percentage || 0).toFixed(1)}%)
-              </div>
-            </div>
-          </div>
-        </div>
-        <Link to="/goals" className="set-goals-link">Manage Goals</Link>
-      </div>
-      
       {/* Charts remain in their own top-level sections */}
       <div className="chart-card yearly-chart"> {/* chart-card provides the background and padding */}
         <h3>Books Read By Year</h3>
         <ResponsiveContainer width="100%" height={250}> {/* Reduced height for compactness */}
           <BarChart data={yearlyData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={NIGHT_OWL_BORDER} />
-            <XAxis dataKey="year" tick={{ fill: NIGHT_OWL_TEXT, fontSize: 12 }} />
-            <YAxis tick={{ fill: NIGHT_OWL_TEXT, fontSize: 12 }} tickFormatter={tickFormatter}/>
+            <CartesianGrid strokeDasharray="3 3" stroke={'var(--current-border)'} />
+            <XAxis dataKey="year" tick={{ fill: 'var(--current-text)', fontSize: 12 }} />
+            <YAxis tick={{ fill: 'var(--current-text)', fontSize: 12 }} tickFormatter={tickFormatter}/>
             <Tooltip 
-              contentStyle={{ backgroundColor: 'var(--night-owl-card-background)', border: `1px solid ${NIGHT_OWL_BORDER}`, color: NIGHT_OWL_TEXT, borderRadius: 'var(--border-radius, 6px)' }} 
-              itemStyle={{ color: NIGHT_OWL_TEXT }}
+              contentStyle={{ backgroundColor: 'var(--current-card-background)', border: '1px solid var(--current-border)', color: 'var(--current-text)', borderRadius: 'var(--border-radius, 6px)' }} 
+              itemStyle={{ color: 'var(--current-text)' }}
               cursor={{ fill: 'rgba(var(--night-owl-accent2-rgb, 130, 170, 255), 0.15)' }}/> {/* Using RGB for opacity */}
             <Bar dataKey="count" fill={NIGHT_OWL_ACCENT_1} name="Books Read" isAnimationActive={true} />
           </BarChart>
@@ -197,14 +159,14 @@ const Dashboard = () => {
         <h3>Monthly Comparison ({currentYear} vs {previousYear})</h3>
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={monthlyComparisonData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }} isAnimationActive={true}>
-            <CartesianGrid strokeDasharray="3 3" stroke={NIGHT_OWL_BORDER} />
-            <XAxis dataKey="month" tick={{ fill: NIGHT_OWL_TEXT, fontSize: 12 }} />
-            <YAxis tick={{ fill: NIGHT_OWL_TEXT, fontSize: 12 }} tickFormatter={tickFormatter}/>
+            <CartesianGrid strokeDasharray="3 3" stroke={'var(--current-border)'} />
+            <XAxis dataKey="month" tick={{ fill: 'var(--current-text)', fontSize: 12 }} />
+            <YAxis tick={{ fill: 'var(--current-text)', fontSize: 12 }} tickFormatter={tickFormatter}/>
             <Tooltip 
-              contentStyle={{ backgroundColor: 'var(--night-owl-card-background)', border: `1px solid ${NIGHT_OWL_BORDER}`, borderRadius: 'var(--border-radius, 6px)' }} 
-              itemStyle={{ color: NIGHT_OWL_TEXT }}
+              contentStyle={{ backgroundColor: 'var(--current-card-background)', border: '1px solid var(--current-border)', color: 'var(--current-text)', borderRadius: 'var(--border-radius, 6px)' }} 
+              itemStyle={{ color: 'var(--current-text)' }}
               cursor={{ fill: 'rgba(var(--night-owl-accent2-rgb, 130, 170, 255), 0.15)' }}/>
-            <Legend wrapperStyle={{ color: NIGHT_OWL_TEXT, fontSize: '12px' }} />
+            <Legend wrapperStyle={{ color: 'var(--current-text)', fontSize: '12px' }} />
             <Bar dataKey={previousYear} fill={NIGHT_OWL_ACCENT_2} name={previousYear} isAnimationActive={true} />
             <Bar dataKey={currentYear} fill={NIGHT_OWL_ACCENT_1} name={currentYear} isAnimationActive={true} />
           </BarChart>
@@ -221,12 +183,12 @@ const Dashboard = () => {
                 data={ratingData}
                 cx="50%"
                 cy="50%"
-                labelLine={{ stroke: NIGHT_OWL_TEXT }}
+                labelLine={{ stroke: 'var(--current-text)' }}
                 outerRadius={80} /* Adjusted for compactness */
                 dataKey="count"
                 nameKey="rating"
                 label={({rating, percent, count}) => `${rating}★: ${(percent * 100).toFixed(0)}% (${count})`}
-                tick={{ fill: NIGHT_OWL_TEXT }}
+                tick={{ fill: 'var(--current-text)' }}
                 isAnimationActive={true} // Enable animation for Pie chart
               >
                 {ratingData.map((entry, index) => (
@@ -234,10 +196,10 @@ const Dashboard = () => {
                 ))}
               </Pie>
               <Tooltip 
-                contentStyle={{ backgroundColor: 'var(--night-owl-card-background)', border: `1px solid ${NIGHT_OWL_BORDER}`, borderRadius: 'var(--border-radius, 6px)' }} 
-                itemStyle={{ color: NIGHT_OWL_TEXT }}
+                contentStyle={{ backgroundColor: 'var(--current-card-background)', border: '1px solid var(--current-border)', color: 'var(--current-text)', borderRadius: 'var(--border-radius, 6px)' }} 
+                itemStyle={{ color: 'var(--current-text)' }}
                 formatter={(value, name) => [`${value} books`, `${name} stars`]}/>
-              {/* <Legend wrapperStyle={{ color: NIGHT_OWL_TEXT, fontSize: '12px', bottom: '-10px' }} /> */}
+              {/* <Legend wrapperStyle={{ color: 'var(--current-text)', fontSize: '12px', bottom: '-10px' }} /> */}
             </PieChart>
           </ResponsiveContainer>
         </div>
