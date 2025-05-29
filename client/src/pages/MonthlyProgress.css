@@ -1,20 +1,18 @@
 /* client/src/pages/MonthlyProgress.css */
 .monthly-progress-page {
-  padding: 1.5rem;
+  padding: 1rem; /* Consistent padding */
+  color: var(--night-owl-text);
 }
 
 .monthly-progress-page h1 {
+  /* font-size: var(--h1-font-size); /* Inherits from index.css */
   margin-bottom: 1.5rem;
-  color: #333;
-  font-size: 2rem;
-  font-weight: 700;
 }
 
 .monthly-progress-page h2 {
-  margin-top: 2rem;
+  /* font-size: var(--h2-font-size); /* Inherits from index.css */
+  margin-top: 1.5rem; /* Consistent margin */
   margin-bottom: 1rem;
-  color: #333;
-  font-size: 1.5rem;
 }
 
 .year-selector {
@@ -22,128 +20,92 @@
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
+  background-color: var(--night-owl-card-background); /* Themed background */
+  padding: 0.75rem;
+  border-radius: var(--border-radius, 8px);
+  border: 1px solid var(--night-owl-border);
+  width: fit-content; /* Make it compact */
 }
 
 .year-selector label {
-  font-weight: 600;
-  color: #333;
+  font-weight: 500; /* Adjusted weight */
+  color: var(--night-owl-text);
+  font-size: 0.9rem;
 }
 
 .year-selector select {
-  padding: 0.5rem 1rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-color: white;
-  font-size: 1rem;
-}
-
-.stats-overview {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  padding: 1.5rem;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  text-align: center;
-}
-
-.stat-card h3 {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  color: #666;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.stat-value {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 0.5rem;
-}
-
-.progress-container {
-  margin-top: 0.5rem;
-}
-
-.progress-bar {
-  height: 12px;
-  background-color: #e0e0e0;
-  border-radius: 6px;
-  overflow: hidden;
-  margin-bottom: 0.5rem;
-}
-
-.progress-fill {
-  height: 100%;
-  background-color: #4CAF50;
-  border-radius: 6px;
-}
-
-.progress-text {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--night-owl-border);
+  border-radius: var(--border-radius, 4px);
+  background-color: var(--night-owl-background); /* Input background */
+  color: var(--night-owl-text); /* Input text color */
+  font-family: var(--font-base);
   font-size: 0.9rem;
-  color: #666;
+}
+.year-selector select:focus {
+  outline: none;
+  border-color: var(--night-owl-accent1);
+  box-shadow: 0 0 0 2px rgba(var(--night-owl-accent1-rgb), 0.3);
 }
 
-.charts-container {
+
+/* .stats-overview, .stat-card, .progress-container, .progress-bar, .progress-fill, .progress-text
+   will inherit from App.css if classes are consistent.
+   The .chart-card class is also globally defined in App.css (or Dashboard.css).
+   We only need to style elements unique to this page or needing overrides. */
+
+.charts-container { /* This is a generic class, ensure styles here are specific or additive */
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.chart-card {
-  background-color: #fff;
-  border-radius: 10px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.chart-card h3 {
-  margin-top: 0;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Adjusted minmax for denser charts */
+  gap: 1rem; /* Consistent gap */
   margin-bottom: 1.5rem;
-  color: #333;
-  font-size: 1.2rem;
-  font-weight: 600;
-  text-align: center;
 }
+
+/* .chart-card is styled globally. Specific h3 inside it can be styled here if needed */
+.monthly-progress-page .chart-card h3 {
+  /* font-size: var(--h3-font-size); /* Inherits or use specific size */
+  margin-bottom: 1rem; /* Consistent margin */
+}
+
 
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* More adaptive calendar cells */
+  gap: 0.75rem; /* Reduced gap */
+  margin-bottom: 1.5rem;
 }
 
 .calendar-month {
-  padding: 1.5rem;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0.8rem; /* Reduced padding */
+  background-color: var(--night-owl-card-background);
+  border-radius: var(--border-radius, 6px); /* Smaller radius */
+  border: 1px solid var(--night-owl-border);
   position: relative;
   overflow: hidden;
+  text-align: center;
+  min-height: 80px; /* Ensure a minimum height */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .calendar-month.has-books {
-  border-left: 4px solid #4CAF50;
+  border-left: 3px solid var(--night-owl-accent1); /* Themed border */
 }
 
 .month-name {
   font-weight: 600;
-  color: #333;
-  margin-bottom: 0.5rem;
+  color: var(--night-owl-text);
+  margin-bottom: 0.3rem;
+  font-size: 0.85rem; /* Adjusted size */
   position: relative;
   z-index: 2;
 }
 
 .month-book-count {
-  font-size: 0.9rem;
-  color: #666;
+  font-size: 0.9rem; /* Larger for count */
+  color: var(--night-owl-accent2); /* Accent color for count */
+  font-weight: 700;
   position: relative;
   z-index: 2;
 }
@@ -154,115 +116,124 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #e8f5e9;
+  background-color: rgba(var(--night-owl-accent1-rgb), 0.1); /* Themed intensity */
   z-index: 1;
+  transition: opacity 0.3s ease;
 }
 
-.monthly-books {
-  background-color: #fff;
-  border-radius: 10px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.monthly-books { /* This can use .chart-card styling if appropriate */
+  background-color: var(--night-owl-card-background);
+  border-radius: var(--border-radius, 8px);
+  padding: 1rem;
+  border: 1px solid var(--night-owl-border);
+  box-shadow: var(--card-shadow);
+}
+.monthly-books h2 {
+  margin-top:0;
 }
 
 .books-list {
   display: grid;
-  gap: 1rem;
+  gap: 0.75rem; /* Reduced gap */
 }
 
 .monthly-book-item {
   display: flex;
-  background-color: #f9f9f9;
-  border-radius: 8px;
+  background-color: var(--night-owl-border); /* Slightly different background for items */
+  border-radius: var(--border-radius, 6px);
   overflow: hidden;
+  border: 1px solid rgba(var(--night-owl-accent2-rgb), 0.2);
 }
 
 .book-month-tag {
-  min-width: 100px;
+  min-width: 80px; /* Reduced width */
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #4CAF50;
-  color: white;
+  background-color: var(--night-owl-accent1);
+  color: var(--night-owl-background); /* Contrast text */
   font-weight: 600;
-  padding: 1rem;
+  padding: 0.5rem; /* Reduced padding */
+  font-size: 0.8rem; /* Adjusted size */
+  text-align: center;
 }
 
 .book-details {
-  padding: 1rem;
+  padding: 0.8rem; /* Reduced padding */
   flex-grow: 1;
 }
 
-.book-title {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  color: #333;
-  font-size: 1.1rem;
-  font-weight: 600;
+/* .book-title, .book-author, .book-rating, .book-date, .book-pages will inherit from App.css */
+/* Or can be overridden here if specific styling is needed for this page */
+.monthly-book-item .book-title {
+  font-size: 1rem; /* Slightly smaller */
+  margin-bottom: 0.25rem;
 }
-
-.book-author {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  color: #666;
-  font-size: 0.9rem;
-  font-style: italic;
-}
-
-.book-rating {
-  color: #FFC107;
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.book-date, .book-pages {
-  margin: 0;
-  color: #888;
+.monthly-book-item .book-author {
   font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+}
+.monthly-book-item .book-rating {
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+.monthly-book-item .book-date, .monthly-book-item .book-pages {
+  font-size: 0.75rem;
 }
 
-.no-books-message {
+
+.no-books-message { /* Style for no books message */
   text-align: center;
-  padding: 2rem;
-  color: #666;
+  padding: 1.5rem;
+  color: var(--night-owl-text);
   font-style: italic;
+  font-size: 0.9rem;
 }
 
+/* Responsive adjustments */
 @media (max-width: 992px) {
   .charts-container {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Stack charts */
   }
-  
-  .calendar-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .calendar-grid { /* Adjust calendar for tablets */
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   }
 }
 
 @media (max-width: 768px) {
+  .monthly-progress-page { padding: 0.75rem; }
+  .stats-overview { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); } /* Smaller stat cards */
+  
   .calendar-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); /* Even smaller cells */
   }
   
   .monthly-book-item {
-    flex-direction: column;
+    flex-direction: column; /* Stack month tag and details */
   }
   
   .book-month-tag {
-    min-width: auto;
-    padding: 0.5rem;
+    min-width: auto; /* Full width */
+    padding: 0.4rem;
+    font-size: 0.75rem;
   }
+  .book-details { padding: 0.6rem; }
 }
 
 @media (max-width: 480px) {
   .stats-overview {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Stack stat cards */
   }
-  
-  .stat-card {
-    padding: 1rem;
+  .charts-container {
+     gap: 0.75rem;
   }
-  
-  .stat-value {
-    font-size: 2rem;
+  .calendar-grid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); /* Smallest cells */
+    gap: 0.5rem;
   }
+  .calendar-month { padding: 0.6rem; min-height: 70px;}
+  .month-name { font-size: 0.75rem; }
+  .month-book-count { font-size: 0.8rem; }
+  .year-selector { flex-direction: column; align-items: flex-start; background: none; padding: 0; border: none; }
+  .year-selector select { width: 100%; }
 }
