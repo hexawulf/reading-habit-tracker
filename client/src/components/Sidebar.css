@@ -1,6 +1,6 @@
 /* client/src/components/Sidebar.css */
 .sidebar {
-  background-color: var(--night-owl-card-background);
+  background-color: var(--current-card-background); /* Themed */
   width: 65px; /* Minimal width for icons */
   height: calc(100vh - 60px); /* Assuming header height is 60px */
   position: fixed;
@@ -9,8 +9,8 @@
   z-index: 1000; /* High z-index */
   overflow-x: hidden; /* Hide text initially */
   overflow-y: auto;
-  border-right: 1px solid var(--night-owl-border);
-  transition: width 0.3s ease; /* Smooth transition for width change */
+  border-right: 1px solid var(--current-border); /* Themed */
+  transition: width 0.3s ease, background-color 0.3s ease, border-color 0.3s ease; /* Smooth transition for width and theme */
   display: flex;
   flex-direction: column;
   justify-content: space-between; /* Pushes bottom items down if needed */
@@ -28,7 +28,7 @@
   align-items: center;
   width: 100%;
   padding: 0.8rem 0; /* Vertical padding, horizontal padding will be controlled by icon/text alignment */
-  color: var(--night-owl-text); /* Icon color */
+  color: var(--current-text); /* Themed: Icon and default text color */
   text-decoration: none;
   font-weight: 500;
   border-radius: 0px; /* No border radius for a sleek look, or var(--border-radius) if preferred */
@@ -72,24 +72,24 @@
 }
 
 .nav-item:hover {
-  background-color: var(--night-owl-border); /* Subtle hover */
-  color: var(--night-owl-accent1); /* Change icon color on hover */
+  background-color: var(--current-border); /* Themed: Subtle hover using current border color */
+  color: var(--night-owl-accent1); /* Accent color for icon and text on hover */
 }
 .nav-item:hover .icon {
- color: var(--night-owl-accent1);
+ color: var(--night-owl-accent1); /* Ensure icon specifically gets accent color */
 }
 
 
 .nav-item.active {
-  background-color: var(--night-owl-accent1);
-  color: var(--night-owl-background); /* Ensure contrast for active icon text */
+  background-color: var(--night-owl-accent1); /* Global accent for active item background */
+  color: var(--night-owl-text); /* Themed: Light text on dark accent background */
 }
 
 .nav-item.active .icon {
-  color: var(--night-owl-background); /* Icon color for active state */
+  color: var(--night-owl-text); /* Themed: Icon color for active state */
 }
 .nav-item.active .nav-text {
-  color: var(--night-owl-background);
+  color: var(--night-owl-text); /* Themed: Text color for active state */
   font-weight: 600;
 }
 

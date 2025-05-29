@@ -3,13 +3,30 @@ import { Link } from 'react-router-dom';
 import './Header.css';
 import Auth from './Auth';
 import AboutModal from './AboutModal';
-import { FiInfo, FiGithub, FiUser, FiLogOut, FiSettings, FiDatabase } from 'react-icons/fi'; // Added icons
+import { FiInfo, FiGithub, FiUser, FiLogOut, FiSettings, FiDatabase, FiSun, FiMoon } from 'react-icons/fi'; // Added icons
 
 const Header = () => { // Removed toggleSidebar prop
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const dropdownRef = useRef(null);
+
+  // Effect to apply theme class to body and save to localStorage
+  useEffect(() => {
+    if (theme === 'light') {
+      document.body.classList.add('light-theme');
+    } else {
+      document.body.classList.remove('light-theme');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    // No need to directly manipulate localStorage or body class here, useEffect handles it.
+  };
 
   const toggleAboutModal = () => {
     setShowAboutModal(prev => !prev);
@@ -63,6 +80,14 @@ const Header = () => { // Removed toggleSidebar prop
             title="About Reading Tracker"
           >
             <FiInfo />
+          </span>
+          <span 
+            className="nav-link theme-toggle-icon"
+            onClick={toggleTheme}
+            title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            style={{ cursor: 'pointer', marginLeft: '10px' }} 
+          >
+            {theme === 'dark' ? <FiSun /> : <FiMoon />}
           </span>
           <a
             href="https://github.com/hexawulf/reading-habit-tracker" 

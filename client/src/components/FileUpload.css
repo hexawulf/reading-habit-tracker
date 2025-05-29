@@ -6,11 +6,12 @@
 }
 
 .upload-card, .instructions-card {
-  background-color: #fff;
+  background-color: var(--current-card-background); /* Themed */
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Shadow theming can be addressed later */
   padding: 20px;
   margin-bottom: 20px;
+  border: 1px solid var(--current-border); /* Themed */
 }
 
 .upload-form {
@@ -28,25 +29,29 @@
 }
 
 .file-button {
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
+  background-color: var(--current-background); /* Themed to look like a button on page bg */
+  border: 1px solid var(--current-border); /* Themed */
+  color: var(--current-text); /* Themed */
   padding: 8px 15px;
   border-radius: 4px;
   cursor: pointer;
   margin-right: 10px;
   transition: background-color 0.3s;
+  font-family: var(--font-base); /* Ensure font consistency */
 }
 
 .file-button:hover {
-  background-color: #e0e0e0;
+  background-color: var(--current-border); /* Themed hover */
 }
 
 .file-name {
-  color: #666;
+  color: var(--current-text); /* Themed */
+  opacity: 0.8; /* Slightly less prominent */
+  font-family: var(--font-base);
 }
 
 .upload-button {
-  background-color: #4CAF50;
+  background-color: #4CAF50; /* Specific accent - kept as is */
   color: white;
   border: none;
   border-radius: 4px;
@@ -54,14 +59,17 @@
   font-size: 16px;
   cursor: pointer;
   transition: background-color 0.3s;
+  font-family: var(--font-base); /* Ensure font consistency */
 }
 
 .upload-button:hover {
-  background-color: #45a049;
+  background-color: #45a049; /* Darken specific accent */
 }
 
 .upload-button:disabled {
-  background-color: #cccccc;
+  background-color: var(--current-border); /* Themed disabled state */
+  color: var(--current-text); /* Themed */
+  opacity: 0.5; /* Make it look disabled */
   cursor: not-allowed;
 }
 
@@ -92,11 +100,11 @@
 
 /* Additional styling for form elements */
 h1, h2 {
-  color: #333;
+  color: var(--current-text); /* Themed */
 }
 
 p {
-  color: #666;
+  color: var(--current-text); /* Themed */
   line-height: 1.5;
 }
 
