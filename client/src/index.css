@@ -1,14 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap');
 
 :root {
+  /* Night Owl (Dark Theme) Specifics */
   --night-owl-background: #011627;
   --night-owl-text: #d6deeb;
   --night-owl-card-background: #0b253a;
-  --night-owl-accent1: #7e57c2;
-  --night-owl-accent1-rgb: 126, 87, 194; /* Added RGB version for opacity */
-  --night-owl-accent2: #82aaff;
-  --night-owl-accent2-rgb: 130, 170, 255; /* Added RGB version for opacity */
   --night-owl-border: #011220;
+  --night-owl-accent1: #7e57c2; /* Purple */
+  --night-owl-accent1-rgb: 126, 87, 194;
+  --night-owl-accent2: #82aaff; /* Blueish */
+  --night-owl-accent2-rgb: 130, 170, 255;
+
+  /* Light Theme Specifics */
+  --light-background: #FFFFFF;
+  --light-text: #212529;
+  --light-card-background: #F8F9FA;
+  --light-border: #DEE2E6;
+
+  /* Generic Variables - Default to Dark Theme */
+  --current-background: var(--night-owl-background);
+  --current-text: var(--night-owl-text);
+  --current-card-background: var(--night-owl-card-background);
+  --current-border: var(--night-owl-border);
+  /* --current-accent1: var(--night-owl-accent1); */ /* Example if needed */
 
   /* Typography */
   --font-base: 'Fira Code', 'Consolas', 'Monaco', monospace;
@@ -30,13 +44,23 @@ body {
   line-height: 1.6; /* Maintain good line height for readability */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--night-owl-background);
-  color: var(--night-owl-text);
+  background-color: var(--current-background);
+  color: var(--current-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.light-theme {
+  --current-background: var(--light-background);
+  --current-text: var(--light-text);
+  --current-card-background: var(--light-card-background);
+  --current-border: var(--light-border);
+  /* --current-accent1: var(--light-accent1); */ /* Example if needed */
 }
 
 code {
   font-family: var(--font-base); /* Use the same monospace font for code elements */
-  background-color: var(--night-owl-border); /* Subtle background for inline code */
+  background-color: var(--current-border); /* Subtle background for inline code, using current-border for contrast */
+  color: var(--current-text); /* Ensure code text uses current theme text color */
   padding: 0.2em 0.4em;
   border-radius: 3px;
   font-size: 0.9em; /* Slightly smaller for code snippets */
@@ -45,7 +69,7 @@ code {
 /* Headings base styling (can be overridden in component CSS) */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-base); /* Or var(--font-sans-serif) if preferred for headings */
-  color: var(--night-owl-text); /* Ensure headings use theme text color */
+  color: var(--current-text); /* Ensure headings use theme text color */
   margin-top: 1em;
   margin-bottom: 0.6em;
   font-weight: 600; /* Default weight for headings */
@@ -55,3 +79,11 @@ h1 { font-size: var(--h1-font-size, 2.2rem); }
 h2 { font-size: var(--h2-font-size, 1.8rem); }
 h3 { font-size: var(--h3-font-size, 1.4rem); }
 /* Define h4, h5, h6 if used, or adjust in components */
+
+a {
+  text-decoration: none;
+  color: var(--night-owl-accent1); /* Keep purple links for now, or use a --current-link-color variable */
+}
+a:hover {
+  text-decoration: underline;
+}
