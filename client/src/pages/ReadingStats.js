@@ -121,12 +121,12 @@ export default function ReadingStats() {
       <div className="book-highlights"> {/* These should use .insight-card or similar from App.css */}
         <BookHighlight
           title="Longest Book"
-          book={pageStats.longestBook}
+          book={pageStatsData.longestBook}
           className="highlight-purple"
         />
         <BookHighlight
           title="Shortest Book"
-          book={pageStats.shortestBook}
+          book={pageStatsData.shortestBook}
           className="highlight-pink"
         />
       </div>
