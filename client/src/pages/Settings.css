@@ -9,11 +9,12 @@
 }
 
 .settings-card {
-  background: white;
+  background: var(--current-card-background); /* Themed */
   border-radius: 10px;
   padding: 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Shadow theming can be addressed later */
   text-align: center;
+  border: 1px solid var(--current-border); /* Themed */
 }
 
 .upcoming-features {
@@ -25,5 +26,6 @@
 .upcoming-features li {
   margin: 1rem 0;
   font-size: 1.1rem;
-  color: #666;
+  color: var(--current-text); /* Themed */
+  opacity: 0.8; /* Make it slightly less prominent */
 }
