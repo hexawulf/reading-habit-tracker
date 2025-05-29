@@ -1,50 +1,50 @@
 
 // client/src/components/Sidebar.js
-import React, { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import {
+  FiGrid,
+  FiTrendingUp,
+  FiCalendar,
+  FiBarChart2,
+  FiBookOpen,
+  FiUsers,
+  FiSettings,
+  FiTarget, // Added for Goals
+  FiUploadCloud // Added for Upload
+} from 'react-icons/fi';
 import './Sidebar.css';
 
+const navItems = [
+  { to: "/", title: "Dashboard", icon: <FiGrid />, end: true },
+  { to: "/goals", title: "Goals", icon: <FiTarget /> }, // Assuming a /goals route
+  { to: "/yearly-progress", title: "Yearly Progress", icon: <FiTrendingUp /> },
+  { to: "/monthly-progress", title: "Monthly Progress", icon: <FiCalendar /> },
+  { to: "/reading-stats", title: "Reading Stats", icon: <FiBarChart2 /> },
+  { to: "/recent-books", title: "Recent Books", icon: <FiBookOpen /> },
+  { to: "/top-authors", title: "Top Authors", icon: <FiUsers /> },
+  { to: "/upload", title: "Upload Data", icon: <FiUploadCloud /> }, // Link to upload page
+  { to: "/data-management", title: "Data Management", icon: <FiSettings /> },
+];
+
 const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
-
-  // Close sidebar when route changes
-  useEffect(() => {
-    setIsOpen(false);
-  }, [location]);
-
   return (
-    <>
-      <div 
-        className={`sidebar-overlay ${isOpen ? 'active' : ''}`}
-        onClick={() => setIsOpen(false)}
-      />
-      <aside className={`sidebar ${isOpen ? 'active' : ''}`}>
-        <nav className="sidebar-nav">
-          <NavLink to="/" className="nav-item" end>
-            <span className="icon">📊</span> Dashboard
+    <aside className="sidebar">
+      <nav className="sidebar-nav">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className="nav-item"
+            title={item.title} // For tooltip
+            end={item.end}
+          >
+            <span className="icon">{item.icon}</span>
+            <span className="nav-text">{item.title}</span> 
           </NavLink>
-          <NavLink to="/yearly-progress" className="nav-item">
-            <span className="icon">📈</span> Yearly Progress
-          </NavLink>
-          <NavLink to="/monthly-progress" className="nav-item">
-            <span className="icon">📅</span> Monthly Progress
-          </NavLink>
-          <NavLink to="/reading-stats" className="nav-item">
-            <span className="icon">📊</span> Reading Stats
-          </NavLink>
-          <NavLink to="/recent-books" className="nav-item">
-            <span className="icon">📚</span> Recent Books
-          </NavLink>
-          <NavLink to="/top-authors" className="nav-item">
-            <span className="icon">👥</span> Top Authors
-          </NavLink>
-          <NavLink to="/data-management" className="nav-item">
-            <span className="icon">⚙️</span> Data Management
-          </NavLink>
-        </nav>
-      </aside>
-    </>
+        ))}
+      </nav>
+    </aside>
   );
 };
 

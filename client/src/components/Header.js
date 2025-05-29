@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './Header.css';
 import Auth from './Auth';
 import AboutModal from './AboutModal';
+import { FiInfo, FiGithub, FiUser, FiLogOut, FiSettings, FiDatabase } from 'react-icons/fi'; // Added icons
 
-const Header = ({ toggleSidebar }) => {
-  const [showOptions, setShowOptions] = useState(false);
+const Header = () => { // Removed toggleSidebar prop
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const dropdownRef = useRef(null);
 
   const toggleAboutModal = () => {
     setShowAboutModal(prev => !prev);
@@ -16,78 +19,92 @@ const Header = ({ toggleSidebar }) => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userName');
     localStorage.removeItem('userPicture');
-    window.location.href = '/'; // Redirect to home after logout
+    setShowUserDropdown(false); // Close dropdown
+    window.location.href = '/'; 
   };
 
   const userName = localStorage.getItem('userName');
   const userPhoto = localStorage.getItem('userPicture');
-  const isAuthenticated = localStorage.getItem('isAuthenticated');
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'; // Ensure boolean comparison
 
-  const handleAvatarClick = () => {
-    // If NOT logged in, just open the Auth modal
+  const handleUserIconClick = () => {
     if (!isAuthenticated) {
-      setShowOptions(true);
-      return;
+      setShowAuthModal(true);
+      setShowUserDropdown(false); // Ensure dropdown is closed
+    } else {
+      setShowUserDropdown(prev => !prev);
     }
-    // If logged in, toggle the dropdown
-    setShowOptions(prev => !prev);
   };
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowUserDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownRef]);
+
 
   return (
     <header className="app-header">
       <div className="header-content">
-        <button 
-          className="menu-toggle"
-          onClick={toggleSidebar}
-          aria-label="Toggle menu"
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
         <Link to="/" className="logo">
           <img src="/generated-icon.png" alt="Reading Habit Tracker" className="header-logo" />
-          <h1>Reading Habit Tracker</h1>
+          <h1>Reading Tracker</h1> {/* Simplified title */}
         </Link>
-        <nav className="nav-links">
-          <span className="nav-link about-icon" onClick={toggleAboutModal} title="About TableTamer">
-            i
+        
+        <nav className="header-nav-items"> {/* Renamed class for clarity */}
+          <span 
+            className="nav-link about-icon" 
+            onClick={toggleAboutModal} 
+            title="About Reading Tracker"
+          >
+            <FiInfo />
           </span>
-          <Link to="/" className="nav-link">Dashboard</Link>
-          <Link to="/upload" className="nav-link">Upload Data</Link>
           <a
             href="https://github.com/hexawulf/reading-habit-tracker" 
             target="_blank" 
             rel="noopener noreferrer" 
             className="nav-link"
+            title="GitHub Repository"
           >
-            GitHub
+            <FiGithub /> <span className="nav-link-text">GitHub</span>
           </a>
-          <div className="user-menu" onClick={handleAvatarClick}>
-            <div className="user-avatar">
-              {userPhoto ? <img src={userPhoto} alt="User" /> : '👤'}
-            </div>
-            <span className="user-name">{userName || 'My Account'}</span>
-          </div>
-          {showOptions && localStorage.getItem('isAuthenticated') && (
-            <div className="dropdown-menu">
-              <a href="/account" className="dropdown-item">
-                <span>📊</span> My Data
-              </a>
-              <a href="/settings" className="dropdown-item">
-                <span>⚙️</span> Settings
-              </a>
-              <div className="dropdown-item" onClick={handleLogout} style={{cursor: 'pointer'}}>
-                <span>🚪</span> Logout
+          
+          <div className="user-menu" ref={dropdownRef}>
+            <button className="user-avatar-button" onClick={handleUserIconClick} title={isAuthenticated ? userName : "Account"}>
+              {isAuthenticated && userPhoto ? (
+                <img src={userPhoto} alt={userName || "User"} className="user-avatar-img" />
+              ) : (
+                <FiUser className="user-avatar-icon" />
+              )}
+              {isAuthenticated && <span className="user-name-display">{userName}</span>}
+            </button>
+
+            {isAuthenticated && showUserDropdown && (
+              <div className="dropdown-menu">
+                <Link to="/account" className="dropdown-item" onClick={() => setShowUserDropdown(false)}>
+                  <FiDatabase /> My Data
+                </Link>
+                <Link to="/settings" className="dropdown-item" onClick={() => setShowUserDropdown(false)}>
+                  <FiSettings /> Settings
+                </Link>
+                <div className="dropdown-item" onClick={handleLogout} style={{cursor: 'pointer'}}>
+                  <FiLogOut /> Logout
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </nav>
       </div>
-      {showOptions && (
-        <div className="auth-modal-overlay" onClick={() => setShowOptions(false)}>
+
+      {showAuthModal && !isAuthenticated && (
+        <div className="auth-modal-overlay" onClick={() => setShowAuthModal(false)}>
           <div className="auth-modal" onClick={e => e.stopPropagation()}>
-            <Auth onClose={() => setShowOptions(false)} />
+            <Auth onClose={() => setShowAuthModal(false)} />
           </div>
         </div>
       )}

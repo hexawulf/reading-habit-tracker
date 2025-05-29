@@ -1,13 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap');
+
+:root {
+  --night-owl-background: #011627;
+  --night-owl-text: #d6deeb;
+  --night-owl-card-background: #0b253a;
+  --night-owl-accent1: #7e57c2;
+  --night-owl-accent1-rgb: 126, 87, 194; /* Added RGB version for opacity */
+  --night-owl-accent2: #82aaff;
+  --night-owl-accent2-rgb: 130, 170, 255; /* Added RGB version for opacity */
+  --night-owl-border: #011220;
+
+  /* Typography */
+  --font-base: 'Fira Code', 'Consolas', 'Monaco', monospace;
+  --font-sans-serif: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif; /* Keep sans-serif for specific uses if needed */
+
+  --base-font-size: 15px; /* Slightly reduced from typical 16px */
+  --h1-font-size: 2.2rem; /* Example, will adjust in specific component CSS */
+  --h2-font-size: 1.8rem;
+  --h3-font-size: 1.4rem;
+  /* Other sizes as needed */
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-base);
+  font-size: var(--base-font-size);
+  line-height: 1.6; /* Maintain good line height for readability */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--night-owl-background);
+  color: var(--night-owl-text);
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: var(--font-base); /* Use the same monospace font for code elements */
+  background-color: var(--night-owl-border); /* Subtle background for inline code */
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em; /* Slightly smaller for code snippets */
 }
+
+/* Headings base styling (can be overridden in component CSS) */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-base); /* Or var(--font-sans-serif) if preferred for headings */
+  color: var(--night-owl-text); /* Ensure headings use theme text color */
+  margin-top: 1em;
+  margin-bottom: 0.6em;
+  font-weight: 600; /* Default weight for headings */
+}
+
+h1 { font-size: var(--h1-font-size, 2.2rem); }
+h2 { font-size: var(--h2-font-size, 1.8rem); }
+h3 { font-size: var(--h3-font-size, 1.4rem); }
+/* Define h4, h5, h6 if used, or adjust in components */

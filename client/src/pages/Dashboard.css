@@ -1,165 +1,183 @@
 /* client/src/pages/Dashboard.css */
+/* Font-family is inherited from body (var(--font-base)) */
+
 .dashboard {
-    padding: 1.5rem;
+    padding: 1rem; 
+    color: var(--night-owl-text);
   }
   
-  .dashboard h1 {
-    margin-bottom: 1.5rem;
-    color: #333;
-    font-size: 2rem;
-    font-weight: 700;
+  .dashboard h1 { /* Uses var(--h1-font-size) from index.css by default */
+    margin-bottom: 1rem; 
+    font-weight: 600; 
+    /* font-size: var(--h1-font-size, 1.8rem); /* Overriding if needed, but index.css has 2.2rem */
+  }
+  .dashboard h2 { /* Uses var(--h2-font-size) from index.css by default */
+    margin-bottom: 1rem; 
+    font-weight: 600;
+    /* font-size: var(--h2-font-size, 1.4rem); /* Overriding if needed, but index.css has 1.8rem */
+    margin-top: 1.5rem; 
+  }
+  
+  /* Generic card styling - applied to all card-like elements */
+  /* Font sizes within these cards will be checked */
+  .stat-card, 
+  .goal-card, 
+  .chart-card, 
+  .book-card, 
+  .insight-card,
+  .goal-progress,
+  .recent-books,
+  .reading-insights,
+  .authors-list-card { 
+    background-color: var(--night-owl-card-background);
+    border-radius: var(--border-radius, 8px); 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3); 
+    padding: 1rem; 
+    margin-bottom: 1rem; 
+    border: 1px solid var(--night-owl-border);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .stat-card:hover, 
+  .goal-card:hover, 
+  .chart-card:hover, 
+  .book-card:hover, 
+  .insight-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  }
+  
+  /* Section for grouping related stats - can be a new div in JSX */
+  .stats-group-container {
+    background-color: var(--night-owl-card-background);
+    border-radius: var(--border-radius, 8px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--night-owl-border);
   }
   
   .stats-overview {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+    gap: 0.75rem; 
   }
   
   .stat-card {
-    padding: 1.5rem;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     text-align: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
   
-  .stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  }
-  
-  .stat-card h3 {
+  .stat-card h3 { /* Uses var(--h3-font-size) from index.css or component-specific */
     margin-top: 0;
-    margin-bottom: 0.5rem;
-    color: #666;
-    font-size: 1rem;
-    font-weight: 600;
+    margin-bottom: 0.25rem; 
+    color: var(--night-owl-text); 
+    font-size: 0.9rem; /* Kept from previous densification, smaller than base h3 */
+    font-weight: 500;
   }
   
-  .stat-value {
-    font-size: 2.5rem;
+  .stat-value { /* This is already in App.css, ensure consistency or override */
+    font-size: 2rem; /* Kept from previous densification */
     font-weight: 700;
-    color: #333;
-    margin-bottom: 0.25rem;
+    color: var(--night-owl-accent2); 
+    margin-bottom: 0.1rem; 
   }
   
-  .rating-stars {
-    color: #FFC107;
-    font-size: 1.2rem;
-    margin-top: 0.25rem;
+  .rating-stars { /* This is in App.css, check if override is needed */
+    color: #FFC107; 
+    font-size: 1rem; 
+    margin-top: 0.1rem;
   }
   
-  .books-read .stat-value {
-    color: #3F51B5;
-  }
-  
-  .this-year .stat-value {
-    color: #4CAF50;
-  }
-  
-  .rating .stat-value {
-    color: #FF9800;
-  }
-  
-  .reading-pace .stat-value {
-    color: #9C27B0;
-  }
+  /* Specific stat value colors removed as they are handled by .stat-value color now */
   
   .goal-progress {
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Styles inherited from generic card */
   }
   
-  .goal-progress h2 {
+  .goal-progress h2 { /* Uses var(--h2-font-size) from index.css or component-specific */
     margin-top: 0;
-    margin-bottom: 1rem;
-    color: #333;
-    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.2rem; /* Kept from previous densification, smaller than base h2 */
   }
   
   .goal-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
   }
   
   .goal-card {
-    padding: 1rem;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    border-left: 4px solid #4CAF50;
+    border-left: 4px solid var(--night-owl-accent1); 
   }
   
-  .goal-card h3 {
+  .goal-card h3 { /* Uses var(--h3-font-size) from index.css or component-specific */
     margin-top: 0;
-    margin-bottom: 0.5rem;
-    color: #333;
-    font-size: 1.2rem;
+    margin-bottom: 0.25rem;
+    color: var(--night-owl-text);
+    font-size: 1rem; /* Kept from previous densification */
   }
   
-  .progress-container {
-    margin-top: 0.5rem;
-  }
-  
-  .progress-bar {
-    height: 12px;
-    background-color: #e0e0e0;
-    border-radius: 6px;
+  .progress-bar { /* This is in App.css, check if override is needed */
+    height: 10px; 
+    background-color: var(--night-owl-border); 
+    border-radius: 5px;
     overflow: hidden;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
   }
   
-  .progress-fill {
+  .progress-fill { /* This is in App.css */
     height: 100%;
-    background-color: #4CAF50;
-    border-radius: 6px;
+    background-color: var(--night-owl-accent1); 
+    border-radius: 5px;
   }
   
-  .progress-text {
-    font-size: 0.9rem;
-    color: #666;
+  .progress-text { /* This is in App.css */
+    font-size: 0.8rem; 
+    color: var(--night-owl-text); 
   }
   
-  .set-goals-link {
+  .set-goals-link, .see-more-link { /* These are <a> tags, will inherit from App.css <a> styles */
     display: inline-block;
     margin-top: 0.5rem;
-    color: #4CAF50;
-    text-decoration: none;
-    font-weight: 600;
+    /* color: var(--night-owl-accent2); /* Already in App.css a */
+    text-decoration: none; /* Already in App.css a */
+    font-weight: 500; 
+    font-size: 0.9rem; /* Specific size for these links */
   }
   
-  .set-goals-link:hover {
-    text-decoration: underline;
+  .set-goals-link:hover, .see-more-link:hover { /* App.css a:hover handles underline */
+    color: var(--night-owl-accent1); /* Specific hover color for these links */
   }
   
   .charts-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    gap: 1rem; 
   }
-  
+
   .chart-card {
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Styles inherited from generic card */
   }
   
-  .chart-card h3 {
+  .chart-card h3 { /* Uses var(--h3-font-size) from index.css or component-specific */
     margin-top: 0;
-    margin-bottom: 1.5rem;
-    color: #333;
-    font-size: 1.2rem;
+    margin-bottom: 1rem; 
+    color: var(--night-owl-text);
+    font-size: 1.1rem; /* Kept from previous densification */
     font-weight: 600;
     text-align: center;
+  }
+  
+  /* Styling for Recharts text elements (axes, labels, tooltips) */
+  /* Ensure font-family is inherited or explicitly set if Recharts overrides it */
+  .recharts-text, .recharts-legend-item-text, .recharts-tooltip-label, .recharts-tooltip-item {
+    font-family: var(--font-base) !important; /* Explicitly set Fira Code */
+    fill: var(--night-owl-text) !important; 
+    font-size: 0.8rem; /* Slightly smaller for chart elements */
+  }
+  .recharts-cartesian-axis-line, .recharts-cartesian-grid-line {
+    stroke: var(--night-owl-border) !important; 
   }
   
   .top-authors {
@@ -169,87 +187,64 @@
   }
   
   .author-item {
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem; 
   }
   
   .author-name {
     display: block;
     font-weight: 600;
-    color: #333;
-    margin-bottom: 0.25rem;
+    color: var(--night-owl-text);
+    margin-bottom: 0.1rem;
+    font-size: 0.9rem; /* Kept from previous densification */
   }
   
   .author-count {
     display: block;
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 0.25rem;
+    font-size: 0.8rem; /* Kept */
+    color: var(--night-owl-text); 
+    margin-bottom: 0.1rem;
   }
   
-  .author-bar {
-    height: 8px;
-    background-color: #e0e0e0;
-    border-radius: 4px;
+  .author-bar { /* This is in App.css, check if override is needed */
+    height: 6px; 
+    background-color: var(--night-owl-border);
+    border-radius: 3px;
     overflow: hidden;
   }
   
-  .author-bar-fill {
+  .author-bar-fill { /* This is in App.css */
     height: 100%;
-    border-radius: 4px;
-  }
-  
-  .see-more-link {
-    display: block;
-    text-align: center;
-    margin-top: 1rem;
-    color: #4CAF50;
-    text-decoration: none;
-    font-weight: 600;
-  }
-  
-  .see-more-link:hover {
-    text-decoration: underline;
+    border-radius: 3px;
   }
   
   .recent-books {
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Styles inherited from generic card */
   }
   
-  .recent-books h2 {
+  .recent-books h2 { /* Uses var(--h2-font-size) from index.css or component-specific */
     margin-top: 0;
-    margin-bottom: 1.5rem;
-    color: #333;
-    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.2rem; /* Kept from previous densification */
   }
   
   .books-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+    gap: 0.75rem; 
+    margin-bottom: 1rem;
   }
   
   .book-card {
-    padding: 1rem;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    transition: transform 0.3s ease;
+    /* Styles inherited from generic card */
   }
   
-  .book-card:hover {
-    transform: translateY(-5px);
-  }
-  
-  .book-title {
+  .book-title { /* Uses var(--h3-font-size) from index.css or component-specific */
     margin-top: 0;
-    margin-bottom: 0.5rem;
-    color: #333;
-    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+    color: var(--night-owl-text);
+    font-size: 0.95rem; /* Slightly adjusted for Fira Code */
     font-weight: 600;
+    line-height: 1.25; /* Adjusted for Fira Code */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -258,97 +253,116 @@
   
   .book-author {
     margin-top: 0;
-    margin-bottom: 0.5rem;
-    color: #666;
-    font-size: 0.9rem;
-    font-style: italic;
+    margin-bottom: 0.25rem;
+    color: var(--night-owl-text); 
+    font-size: 0.75rem; /* Adjusted for Fira Code */
+    font-style: italic; /* Keep italic if desired, Fira Code supports it */
   }
   
-  .book-rating {
-    color: #FFC107;
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
+  .book-rating { /* This is in App.css */
+    color: #FFC107; 
+    font-size: 0.9rem; 
+    margin-bottom: 0.25rem;
   }
   
   .book-date, .book-pages {
     margin: 0;
-    color: #888;
-    font-size: 0.8rem;
+    color: var(--night-owl-text); 
+    font-size: 0.7rem; /* Adjusted for Fira Code */
   }
   
   .reading-insights {
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Styles inherited from generic card */
   }
   
-  .reading-insights h2 {
+  .reading-insights h2 { /* Uses var(--h2-font-size) from index.css or component-specific */
     margin-top: 0;
-    margin-bottom: 1.5rem;
-    color: #333;
-    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.2rem; /* Kept from previous densification */
   }
   
   .insights-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+    gap: 0.75rem; 
   }
   
   .insight-card {
-    padding: 1rem;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    border-top: 4px solid #4CAF50;
+    border-top: 3px solid var(--night-owl-accent1); 
   }
   
   .insight-card:nth-child(2) {
-    border-top-color: #3F51B5;
+    border-top-color: var(--night-owl-accent2);
   }
-  
   .insight-card:nth-child(3) {
-    border-top-color: #FF9800;
+    border-top-color: var(--night-owl-accent1); 
   }
-  
   .insight-card:nth-child(4) {
-    border-top-color: #9C27B0;
+    border-top-color: var(--night-owl-accent2); 
   }
   
-  .insight-card h3 {
+  .insight-card h3 { /* Uses var(--h3-font-size) from index.css or component-specific */
     margin-top: 0;
-    margin-bottom: 0.5rem;
-    color: #333;
-    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+    color: var(--night-owl-text);
+    font-size: 0.95rem; /* Adjusted for Fira Code */
     font-weight: 600;
   }
   
   .insight-card p {
     margin: 0;
-    color: #666;
-    font-size: 0.9rem;
+    color: var(--night-owl-text); 
+    font-size: 0.8rem; /* Adjusted for Fira Code */
   }
   
-  @media (max-width: 768px) {
+  /* Responsive Adjustments */
+  @media (max-width: 1200px) { /* For large desktops, maybe allow more columns */
+    .stats-overview { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+    .charts-container { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .books-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  }
+
+  @media (max-width: 992px) { /* For standard laptops/tablets */
+    .stats-overview { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+    .charts-container { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+  }
+  
+  @media (max-width: 768px) { /* Tablets */
+    .dashboard { padding: 0.75rem; }
+    .stats-overview { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
     .charts-container {
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr; /* Stack charts */
     }
-    
     .books-grid {
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+    .insights-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+    .content { /* From App.css, if sidebar is hidden, content might take full width */
+        margin-left: 0; 
+        padding: 0.75rem;
     }
   }
   
-  @media (max-width: 480px) {
-    .stat-card {
-      padding: 1rem;
+  @media (max-width: 480px) { /* Mobile phones */
+    .dashboard { padding: 0.5rem; }
+    .stats-overview {
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Even smaller cards */
+      gap: 0.5rem;
     }
-    
-    .stat-value {
-      font-size: 2rem;
+    .stat-card, .goal-card, .chart-card, .book-card, .insight-card {
+      padding: 0.5rem; /* Further reduce padding */
     }
-    
+    .stat-value { font-size: 1.5rem; }
+    .stat-card h3 { font-size: 0.8rem; }
+
+    .goal-cards { grid-template-columns: 1fr; } /* Stack goal cards */
     .books-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); /* Or simply 1fr to stack */
+      gap: 0.5rem;
     }
+    .insights-grid { grid-template-columns: 1fr; } /* Stack insights */
+
+    .dashboard h1 { font-size: 1.5rem; }
+    .dashboard h2 { font-size: 1.2rem; }
+    .content { padding: 0.5rem; } /* From App.css */
   }
