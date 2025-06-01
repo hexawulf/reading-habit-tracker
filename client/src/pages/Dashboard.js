@@ -8,11 +8,14 @@ import {
 } from 'recharts';
 import './Dashboard.css';
 
-// Night Owl theme colors for charts (examples)
-const NIGHT_OWL_ACCENT_1 = "var(--night-owl-accent1)"; // #7e57c2
-const NIGHT_OWL_ACCENT_2 = "var(--night-owl-accent2)"; // #82aaff
-// const NIGHT_OWL_TEXT = "var(--night-owl-text)";       // #d6deeb // Replaced by CSS var(--current-text)
-// const NIGHT_OWL_BORDER = "var(--night-owl-border)";   // #011220 // Replaced by CSS var(--current-border)
+// FIXED: Use actual hex values instead of CSS variables in JavaScript
+const NIGHT_OWL_ACCENT_1 = "#7e57c2"; // Purple
+const NIGHT_OWL_ACCENT_2 = "#82aaff"; // Blue
+
+// FIXED: Function to get CSS variable values at runtime
+const getCSSVariable = (variableName) => {
+  return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+};
 
 const Dashboard = () => {
   const { stats, readingData, loading, error, goalProgress } = useReadingData();
@@ -41,7 +44,8 @@ const Dashboard = () => {
       <div className="no-data">
         <h2>No Reading Data Available</h2>
         <p>Please upload your Goodreads export file to get started.</p>
-        <Link to="/upload" className="btn btn-primary" style={{marginTop: '1rem'}}>Upload File</Link>
+        {/* FIXED: Removed inline style */}
+        <Link to="/upload" className="btn btn-primary">Upload File</Link>
       </div>
     );
   }
@@ -94,8 +98,10 @@ const Dashboard = () => {
     return value;
   };
 
-  // Tooltip and Legend text color will be handled by CSS (.recharts-text, etc.)
-  // For CartesianGrid, stroke is set via CSS.
+  // FIXED: Get current theme colors at runtime
+  const currentCardBg = getCSSVariable('--current-card-background') || '#2d3748';
+  const currentBorder = getCSSVariable('--current-border') || '#4a5568';
+  const currentText = getCSSVariable('--current-text') || '#f7fafc';
 
   return (
     <div className="dashboard">
@@ -139,17 +145,17 @@ const Dashboard = () => {
       </div>
       
       {/* Charts remain in their own top-level sections */}
-      <div className="chart-card yearly-chart"> {/* chart-card provides the background and padding */}
+      <div className="chart-card yearly-chart">
         <h3>Books Read By Year</h3>
-        <ResponsiveContainer width="100%" height={250}> {/* Reduced height for compactness */}
+        <ResponsiveContainer width="100%" height={250}>
           <BarChart data={yearlyData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={'var(--current-border)'} />
-            <XAxis dataKey="year" tick={{ fill: 'var(--current-text)', fontSize: 12 }} />
-            <YAxis tick={{ fill: 'var(--current-text)', fontSize: 12 }} tickFormatter={tickFormatter}/>
+            <CartesianGrid strokeDasharray="3 3" stroke={currentBorder} />
+            <XAxis dataKey="year" tick={{ fill: currentText, fontSize: 12 }} />
+            <YAxis tick={{ fill: currentText, fontSize: 12 }} tickFormatter={tickFormatter}/>
             <Tooltip 
-              contentStyle={{ backgroundColor: 'var(--current-card-background)', border: '1px solid var(--current-border)', color: 'var(--current-text)', borderRadius: 'var(--border-radius, 6px)' }} 
-              itemStyle={{ color: 'var(--current-text)' }}
-              cursor={{ fill: 'rgba(var(--night-owl-accent2-rgb, 130, 170, 255), 0.15)' }}/> {/* Using RGB for opacity */}
+              contentStyle={{ backgroundColor: currentCardBg, border: `1px solid ${currentBorder}`, color: currentText, borderRadius: '6px' }} 
+              itemStyle={{ color: currentText }}
+              cursor={{ fill: 'rgba(130, 170, 255, 0.15)' }}/>
             <Bar dataKey="count" fill={NIGHT_OWL_ACCENT_1} name="Books Read" isAnimationActive={true} />
           </BarChart>
         </ResponsiveContainer>
@@ -159,14 +165,14 @@ const Dashboard = () => {
         <h3>Monthly Comparison ({currentYear} vs {previousYear})</h3>
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={monthlyComparisonData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }} isAnimationActive={true}>
-            <CartesianGrid strokeDasharray="3 3" stroke={'var(--current-border)'} />
-            <XAxis dataKey="month" tick={{ fill: 'var(--current-text)', fontSize: 12 }} />
-            <YAxis tick={{ fill: 'var(--current-text)', fontSize: 12 }} tickFormatter={tickFormatter}/>
+            <CartesianGrid strokeDasharray="3 3" stroke={currentBorder} />
+            <XAxis dataKey="month" tick={{ fill: currentText, fontSize: 12 }} />
+            <YAxis tick={{ fill: currentText, fontSize: 12 }} tickFormatter={tickFormatter}/>
             <Tooltip 
-              contentStyle={{ backgroundColor: 'var(--current-card-background)', border: '1px solid var(--current-border)', color: 'var(--current-text)', borderRadius: 'var(--border-radius, 6px)' }} 
-              itemStyle={{ color: 'var(--current-text)' }}
-              cursor={{ fill: 'rgba(var(--night-owl-accent2-rgb, 130, 170, 255), 0.15)' }}/>
-            <Legend wrapperStyle={{ color: 'var(--current-text)', fontSize: '12px' }} />
+              contentStyle={{ backgroundColor: currentCardBg, border: `1px solid ${currentBorder}`, color: currentText, borderRadius: '6px' }} 
+              itemStyle={{ color: currentText }}
+              cursor={{ fill: 'rgba(130, 170, 255, 0.15)' }}/>
+            <Legend wrapperStyle={{ color: currentText, fontSize: '12px' }} />
             <Bar dataKey={previousYear} fill={NIGHT_OWL_ACCENT_2} name={previousYear} isAnimationActive={true} />
             <Bar dataKey={currentYear} fill={NIGHT_OWL_ACCENT_1} name={currentYear} isAnimationActive={true} />
           </BarChart>
@@ -174,7 +180,7 @@ const Dashboard = () => {
       </div>
       
       {/* Grouping Rating Distribution and Top Authors */}
-      <div className="charts-container"> {/* This div can act as a row for these two charts */}
+      <div className="charts-container">
         <div className="chart-card rating-chart">
           <h3>Rating Distribution</h3>
           <ResponsiveContainer width="100%" height={250}>
@@ -183,28 +189,27 @@ const Dashboard = () => {
                 data={ratingData}
                 cx="50%"
                 cy="50%"
-                labelLine={{ stroke: 'var(--current-text)' }}
-                outerRadius={80} /* Adjusted for compactness */
+                labelLine={{ stroke: currentText }}
+                outerRadius={80}
                 dataKey="count"
                 nameKey="rating"
                 label={({rating, percent, count}) => `${rating}★: ${(percent * 100).toFixed(0)}% (${count})`}
-                tick={{ fill: 'var(--current-text)' }}
-                isAnimationActive={true} // Enable animation for Pie chart
+                tick={{ fill: currentText }}
+                isAnimationActive={true}
               >
                 {ratingData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={RATING_COLORS[(entry.rating - 1) % RATING_COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip 
-                contentStyle={{ backgroundColor: 'var(--current-card-background)', border: '1px solid var(--current-border)', color: 'var(--current-text)', borderRadius: 'var(--border-radius, 6px)' }} 
-                itemStyle={{ color: 'var(--current-text)' }}
+                contentStyle={{ backgroundColor: currentCardBg, border: `1px solid ${currentBorder}`, color: currentText, borderRadius: '6px' }} 
+                itemStyle={{ color: currentText }}
                 formatter={(value, name) => [`${value} books`, `${name} stars`]}/>
-              {/* <Legend wrapperStyle={{ color: 'var(--current-text)', fontSize: '12px', bottom: '-10px' }} /> */}
             </PieChart>
           </ResponsiveContainer>
         </div>
         
-        <div className="chart-card authors-list-card"> {/* Changed class to authors-list-card to use generic card styles */}
+        <div className="chart-card authors-list-card">
           <h3>Top Authors</h3>
           <ul className="top-authors">
             {(stats.topAuthors || []).slice(0, 5).map((author, index) => (
@@ -216,7 +221,6 @@ const Dashboard = () => {
                     className="author-bar-fill"
                     style={{ 
                       width: `${(author.count / (stats.topAuthors[0]?.count || 1)) * 100}%`,
-                      // Cycle through accent colors or use a Night Owl friendly palette
                       backgroundColor: index % 2 === 0 ? NIGHT_OWL_ACCENT_1 : NIGHT_OWL_ACCENT_2
                     }}
                   ></div>
@@ -229,11 +233,11 @@ const Dashboard = () => {
         </div>
       </div>
       
-      <div className="recent-books"> {/* This is already a card-like container */}
+      <div className="recent-books">
         <h2>Recently Read Books</h2>
         <div className="books-grid">
           {recentBooks.map((book, index) => (
-            <div key={index} className="book-card"> {/* book-card provides styling */}
+            <div key={index} className="book-card">
               <h3 className="book-title" title={book.title}>{book.title}</h3>
               <p className="book-author">by {book.author}</p>
               <div className="book-rating">
@@ -243,7 +247,6 @@ const Dashboard = () => {
               <p className="book-date">
                 Read: {book.dateRead ? new Date(book.dateRead).toLocaleDateString() : 'N/A'}
               </p>
-              {/* <p className="book-pages">{book.pages || 0} pages</p> */}
             </div>
           ))}
         </div>
@@ -251,7 +254,7 @@ const Dashboard = () => {
           <Link to="/recent-books" className="see-more-link">See All Recent Books</Link>}
       </div>
       
-      <div className="reading-insights"> {/* This is already a card-like container */}
+      <div className="reading-insights">
         <h2>Reading Insights</h2>
         <div className="insights-grid">
           <div className="insight-card">
