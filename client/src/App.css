@@ -71,7 +71,7 @@ button:hover, .btn:hover {
   background: var(--current-card-background); /* Use current card background */
   border-radius: var(--border-radius, 12px); /* Keep border-radius or use a default */
   padding: 1.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4); /* Adjusted shadow for dark theme - consider theming shadows later */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.24);
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
@@ -83,7 +83,7 @@ button:hover, .btn:hover {
 
 .stat-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); /* Adjusted shadow for dark theme */
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.33);
 }
 
 .stat-value {
@@ -169,7 +169,7 @@ button:hover, .btn:hover {
   padding: 1.5rem; /* Adjusted padding */
   background-color: var(--current-card-background); /* Use current card background */
   border-radius: var(--border-radius, 10px); /* Adjusted radius */
-  box-shadow: var(--card-shadow, 0 3px 5px rgba(0,0,0,0.3)); 
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.24);
   text-align: center;
   border: 1px solid var(--current-border); /* Use current border */
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
@@ -190,7 +190,7 @@ button:hover, .btn:hover {
 .card { /* General card styling, already themed */
   background-color: var(--current-card-background); /* Use current card background */
   border-radius: var(--border-radius, 10px); /* Adjusted radius */
-  box-shadow: var(--card-shadow, 0 3px 5px rgba(0,0,0,0.3));
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.24);
   padding: 1.2rem; /* Adjusted padding */
   margin-bottom: 1rem; /* Adjusted margin */
   transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
@@ -199,7 +199,7 @@ button:hover, .btn:hover {
 
 .card:hover {
   transform: translateY(-3px); /* Adjusted hover effect */
-  box-shadow: var(--hover-shadow, 0 6px 10px rgba(0,0,0,0.4)); /* Adjusted shadow */
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.33);
 }
 
 .card-title { /* For titles within cards */
@@ -261,7 +261,7 @@ button:hover, .btn:hover {
   padding: 1.5rem; /* Adjusted padding */
   background-color: var(--current-card-background); /* Use current card background */
   border-radius: var(--border-radius, 10px); /* Adjusted radius */
-  box-shadow: var(--card-shadow, 0 3px 5px rgba(0,0,0,0.3));
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.24);
   margin: 1rem;
   color: var(--current-text); /* Use current text color */
   border: 1px solid var(--current-border); /* Use current border */
