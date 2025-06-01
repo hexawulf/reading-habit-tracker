@@ -29,15 +29,27 @@
   .recent-books,
   .reading-insights,
   .authors-list-card { 
-    background-color: var(--current-card-background); /* FIXED */
-    border: 1px solid var(--current-border); /* FIXED */
-    color: var(--current-text); /* FIXED */
+     background-color: var(--night-owl-card-background); /* Changed to direct dark theme variable */
+    border: 1px solid var(--current-border);
+    color: var(--current-text);
     border-radius: var(--border-radius, 8px); 
     box-shadow: 0 2px 5px rgba(0,0,0,0.3); 
     padding: 1rem; 
     margin-bottom: 1rem; 
     transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
   }
+
+   body.light-theme .stat-card,
+   body.light-theme .goal-card,
+   body.light-theme .chart-card,
+   body.light-theme .book-card,
+   body.light-theme .insight-card,
+   body.light-theme .goal-progress,
+   body.light-theme .recent-books,
+   body.light-theme .reading-insights,
+   body.light-theme .authors-list-card {
+     background-color: var(--light-card-background); /* Specific light theme override */
+   }
   
   .stat-card:hover, 
   .goal-card:hover, 
