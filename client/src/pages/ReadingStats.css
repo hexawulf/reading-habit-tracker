@@ -1,17 +1,25 @@
+/* client/src/pages/ReadingStats.css */
+
+/* Dark Theme Defaults */
 .reading-stats-page {
   padding: 2rem;
+  background-color: #2d3748 !important;
+  color: #f7fafc !important;
+  min-height: 100vh; /* Ensure full page background */
 }
 
 .reading-stats-page h2 {
   font-size: 2rem;
   font-weight: 600;
   margin-bottom: 2rem;
+  color: #f7fafc !important; /* Dark theme adjustment */
 }
 
 .reading-stats-page h3 {
   font-size: 1.25rem;
   font-weight: 500;
   margin-bottom: 1rem;
+  color: #f7fafc !important; /* Dark theme adjustment */
 }
 
 .stats-overview {
@@ -22,10 +30,12 @@
 }
 
 .stat-card {
-  background: white;
+  background-color: #2d3748 !important;
+  color: #f7fafc !important;
+  border: 1px solid #4a5568 !important;
   border-radius: 0.75rem;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); /* Adjusted shadow for dark theme */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -33,13 +43,14 @@
 
 .card-title {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: #a0aec0 !important; /* Lighter text for card titles */
 }
 
 .card-value {
   font-size: 1.5rem;
   font-weight: 600;
   margin-top: 0.5rem;
+  color: #f7fafc !important; /* Ensure value is bright */
 }
 
 .charts-grid {
@@ -50,11 +61,25 @@
 }
 
 .chart-container {
-  background: white;
+  background-color: #2d3748 !important;
+  color: #f7fafc !important;
+  border: 1px solid #4a5568 !important;
   border-radius: 0.75rem;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); /* Adjusted shadow for dark theme */
 }
+
+/* Assuming chart content (text, labels) might need explicit color if not inheriting properly */
+.chart-container text, .chart-container .recharts-text { /* Example for Recharts */
+  fill: #f7fafc !important;
+}
+.chart-container .recharts-legend-item text {
+  color: #f7fafc !important;
+}
+.chart-container .recharts-cartesian-axis-tick-value {
+   fill: #a0aec0 !important; /* Axis tick labels */
+}
+
 
 .book-highlights {
   display: grid;
@@ -65,17 +90,21 @@
 .book-highlight {
   padding: 1.5rem;
   border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); /* Adjusted shadow for dark theme */
+  border: 1px solid #4a5568 !important; /* Added border for consistency */
 }
 
+/* Specific highlight themes - Adjusting for dark mode */
 .highlight-purple {
-  background: #f3e8ff;
-  color: #6b21a8;
+  background: #4a356c !important; /* Darker purple background */
+  color: #e9d8fd !important; /* Lighter purple text */
+  border-color: #5f4385 !important; /* Slightly different border */
 }
 
 .highlight-pink {
-  background: #fce7f3;
-  color: #be185d;
+  background: #701a45 !important; /* Darker pink background */
+  color: #fbcfe8 !important; /* Lighter pink text */
+  border-color: #832551 !important; /* Slightly different border */
 }
 
 .book-title {
@@ -84,12 +113,84 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #f7fafc !important; /* Ensure title is bright */
 }
 
 .book-details {
   font-size: 0.875rem;
   opacity: 0.8;
+  color: #a0aec0 !important; /* Lighter details text */
 }
+
+/* Light Theme Overrides */
+body.light-theme .reading-stats-page {
+  background-color: #F8F9FA !important;
+  color: #212529 !important;
+}
+
+body.light-theme .reading-stats-page h2,
+body.light-theme .reading-stats-page h3 {
+  color: #212529 !important;
+}
+
+body.light-theme .stat-card {
+  background-color: #fff !important; /* Original was white, F8F9FA for page consistency */
+  color: #212529 !important;
+  border: 1px solid #DEE2E6 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Original shadow */
+}
+
+body.light-theme .card-title {
+  color: #6b7280 !important; /* Original color */
+}
+
+body.light-theme .card-value {
+  color: #212529 !important; /* Default text color */
+}
+
+body.light-theme .chart-container {
+  background-color: #fff !important; /* Original was white, F8F9FA for page consistency */
+  color: #212529 !important;
+  border: 1px solid #DEE2E6 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Original shadow */
+}
+
+body.light-theme .chart-container text, body.light-theme .chart-container .recharts-text {
+  fill: #212529 !important;
+}
+body.light-theme .chart-container .recharts-legend-item text {
+  color: #212529 !important;
+}
+body.light-theme .chart-container .recharts-cartesian-axis-tick-value {
+   fill: #6c757d !important; /* Standard light theme muted text */
+}
+
+body.light-theme .book-highlight {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Original shadow */
+  border: 1px solid #DEE2E6 !important; /* Light theme border */
+}
+
+body.light-theme .highlight-purple {
+  background: #f3e8ff !important; /* Original */
+  color: #6b21a8 !important; /* Original */
+  border-color: #DEE2E6 !important;
+}
+
+body.light-theme .highlight-pink {
+  background: #fce7f3 !important; /* Original */
+  color: #be185d !important; /* Original */
+  border-color: #DEE2E6 !important;
+}
+
+body.light-theme .book-title {
+  color: #212529 !important; /* Default text color */
+}
+
+body.light-theme .book-details {
+  color: #495057 !important; /* Standard light theme text */
+  opacity: 0.8;
+}
+
 
 @media (max-width: 640px) {
   .reading-stats-page {

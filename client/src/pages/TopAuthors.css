@@ -1,13 +1,15 @@
 /* client/src/pages/TopAuthors.css */
 .top-authors-page {
   padding: 1rem; /* Consistent with other page paddings */
-  color: var(--night-owl-text);
+  color: #f7fafc !important; /* var(--night-owl-text) */
+  background-color: #2d3748 !important; /* Assuming page background needs to be dark */
+  min-height: 100vh; /* Ensure full page background */
 }
 
 .top-authors-page h1 {
   /* font-size: var(--h1-font-size); /* Inherits from index.css */
   margin-bottom: 1.5rem;
-  color: var(--night-owl-text);
+  color: #f7fafc !important; /* var(--night-owl-text) */
 }
 
 .top-authors-scroller {
@@ -15,8 +17,6 @@
   overflow-x: auto; /* Enable horizontal scrolling */
   padding-bottom: 1rem; /* Space for scrollbar if it appears */
   gap: 1rem; /* Space between cards */
-  /* Optional: Add scroll-snap for a smoother experience, but can be tricky */
-  /* scroll-snap-type: x mandatory; */
 }
 
 /* Hide scrollbar for a cleaner look, but ensure usability (can still scroll with mouse/touch) */
@@ -24,64 +24,60 @@
   height: 8px;
 }
 .top-authors-scroller::-webkit-scrollbar-thumb {
-  background: var(--night-owl-border);
+  background: #4a5568 !important; /* var(--night-owl-border) */
   border-radius: 4px;
 }
 .top-authors-scroller::-webkit-scrollbar-thumb:hover {
-  background: var(--night-owl-accent1);
+  background: #7e57c2 !important; /* var(--night-owl-accent1) */
 }
 
-
 .author-card-item {
-  background-color: var(--night-owl-card-background);
-  border: 1px solid var(--night-owl-border);
-  border-radius: var(--border-radius, 8px);
-  box-shadow: var(--card-shadow, 0 2px 5px rgba(0,0,0,0.3));
-  padding: 1.2rem 1rem; /* Adjusted padding */
-  min-width: 220px; /* Minimum width for each card */
-  max-width: 250px; /* Maximum width for each card */
+  background-color: #2d3748 !important; /* var(--night-owl-card-background) */
+  border: 1px solid #4a5568 !important; /* var(--night-owl-border) */
+  border-radius: var(--border-radius, 8px); /* Assuming var(--border-radius) is fine */
+  box-shadow: var(--card-shadow, 0 2px 5px rgba(0,0,0,0.3)); /* Assuming var(--card-shadow) is fine */
+  padding: 1.2rem 1rem;
+  min-width: 220px;
+  max-width: 250px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  text-decoration: none; /* Remove underline from Link component */
-  color: var(--night-owl-text);
+  text-decoration: none;
+  color: #f7fafc !important; /* var(--night-owl-text) */
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  /* scroll-snap-align: start; /* For scroll-snap */
 }
 
 .author-card-item:hover {
   transform: translateY(-4px);
-  box-shadow: var(--hover-shadow, 0 4px 10px rgba(0,0,0,0.4));
+  box-shadow: var(--hover-shadow, 0 4px 10px rgba(0,0,0,0.4)); /* Assuming var(--hover-shadow) is fine */
 }
 
 .author-avatar-placeholder {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background-color: var(--night-owl-accent2); /* Use an accent color */
-  color: var(--night-owl-background); /* Text color for initials */
+  background-color: #82aaff !important; /* var(--night-owl-accent2) */
+  color: #1a202c !important; /* var(--night-owl-background) for contrast text */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem; /* Size for initials */
+  font-size: 2rem;
   font-weight: 600;
   margin-bottom: 0.8rem;
-  overflow: hidden; /* In case an actual image is used later */
+  overflow: hidden;
 }
-.author-avatar-placeholder svg { /* If using react-icons as placeholder */
+.author-avatar-placeholder svg {
   width: 50px;
   height: 50px;
 }
 
-
-.author-card-item .author-name { /* Targeting h3 within the card */
-  font-size: 1.1rem; /* Adjusted for Fira Code */
+.author-card-item .author-name {
+  font-size: 1.1rem;
   font-weight: 600;
   margin-top: 0;
   margin-bottom: 0.4rem;
-  color: var(--night-owl-text);
-  /* Ellipsis for long names if needed */
+  color: #f7fafc !important; /* var(--night-owl-text) */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -89,51 +85,88 @@
 }
 
 .author-info {
-  font-size: 0.85rem; /* Adjusted */
-  color: var(--night-owl-text); /* Softer text */
+  font-size: 0.85rem;
+  color: #a0aec0 !important; /* Adjusted for less emphasis from var(--night-owl-text) */
   margin-bottom: 0.3rem;
 }
 
 .author-rating {
-  font-size: 0.9rem; /* Adjusted */
-  color: var(--night-owl-accent1); /* Use accent for rating */
+  font-size: 0.9rem;
+  color: #7e57c2 !important; /* var(--night-owl-accent1) */
   font-weight: 500;
 }
 .author-rating span { /* If stars are used as spans */
-    color: #FFC107; /* Keep yellow for stars */
+    color: #FFC107 !important; /* Keep yellow for stars */
 }
 
-.no-data-message { /* Inherits from App.css, can add specific styles here */
+.no-data-message { /* Assuming global styling or if specific: */
   /* text-align: center; */
-  /* padding: 2rem; */
-  /* color: var(--night-owl-text); */
-  /* background-color: var(--night-owl-card-background); */
-  /* border-radius: var(--border-radius); */
+  padding: 2rem; /* Example */
+  color: #f7fafc !important; /* var(--night-owl-text) */
+  background-color: #2d3748 !important; /* var(--night-owl-card-background) */
+  border-radius: var(--border-radius, 8px); /* Example */
   /* margin: 2rem auto; */
   /* max-width: 500px; */
 }
 
-/* Remove old grid styles if they are no longer used */
-.authors-grid, 
-.author-card, 
-.author-count,
-.authors-list-container,
-.author-details,
-.author-stats,
-.stat-item,
-.stat-label,
-.author-charts,
-.author-books,
-.book-card, /* If this is old and not the dashboard book-card */
-.no-selection,
-.placeholder-message {
-  /* display: none; */ /* Or completely remove these rules */
+/* Light Theme Overrides */
+body.light-theme .top-authors-page {
+  color: #212529 !important;
+  background-color: #F8F9FA !important;
 }
+
+body.light-theme .top-authors-page h1 {
+  color: #212529 !important;
+}
+
+body.light-theme .top-authors-scroller::-webkit-scrollbar-thumb {
+  background: #DEE2E6 !important;
+}
+body.light-theme .top-authors-scroller::-webkit-scrollbar-thumb:hover {
+  background: #5e35b1 !important; /* Light theme accent1 */
+}
+
+body.light-theme .author-card-item {
+  background-color: #fff !important; /* Cards usually white in light theme */
+  border-color: #DEE2E6 !important;
+  color: #212529 !important;
+  /* box-shadow: standard light theme shadow if var(--card-shadow) was dark-specific */
+}
+
+body.light-theme .author-card-item:hover {
+  /* box-shadow: standard light theme hover shadow if var(--hover-shadow) was dark-specific */
+}
+
+body.light-theme .author-avatar-placeholder {
+  background-color: #007bff !important; /* Light theme accent2 (e.g., primary blue) */
+  color: #fff !important; /* White text for contrast */
+}
+
+body.light-theme .author-card-item .author-name {
+  color: #212529 !important;
+}
+
+body.light-theme .author-info {
+  color: #495057 !important; /* Standard light theme secondary text */
+}
+
+body.light-theme .author-rating {
+  color: #5e35b1 !important; /* Light theme accent1 */
+}
+body.light-theme .author-rating span {
+    color: #FFC107 !important; /* Gold/Yellow is often fine for both themes */
+}
+
+body.light-theme .no-data-message {
+  color: #212529 !important;
+  background-color: #fff !important;
+  border-color: #DEE2E6 !important; /* If it has a border */
+}
+
 
 /* Responsive adjustments for the scroller */
 @media (max-width: 768px) {
   .top-authors-scroller {
-    /* On smaller screens, cards might be slightly smaller or padding adjusted */
     gap: 0.75rem;
   }
   .author-card-item {
@@ -156,7 +189,7 @@
 
 @media (max-width: 480px) {
   .top-authors-scroller {
-    padding-bottom: 0.5rem; /* Less padding for smaller scrollbar */
+    padding-bottom: 0.5rem;
   }
   .author-card-item {
     min-width: 150px;

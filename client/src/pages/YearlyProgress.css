@@ -1,7 +1,7 @@
 /* client/src/pages/YearlyProgress.css */
 .yearly-progress-page {
   padding: 1rem; /* Consistent padding */
-  color: var(--night-owl-text);
+  color: #f7fafc !important; /* var(--night-owl-text) */
 }
 
 .yearly-progress-page h1 {
@@ -15,118 +15,158 @@
   margin-bottom: 1rem;
 }
 
-/* .stats-overview and .stat-card will mostly inherit from App.css. 
-   Specific styles for this page's stat cards can go here. */
 .yearly-progress-page .stats-overview {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Slightly smaller min for denser layout */
-  gap: 0.75rem; /* Reduced gap */
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
 }
 
-.yearly-progress-page .stat-card h3 {
-  font-size: 0.9rem; /* Consistent with Dashboard stat cards */
+.yearly-progress-page .stat-card h3 { /* Assuming .stat-card itself is globally themed */
+  font-size: 0.9rem;
 }
-.yearly-progress-page .stat-value {
-  font-size: 1.8rem; /* Consistent with Dashboard stat values */
+.yearly-progress-page .stat-value { /* Assuming .stat-card itself is globally themed */
+  font-size: 1.8rem;
 }
-.yearly-progress-page .stat-subtitle { /* For year under best/worst year */
+.yearly-progress-page .stat-subtitle {
   font-size: 0.85rem;
-  color: var(--night-owl-text);
+  color: #f7fafc !important; /* var(--night-owl-text) */
   opacity: 0.8;
   margin-top: 0.1rem;
 }
 
-
-/* .progress-container, .progress-bar, .progress-fill, .progress-text 
-   will inherit from App.css. */
-
-.charts-container { /* This is a generic class, ensure styles here are specific or additive */
+.charts-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Adjusted minmax */
-  gap: 1rem; /* Consistent gap */
-  margin-bottom: 1.5rem;
-}
-
-/* .chart-card is styled globally. Specific h3 inside it can be styled here if needed */
-.yearly-progress-page .chart-card h3 {
-  /* font-size: var(--h3-font-size); /* Inherits or use specific size */
-  margin-bottom: 1rem; /* Consistent margin */
-}
-
-.years-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Adjusted minmax */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
-.year-card { /* Uses .chart-card styling from App.css if class is added, or define here */
-  background-color: var(--night-owl-card-background);
-  border-radius: var(--border-radius, 8px);
-  border: 1px solid var(--night-owl-border);
-  box-shadow: var(--card-shadow);
-  overflow: hidden; /* To contain the header */
+.yearly-progress-page .chart-card h3 { /* Assuming .chart-card is globally themed */
+  margin-bottom: 1rem;
+}
+
+.years-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.year-card {
+  background-color: #2d3748 !important; /* var(--night-owl-card-background) */
+  border-radius: var(--border-radius, 8px); /* Assuming var(--border-radius) is fine */
+  border: 1px solid #4a5568 !important; /* var(--night-owl-border) */
+  box-shadow: var(--card-shadow); /* Assuming var(--card-shadow) is fine or globally handled */
+  overflow: hidden;
 }
 
 .year-header {
-  padding: 0.8rem 1rem; /* Adjusted padding */
-  background-color: var(--night-owl-accent1); /* Themed header */
-  color: var(--night-owl-background); /* Contrast text */
+  padding: 0.8rem 1rem;
+  background-color: #7e57c2 !important; /* var(--night-owl-accent1) */
+  color: #1a202c !important; /* var(--night-owl-background) for contrast text */
   text-align: center;
 }
 
 .year-header h3 {
   margin: 0;
-  font-size: 1.2rem; /* Adjusted size */
-  font-weight: 600; /* Adjusted weight */
-  color: var(--night-owl-background); /* Ensure color override if global h3 is different */
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1a202c !important; /* var(--night-owl-background) for contrast text */
 }
 
 .year-book-count {
-  font-size: 0.85rem; /* Adjusted size */
+  font-size: 0.85rem;
   opacity: 0.9;
-  color: var(--night-owl-background);
+  color: #1a202c !important; /* var(--night-owl-background) for contrast text */
 }
 
 .year-stats {
   padding: 1rem;
 }
 
-.year-stats p { /* Changed from .year-stat to p for easier styling */
-  margin-bottom: 0.4rem; /* Adjusted spacing */
-  font-size: 0.85rem; /* Base size for stat lines */
-  color: var(--night-owl-text);
+.year-stats p {
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+  color: #f7fafc !important; /* var(--night-owl-text) */
   display: flex;
   justify-content: space-between;
 }
 .year-stats p:last-child { margin-bottom: 0; }
 
-.year-stats span { /* The actual value part of the stat line */
+.year-stats span {
   font-weight: 600;
-  color: var(--night-owl-accent2); /* Accent for values */
+  color: #82aaff !important; /* var(--night-owl-accent2) */
 }
-.year-stats .rating-stars { /* Ensure stars are styled if used here */
-  font-size: 0.85rem; /* Match text size */
+.year-stats .rating-stars { /* Assuming this is a specific class for star icons */
+  font-size: 0.85rem;
   margin-left: 0.3rem;
-  color: #FFC107;
+  color: #FFC107 !important; /* Standard yellow for stars, assuming it works on dark bg */
 }
 
-
-.goal-history-container { /* This can use .chart-card styling */
-  /* background-color: var(--night-owl-card-background); */
-  /* border-radius: var(--border-radius, 8px); */
-  /* padding: 1.5rem; */
-  /* box-shadow: var(--card-shadow); */
-  /* border: 1px solid var(--night-owl-border); */
+.goal-history-container { /* If this uses .chart-card, it's globally themed. Otherwise: */
+  /* background-color: #2d3748 !important; */
+  /* border: 1px solid #4a5568 !important; */
+  /* color: #f7fafc !important; */
 }
 
 .no-goal-history {
   text-align: center;
   padding: 1.5rem;
-  color: var(--night-owl-text);
+  color: #f7fafc !important; /* var(--night-owl-text) */
   font-size: 0.9rem;
 }
 .no-goal-history p {
   margin-bottom: 0.5rem;
+}
+
+/* Light Theme Overrides */
+body.light-theme .yearly-progress-page {
+  color: #212529 !important;
+}
+
+body.light-theme .yearly-progress-page .stat-subtitle {
+  color: #495057 !important; /* Light theme text */
+  opacity: 0.8;
+}
+
+body.light-theme .year-card {
+  background-color: #F8F9FA !important;
+  border-color: #DEE2E6 !important;
+  /* box-shadow: original var(--card-shadow) if different for light */
+}
+
+body.light-theme .year-header {
+  background-color: #5e35b1 !important; /* Light theme accent1 */
+  color: #fff !important; /* White text for contrast */
+}
+
+body.light-theme .year-header h3 {
+  color: #fff !important; /* White text for contrast */
+}
+
+body.light-theme .year-book-count {
+  color: #e0e0e0 !important; /* Lighter text on accent1 for light theme */
+  opacity: 0.9;
+}
+
+body.light-theme .year-stats p {
+  color: #212529 !important;
+}
+
+body.light-theme .year-stats span {
+  color: #007bff !important; /* Standard light theme accent (e.g., primary blue) */
+}
+body.light-theme .year-stats .rating-stars {
+  color: #FFC107 !important; /* Gold/Yellow is often fine for both themes */
+}
+
+body.light-theme .goal-history-container {
+  /* background-color: #F8F9FA !important; */
+  /* border-color: #DEE2E6 !important; */
+  /* color: #212529 !important; */
+}
+
+body.light-theme .no-goal-history {
+  color: #212529 !important;
 }
 
 
