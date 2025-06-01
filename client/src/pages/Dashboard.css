@@ -20,7 +20,7 @@
   
   /* Generic card styling - applied to all card-like elements */
   /* Font sizes within these cards will be checked */
-  .stat-card, 
+  /* Modified multi-class selector ( .stat-card removed ) */
   .goal-card, 
   .chart-card, 
   .book-card, 
@@ -29,7 +29,7 @@
   .recent-books,
   .reading-insights,
   .authors-list-card { 
-     background-color: var(--night-owl-card-background); /* Changed to direct dark theme variable */
+    background-color: #2d3748;
     border: 1px solid var(--current-border);
     color: var(--current-text);
     border-radius: var(--border-radius, 8px); 
@@ -39,17 +39,29 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
   }
 
-   body.light-theme .stat-card,
-   body.light-theme .goal-card,
-   body.light-theme .chart-card,
-   body.light-theme .book-card,
-   body.light-theme .insight-card,
-   body.light-theme .goal-progress,
-   body.light-theme .recent-books,
-   body.light-theme .reading-insights,
-   body.light-theme .authors-list-card {
-     background-color: var(--light-card-background); /* Specific light theme override */
-   }
+  /* Modified light theme multi-class selector ( .stat-card removed ) */
+  body.light-theme .goal-card,
+  body.light-theme .chart-card,
+  body.light-theme .book-card,
+  body.light-theme .insight-card,
+  body.light-theme .goal-progress,
+  body.light-theme .recent-books,
+  body.light-theme .reading-insights,
+  body.light-theme .authors-list-card {
+    background-color: #F8F9FA;
+  }
+
+  /* New rule for .stat-card specific layout properties */
+  .stat-card {
+    border-radius: var(--border-radius, 8px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    text-align: center; /* From existing .stat-card rule */
+    /* Ensure transition does not include background-color, color, or border */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  /* No specific body.light-theme .stat-card needed here if only layout styles */
   
   .stat-card:hover, 
   .goal-card:hover, 
@@ -62,23 +74,24 @@
   
   /* Section for grouping related stats - can be a new div in JSX */
   .stats-group-container {
-    background-color: var(--current-card-background); /* FIXED */
+    /* background-color: #2d3748; */ /* Handled by inline styles */
     border-radius: var(--border-radius, 8px);
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     padding: 1rem;
     margin-bottom: 1rem;
-    border: 1px solid var(--current-border); /* FIXED */
-    transition: background-color 0.3s ease, border-color 0.3s ease; /* Added theme transitions */
+    /* border: 1px solid var(--current-border); */ /* Handled by inline styles */
+    /* transition: background-color 0.3s ease, border-color 0.3s ease; */ /* Comment out transition for these properties */
+    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Keep other transitions if any were part of a combined property */
+  }
+
+  body.light-theme .stats-group-container {
+    /* background-color: #F8F9FA; */ /* Handled by inline styles */
   }
   
   .stats-overview {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
     gap: 0.75rem; 
-  }
-  
-  .stat-card {
-    text-align: center;
   }
   
   .stat-card h3 { /* Uses var(--h3-font-size) from index.css or component-specific */

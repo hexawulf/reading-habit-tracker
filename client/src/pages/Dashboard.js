@@ -13,12 +13,78 @@ const NIGHT_OWL_ACCENT_1 = "#7e57c2"; // Purple
 const NIGHT_OWL_ACCENT_2 = "#82aaff"; // Blue
 
 // FIXED: Function to get CSS variable values at runtime
+// This function might become less relevant for card styles if hardcoded in JS,
+// but retained for other dynamic styles like chart elements.
 const getCSSVariable = (variableName) => {
   return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
 };
 
+// Theme style objects
+const darkThemeStyles = {
+  backgroundColor: '#2d3748', // --night-owl-card-background
+  color: '#f7fafc',           // --night-owl-text
+  border: '1px solid #4a5568' // --night-owl-border
+};
+
+const lightThemeStyles = {
+  backgroundColor: '#F8F9FA', // --light-card-background
+  color: '#212529',           // --light-text
+  border: '1px solid #DEE2E6' // --light-border
+};
+
 const Dashboard = () => {
   const { stats, readingData, loading, error, goalProgress } = useReadingData();
+
+  // Function to determine active theme styles
+  const getActiveThemeStyles = () => {
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    const isLight = document.body.classList.contains('light-theme');
+
+    // Prioritize body class if it's set and potentially out of sync with localStorage
+    // This can happen if Header.js changes class but localStorage update hasn't propagated or isn't used by Header.js
+    if (isLight) {
+        // If body is light, always use light theme styles
+        return lightThemeStyles;
+    } else {
+        // If body is not light (i.e., dark), or no theme class is set, use dark theme styles
+        // This also covers the initial state where localStorage might be 'light' but body class isn't updated yet.
+        // However, the MutationObserver should quickly sync this.
+        return darkThemeStyles;
+    }
+    // Fallback based on localStorage if body class logic isn't definitive (e.g. initial render before observer)
+    // This part of logic might be redundant if observer works quickly.
+    // return (currentTheme === 'light') ? lightThemeStyles : darkThemeStyles;
+  };
+
+  const [cardStyles, setCardStyles] = React.useState(getActiveThemeStyles());
+
+  React.useEffect(() => {
+    const updateStyles = () => {
+      setCardStyles(getActiveThemeStyles());
+    };
+
+    // Initial set
+    updateStyles();
+
+    // Listen for localStorage changes (e.g., from other tabs)
+    window.addEventListener('storage', updateStyles);
+
+    // Observe body class changes (e.g., from Header component in the same window)
+    const observer = new MutationObserver((mutationsList) => {
+      for (let mutation of mutationsList) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          updateStyles();
+          break;
+        }
+      }
+    });
+    observer.observe(document.body, { attributes: true });
+
+    return () => {
+      window.removeEventListener('storage', updateStyles);
+      observer.disconnect();
+    };
+  }, []); // Empty dependency array: runs once on mount, cleans up on unmount
   
   if (loading) {
     return (
@@ -108,18 +174,18 @@ const Dashboard = () => {
       <h1>Reading Dashboard</h1>
       
       {/* Grouping Key Statistics */}
-      <div className="stats-group-container">
+      <div className="stats-group-container" style={cardStyles}>
         <h2>Key Statistics</h2>
         <div className="stats-overview">
-          <div className="stat-card books-read">
+          <div className="stat-card books-read" style={cardStyles}>
             <h3>Total Books</h3>
             <div className="stat-value">{stats.totalBooks || 0}</div>
           </div>
-          <div className="stat-card this-year">
+          <div className="stat-card this-year" style={cardStyles}>
             <h3>Read in {currentYear}</h3>
             <div className="stat-value">{stats.readingByYear[currentYear] || 0}</div>
           </div>
-          <div className="stat-card rating">
+          <div className="stat-card rating" style={cardStyles}>
             <h3>Average Rating</h3>
             <div className="stat-value">{(stats.averageRating || 0).toFixed(1)}</div>
             <div className="rating-stars">
@@ -127,17 +193,17 @@ const Dashboard = () => {
               {'☆'.repeat(5 - Math.round(stats.averageRating || 0))}
             </div>
           </div>
-          <div className="stat-card reading-pace">
+          <div className="stat-card reading-pace" style={cardStyles}>
             <h3>Books/Month</h3>
             <div className="stat-value">
               {stats.readingPace.booksPerMonth.toFixed(1)}
             </div>
           </div>
-           <div className="stat-card">
+           <div className="stat-card" style={cardStyles}>
             <h3>Pages/Day</h3>
             <div className="stat-value">{stats.readingPace.pagesPerDay.toFixed(1)}</div>
           </div>
-          <div className="stat-card">
+          <div className="stat-card" style={cardStyles}>
             <h3>Avg. Length</h3>
             <div className="stat-value">{Math.round(stats.pageStats.averageLength)}</div>
           </div>
