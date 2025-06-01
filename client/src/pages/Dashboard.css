@@ -3,7 +3,7 @@
 
 .dashboard {
     padding: 1rem; 
-    color: hsl(var(--card-foreground)); /* Themed */
+    color: var(--current-text); /* FIXED */
   }
   
   .dashboard h1 { /* Uses var(--h1-font-size) from index.css by default */
@@ -29,9 +29,9 @@
   .recent-books,
   .reading-insights,
   .authors-list-card { 
-    background-color: hsl(var(--card)); /* CORRECT */
-    border: 1px solid hsl(var(--border)); /* CORRECT */
-    color: hsl(var(--card-foreground)); /* CORRECT */
+    background-color: var(--current-card-background); /* FIXED */
+    border: 1px solid var(--current-border); /* FIXED */
+    color: var(--current-text); /* FIXED */
     border-radius: var(--border-radius, 8px); 
     box-shadow: 0 2px 5px rgba(0,0,0,0.3); 
     padding: 1rem; 
@@ -50,12 +50,12 @@
   
   /* Section for grouping related stats - can be a new div in JSX */
   .stats-group-container {
-    background-color: hsl(var(--card)); /* Themed */
+    background-color: var(--current-card-background); /* FIXED */
     border-radius: var(--border-radius, 8px);
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     padding: 1rem;
     margin-bottom: 1rem;
-    border: 1px solid hsl(var(--border)); /* Themed */
+    border: 1px solid var(--current-border); /* FIXED */
     transition: background-color 0.3s ease, border-color 0.3s ease; /* Added theme transitions */
   }
   
@@ -72,7 +72,7 @@
   .stat-card h3 { /* Uses var(--h3-font-size) from index.css or component-specific */
     margin-top: 0;
     margin-bottom: 0.25rem; 
-    color: hsl(var(--card-foreground));  /* Themed */
+    color: var(--current-text); /* FIXED */
     font-size: 0.9rem; /* Kept from previous densification, smaller than base h3 */
     font-weight: 500;
   }
@@ -80,7 +80,7 @@
   .stat-value { /* This is already in App.css, ensure consistency or override */
     font-size: 2rem; /* Kept from previous densification */
     font-weight: 700;
-  color: hsl(var(--card-foreground));
+    color: var(--current-text); /* FIXED */
     margin-bottom: 0.1rem; 
   }
   
@@ -116,13 +116,13 @@
   .goal-card h3 { /* Uses var(--h3-font-size) from index.css or component-specific */
     margin-top: 0;
     margin-bottom: 0.25rem;
-    color: hsl(var(--card-foreground)); /* Themed */
+    color: var(--current-text); /* FIXED */
     font-size: 1rem; /* Kept from previous densification */
   }
   
   .progress-bar { /* This is in App.css, check if override is needed */
     height: 10px; 
-    background-color: hsl(var(--border)); /* Themed */
+    background-color: var(--current-border); /* FIXED */
     border-radius: 5px;
     overflow: hidden;
     margin-bottom: 0.25rem;
@@ -136,7 +136,7 @@
   
   .progress-text { /* This is in App.css */
     font-size: 0.8rem; 
-    color: hsl(var(--card-foreground));  /* Themed */
+    color: var(--current-text); /* FIXED */
   }
   
   .set-goals-link, .see-more-link { /* These are <a> tags, will inherit from App.css <a> styles */
@@ -165,7 +165,7 @@
   .chart-card h3 { /* Uses var(--h3-font-size) from index.css or component-specific */
     margin-top: 0;
     margin-bottom: 1rem; 
-    color: hsl(var(--card-foreground)); /* Themed */
+    color: var(--current-text); /* FIXED */
     font-size: 1.1rem; /* Kept from previous densification */
     font-weight: 600;
     text-align: center;
@@ -175,11 +175,11 @@
   /* Ensure font-family is inherited or explicitly set if Recharts overrides it */
   .recharts-text, .recharts-legend-item-text, .recharts-tooltip-label, .recharts-tooltip-item {
     font-family: var(--font-base) !important; /* Explicitly set Fira Code */
-    fill: hsl(var(--card-foreground)) !important; /* Themed */
+    fill: var(--current-text) !important; /* FIXED */
     font-size: 0.8rem; /* Slightly smaller for chart elements */
   }
   .recharts-cartesian-axis-line, .recharts-cartesian-grid-line {
-    stroke: hsl(var(--border)) !important; /* Themed */
+    stroke: var(--current-border) !important; /* FIXED */
   }
   
   .top-authors {
@@ -195,7 +195,7 @@
   .author-name {
     display: block;
     font-weight: 600;
-    color: hsl(var(--card-foreground)); /* Themed */
+    color: var(--current-text); /* FIXED */
     margin-bottom: 0.1rem;
     font-size: 0.9rem; /* Kept from previous densification */
   }
@@ -203,13 +203,13 @@
   .author-count {
     display: block;
     font-size: 0.8rem; /* Kept */
-    color: hsl(var(--card-foreground));  /* Themed */
+    color: var(--current-text); /* FIXED */
     margin-bottom: 0.1rem;
   }
   
   .author-bar { /* This is in App.css, check if override is needed */
     height: 6px; 
-    background-color: hsl(var(--border)); /* Themed */
+    background-color: var(--current-border); /* FIXED */
     border-radius: 3px;
     overflow: hidden;
   }
@@ -243,7 +243,7 @@
   .book-title { /* Uses var(--h3-font-size) from index.css or component-specific */
     margin-top: 0;
     margin-bottom: 0.25rem;
-    color: hsl(var(--card-foreground)); /* Themed */
+    color: var(--current-text); /* FIXED */
     font-size: 0.95rem; /* Slightly adjusted for Fira Code */
     font-weight: 600;
     line-height: 1.25; /* Adjusted for Fira Code */
@@ -256,7 +256,7 @@
   .book-author {
     margin-top: 0;
     margin-bottom: 0.25rem;
-    color: hsl(var(--card-foreground));  /* Themed */
+    color: var(--current-text); /* FIXED */
     font-size: 0.75rem; /* Adjusted for Fira Code */
     font-style: italic; /* Keep italic if desired, Fira Code supports it */
   }
@@ -269,7 +269,7 @@
   
   .book-date, .book-pages {
     margin: 0;
-    color: hsl(var(--card-foreground));  /* Themed */
+    color: var(--current-text); /* FIXED */
     font-size: 0.7rem; /* Adjusted for Fira Code */
   }
   
@@ -306,14 +306,14 @@
   .insight-card h3 { /* Uses var(--h3-font-size) from index.css or component-specific */
     margin-top: 0;
     margin-bottom: 0.25rem;
-    color: hsl(var(--card-foreground)); /* Themed */
+    color: var(--current-text); /* FIXED */
     font-size: 0.95rem; /* Adjusted for Fira Code */
     font-weight: 600;
   }
   
   .insight-card p {
     margin: 0;
-    color: hsl(var(--card-foreground));  /* Themed */
+    color: var(--current-text); /* FIXED */
     font-size: 0.8rem; /* Adjusted for Fira Code */
   }
   
