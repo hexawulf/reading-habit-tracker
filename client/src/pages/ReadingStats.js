@@ -61,8 +61,8 @@ export default function ReadingStats() {
 
       <div className="stats-overview"> {/* These should use the .stat-card styles from App.css now */}
         <Card title="Avg Books / Year" value={pace.booksPerYear.toFixed(1)} />
-        <Card title="Avg Books / Month" value={pace.booksPerMonth.toFixed(1)} />
-        <Card title="Avg Pages / Day" value={pace.pagesPerDay.toFixed(1)} />
+        <Card title="Current Year Pace (Books/Month)" value={pace.booksPerMonth.toFixed(1)} />
+        <Card title="Recent Pace (Pages/Day)" value={pace.pagesPerDay.toFixed(1)} />
         <Card title="Avg Book Length" value={pageStatsData.averageLength.toFixed(0) + 'p'} />
       </div>
 
