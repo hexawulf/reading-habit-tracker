@@ -29,7 +29,7 @@
   .recent-books,
   .reading-insights,
   .authors-list-card { 
-     background-color: var(--night-owl-card-background); /* Changed to direct dark theme variable */
+     background-color: #2d3748; /* Removed !important */
     border: 1px solid var(--current-border);
     color: var(--current-text);
     border-radius: var(--border-radius, 8px); 
@@ -48,7 +48,7 @@
    body.light-theme .recent-books,
    body.light-theme .reading-insights,
    body.light-theme .authors-list-card {
-     background-color: var(--light-card-background); /* Specific light theme override */
+     background-color: #F8F9FA; /* Removed !important */
    }
   
   .stat-card:hover, 
@@ -62,13 +62,17 @@
   
   /* Section for grouping related stats - can be a new div in JSX */
   .stats-group-container {
-    background-color: var(--current-card-background); /* FIXED */
+    background-color: #2d3748; /* Hardcoded Night Owl card background */
     border-radius: var(--border-radius, 8px);
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     padding: 1rem;
     margin-bottom: 1rem;
-    border: 1px solid var(--current-border); /* FIXED */
-    transition: background-color 0.3s ease, border-color 0.3s ease; /* Added theme transitions */
+    border: 1px solid var(--current-border);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+
+  body.light-theme .stats-group-container {
+    background-color: #F8F9FA; /* Hardcoded Light card background */
   }
   
   .stats-overview {
