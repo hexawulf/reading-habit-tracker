@@ -3,9 +3,9 @@
 :root {
   /* Night Owl (Dark Theme) Specifics */
   --night-owl-background: #011627;
-  --night-owl-text: #d6deeb;
-  --night-owl-card-background: #0b253a;
-  --night-owl-border: #011220;
+  --night-owl-text: #f7fafc;
+  --night-owl-card-background: #2d3748;
+  --night-owl-border: #4a5568;
   --night-owl-accent1: #7e57c2; /* Purple */
   --night-owl-accent1-rgb: 126, 87, 194;
   --night-owl-accent2: #82aaff; /* Blueish */
