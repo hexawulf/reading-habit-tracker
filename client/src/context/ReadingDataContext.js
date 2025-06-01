@@ -223,6 +223,27 @@ export const ReadingDataProvider = ({ children }) => {
 
     const numBooksWithValidDates = booksWithValidDates.length;
 
+    // New logic for Books/Month
+    const currentYear = new Date().getFullYear();
+    const booksThisYear = booksWithValidDates.filter(book => {
+      const year = new Date(book.dateRead).getFullYear();
+      return year === currentYear;
+    });
+    const monthsElapsedThisYear = new Date().getMonth() + 1; // January is 0, so add 1
+    const booksPerMonthCurrentYear = monthsElapsedThisYear > 0 ? booksThisYear.length / monthsElapsedThisYear : 0;
+
+    // New logic for Pages/Day
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const recentBooks = booksWithValidDates.filter(book => {
+      const readDate = new Date(book.dateRead);
+      return readDate >= thirtyDaysAgo;
+    });
+
+    const recentPages = recentBooks.reduce((sum, book) => sum + (book.pages || 0), 0);
+    const pagesPerDayLast30Days = recentBooks.length > 0 ? recentPages / 30 : 0;
+
     return {
       totalBooks: books.length, // Original total books
       averageRating: numBooksWithValidDates > 0
@@ -240,9 +261,9 @@ export const ReadingDataProvider = ({ children }) => {
           }, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 })
         : { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }, // Default if no books with valid dates
       readingPace: {
-        booksPerMonth: numBooksWithValidDates / totalReadingMonths,
+        booksPerMonth: booksPerMonthCurrentYear, // Updated calculation
         booksPerYear: numBooksWithValidDates, // As per instruction, keep this based on count
-        pagesPerDay: totalPagesWithValidDates / totalReadingDays,
+        pagesPerDay: pagesPerDayLast30Days, // Updated calculation
       },
       pageStats: {
         totalPages: totalPagesWithValidDates,
