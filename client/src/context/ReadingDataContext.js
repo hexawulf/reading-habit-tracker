@@ -73,6 +73,9 @@ export const ReadingDataProvider = ({ children }) => {
   }, []);
 
   const processReadingData = (data) => {
+    console.log("processReadingData called with:", data);
+    console.log("Current readingData state:", readingData);
+    console.log("Data type:", typeof data, "Array?", Array.isArray(data));
     setLoading(true);
     try {
       if (data && data.books && data.stats) {
@@ -88,14 +91,20 @@ export const ReadingDataProvider = ({ children }) => {
         return;
       }
 
-    const calculatedStats = calculateStats(readingData);
-    const calculatedGoalProgress = calculateGoalProgress(readingData);
+    // ✅ FIX: Use the 'data' parameter, not 'readingData' state
+    const booksToProcess = data || readingData;  // Handle both cases
+    const calculatedStats = calculateStats(booksToProcess);
+    const calculatedGoalProgress = calculateGoalProgress(booksToProcess);
 
-    setReadingData(readingData);
+    setReadingData(booksToProcess);
     setStats(calculatedStats);
     setGoalProgress(calculatedGoalProgress);
 
-    storageService.saveData({ readingData, stats: calculatedStats, goalProgress: calculatedGoalProgress });
+    storageService.saveData({
+      readingData: booksToProcess,
+      stats: calculatedStats,
+      goalProgress: calculatedGoalProgress
+    });
     } catch (error) {
       setError(error);
     } finally {
