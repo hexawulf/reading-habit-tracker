@@ -142,15 +142,63 @@ export const ReadingDataProvider = ({ children }) => {
   };
 
   const calculateStats = (books) => {
-    if (!books || !books.length) return stats;
+    // If books is empty or undefined, return the current stats object (which has defaults)
+    if (!books || books.length === 0) {
+      return stats;
+    }
 
-    // Time variables removed as they're not currently used
+    const booksWithValidDates = books.filter(book => book.dateRead && !isNaN(new Date(book.dateRead)));
+    console.log("Total books (original input):", books.length);
+    console.log("Total books (with valid dates):", booksWithValidDates.length);
 
-    // Group books by year and month
+    const booksIn2025 = booksWithValidDates.filter(book => {
+      const year = new Date(book.dateRead).getFullYear();
+      return year === 2025;
+    });
+    console.log("Books read in 2025 (with valid dates):", booksIn2025.length);
+
+    // If no books have valid dates, return existing stats or a default for readingPace
+    if (booksWithValidDates.length === 0) {
+      return {
+        ...stats, // Return existing stats
+        readingPace: { // Ensure readingPace is explicitly zeroed out
+          booksPerMonth: 0,
+          booksPerYear: 0,
+          pagesPerDay: 0
+        }
+      };
+    }
+
+    let earliestDate = new Date(booksWithValidDates[0].dateRead);
+    let latestDate = new Date(booksWithValidDates[0].dateRead);
+
+    booksWithValidDates.forEach(book => {
+      const currentDate = new Date(book.dateRead);
+      if (currentDate < earliestDate) {
+        earliestDate = currentDate;
+      }
+      if (currentDate > latestDate) {
+        latestDate = currentDate;
+      }
+    });
+
+    let totalReadingDays = Math.max(1, Math.ceil((latestDate - earliestDate) / (1000 * 60 * 60 * 24)));
+    if (earliestDate.getTime() === latestDate.getTime()) {
+      totalReadingDays = 1;
+    }
+
+    let totalReadingMonths =
+      (latestDate.getFullYear() - earliestDate.getFullYear()) * 12 +
+      (latestDate.getMonth() - earliestDate.getMonth()) + 1;
+    totalReadingMonths = Math.max(1, totalReadingMonths);
+
+
+    // Group books by year and month using booksWithValidDates
     const readingByYear = {};
     const readingByMonth = {};
+    let totalPagesWithValidDates = 0;
 
-    books.forEach(book => {
+    booksWithValidDates.forEach(book => {
       const year = new Date(book.dateRead).getFullYear().toString();
       const month = new Date(book.dateRead).getMonth();
 
@@ -158,11 +206,12 @@ export const ReadingDataProvider = ({ children }) => {
 
       if (!readingByMonth[year]) readingByMonth[year] = Array(12).fill(0);
       readingByMonth[year][month]++;
+      totalPagesWithValidDates += (book.pages || 0);
     });
 
-    // Calculate top authors
+    // Calculate top authors using booksWithValidDates
     const authorCounts = {};
-    books.forEach(book => {
+    booksWithValidDates.forEach(book => {
       if (book.author) {
         authorCounts[book.author] = (authorCounts[book.author] || 0) + 1;
       }
@@ -172,33 +221,41 @@ export const ReadingDataProvider = ({ children }) => {
       .map(([author, count]) => ({ author, count }))
       .sort((a, b) => b.count - a.count);
 
+    const numBooksWithValidDates = booksWithValidDates.length;
+
     return {
-      totalBooks: books.length,
-      averageRating: books.reduce((sum, book) => sum + (book.myRating || 0), 0) / books.length,
+      totalBooks: books.length, // Original total books
+      averageRating: numBooksWithValidDates > 0
+        ? booksWithValidDates.reduce((sum, book) => sum + (book.myRating || 0), 0) / numBooksWithValidDates
+        : 0,
       readingByYear,
       readingByMonth,
-      ratingDistribution: books.reduce((dist, book) => {
-        const rating = Number(book.myRating);
-        if (rating >= 1 && rating <= 5) {
-          dist[rating] = (dist[rating] || 0) + 1;
-        }
-        return dist;
-      }, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }),
+      ratingDistribution: numBooksWithValidDates > 0
+        ? booksWithValidDates.reduce((dist, book) => {
+            const rating = Number(book.myRating);
+            if (rating >= 1 && rating <= 5) {
+              dist[rating] = (dist[rating] || 0) + 1;
+            }
+            return dist;
+          }, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 })
+        : { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }, // Default if no books with valid dates
       readingPace: {
-        booksPerMonth: books.length / 12,
-        booksPerYear: books.length,
-        pagesPerDay: books.reduce((sum, book) => sum + (book.pages || 0), 0) / 365
+        booksPerMonth: numBooksWithValidDates / totalReadingMonths,
+        booksPerYear: numBooksWithValidDates, // As per instruction, keep this based on count
+        pagesPerDay: totalPagesWithValidDates / totalReadingDays,
       },
       pageStats: {
-        totalPages: books.reduce((sum, book) => sum + (book.pages || 0), 0),
-        averageLength: books.reduce((sum, book) => sum + (book.pages || 0), 0) / books.length,
-        longestBook: books.reduce((longest, book) => 
-          (book.pages > (longest?.pages || 0)) ? book : longest, 
-          { title: '', pages: 0 }
-        )
+        totalPages: totalPagesWithValidDates,
+        averageLength: numBooksWithValidDates > 0 ? totalPagesWithValidDates / numBooksWithValidDates : 0,
+        longestBook: numBooksWithValidDates > 0
+          ? booksWithValidDates.reduce((longest, book) =>
+              (book.pages > (longest?.pages || 0)) ? book : longest,
+              { title: '', pages: 0 }
+            )
+          : { title: '', pages: 0 } // Default if no books with valid dates
       },
       topAuthors,
-      readingByGenre: {}
+      readingByGenre: {} // Assuming this will be populated elsewhere or is fine as default
     };
   };
 
