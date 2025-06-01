@@ -1,7 +1,7 @@
 /* client/src/pages/MonthlyProgress.css */
 .monthly-progress-page {
   padding: 1rem; /* Consistent padding */
-  color: var(--night-owl-text);
+  color: #f7fafc !important; /* var(--night-owl-text) */
 }
 
 .monthly-progress-page h1 {
@@ -20,91 +20,82 @@
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
-  background-color: var(--night-owl-card-background); /* Themed background */
+  background-color: #2d3748 !important; /* var(--night-owl-card-background) */
   padding: 0.75rem;
-  border-radius: var(--border-radius, 8px);
-  border: 1px solid var(--night-owl-border);
+  border-radius: var(--border-radius, 8px); /* Assuming var(--border-radius) is globally defined and fine */
+  border: 1px solid #4a5568 !important; /* var(--night-owl-border) */
   width: fit-content; /* Make it compact */
 }
 
 .year-selector label {
   font-weight: 500; /* Adjusted weight */
-  color: var(--night-owl-text);
+  color: #f7fafc !important; /* var(--night-owl-text) */
   font-size: 0.9rem;
 }
 
 .year-selector select {
   padding: 0.4rem 0.8rem;
-  border: 1px solid var(--night-owl-border);
+  border: 1px solid #4a5568 !important; /* var(--night-owl-border) */
   border-radius: var(--border-radius, 4px);
-  background-color: var(--night-owl-background); /* Input background */
-  color: var(--night-owl-text); /* Input text color */
+  background-color: #1a202c !important; /* var(--night-owl-background) -> darker card for inputs */
+  color: #f7fafc !important; /* var(--night-owl-text) */
   font-family: var(--font-base);
   font-size: 0.9rem;
 }
 .year-selector select:focus {
   outline: none;
-  border-color: var(--night-owl-accent1);
-  box-shadow: 0 0 0 2px rgba(var(--night-owl-accent1-rgb), 0.3);
+  border-color: #7e57c2 !important; /* var(--night-owl-accent1) */
+  box-shadow: 0 0 0 2px #7e57c24D !important; /* rgba(var(--night-owl-accent1-rgb), 0.3) */
 }
 
-
-/* .stats-overview, .stat-card, .progress-container, .progress-bar, .progress-fill, .progress-text
-   will inherit from App.css if classes are consistent.
-   The .chart-card class is also globally defined in App.css (or Dashboard.css).
-   We only need to style elements unique to this page or needing overrides. */
-
-.charts-container { /* This is a generic class, ensure styles here are specific or additive */
+.charts-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Adjusted minmax for denser charts */
-  gap: 1rem; /* Consistent gap */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
-/* .chart-card is styled globally. Specific h3 inside it can be styled here if needed */
 .monthly-progress-page .chart-card h3 {
-  /* font-size: var(--h3-font-size); /* Inherits or use specific size */
-  margin-bottom: 1rem; /* Consistent margin */
+  margin-bottom: 1rem;
 }
-
 
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* More adaptive calendar cells */
-  gap: 0.75rem; /* Reduced gap */
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.75rem;
   margin-bottom: 1.5rem;
 }
 
 .calendar-month {
-  padding: 0.8rem; /* Reduced padding */
-  background-color: var(--night-owl-card-background);
-  border-radius: var(--border-radius, 6px); /* Smaller radius */
-  border: 1px solid var(--night-owl-border);
+  padding: 0.8rem;
+  background-color: #2d3748 !important; /* var(--night-owl-card-background) */
+  border-radius: var(--border-radius, 6px);
+  border: 1px solid #4a5568 !important; /* var(--night-owl-border) */
   position: relative;
   overflow: hidden;
   text-align: center;
-  min-height: 80px; /* Ensure a minimum height */
+  min-height: 80px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
 .calendar-month.has-books {
-  border-left: 3px solid var(--night-owl-accent1); /* Themed border */
+  border-left: 3px solid #7e57c2 !important; /* var(--night-owl-accent1) */
 }
 
 .month-name {
   font-weight: 600;
-  color: var(--night-owl-text);
+  color: #f7fafc !important; /* var(--night-owl-text) */
   margin-bottom: 0.3rem;
-  font-size: 0.85rem; /* Adjusted size */
+  font-size: 0.85rem;
   position: relative;
   z-index: 2;
 }
 
 .month-book-count {
-  font-size: 0.9rem; /* Larger for count */
-  color: var(--night-owl-accent2); /* Accent color for count */
+  font-size: 0.9rem;
+  color: #82aaff !important; /* var(--night-owl-accent2) */
   font-weight: 700;
   position: relative;
   z-index: 2;
@@ -116,17 +107,17 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(var(--night-owl-accent1-rgb), 0.1); /* Themed intensity */
+  background-color: #7e57c21A !important; /* rgba(var(--night-owl-accent1-rgb), 0.1) */
   z-index: 1;
   transition: opacity 0.3s ease;
 }
 
-.monthly-books { /* This can use .chart-card styling if appropriate */
-  background-color: var(--night-owl-card-background);
+.monthly-books {
+  background-color: #2d3748 !important; /* var(--night-owl-card-background) */
   border-radius: var(--border-radius, 8px);
   padding: 1rem;
-  border: 1px solid var(--night-owl-border);
-  box-shadow: var(--card-shadow);
+  border: 1px solid #4a5568 !important; /* var(--night-owl-border) */
+  box-shadow: var(--card-shadow); /* Assuming var(--card-shadow) is theme-agnostic or globally handled */
 }
 .monthly-books h2 {
   margin-top:0;
@@ -134,63 +125,139 @@
 
 .books-list {
   display: grid;
-  gap: 0.75rem; /* Reduced gap */
+  gap: 0.75rem;
 }
 
 .monthly-book-item {
   display: flex;
-  background-color: var(--night-owl-border); /* Slightly different background for items */
+  background-color: #4a5568 !important; /* var(--night-owl-border) -> as a slightly different bg */
   border-radius: var(--border-radius, 6px);
   overflow: hidden;
-  border: 1px solid rgba(var(--night-owl-accent2-rgb), 0.2);
+  border: 1px solid #82aaff33 !important; /* rgba(var(--night-owl-accent2-rgb), 0.2) */
 }
 
 .book-month-tag {
-  min-width: 80px; /* Reduced width */
+  min-width: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--night-owl-accent1);
-  color: var(--night-owl-background); /* Contrast text */
+  background-color: #7e57c2 !important; /* var(--night-owl-accent1) */
+  color: #1a202c !important; /* var(--night-owl-background) -> for contrast text on accent bg */
   font-weight: 600;
-  padding: 0.5rem; /* Reduced padding */
-  font-size: 0.8rem; /* Adjusted size */
+  padding: 0.5rem;
+  font-size: 0.8rem;
   text-align: center;
 }
 
-.book-details {
-  padding: 0.8rem; /* Reduced padding */
+.book-details { /* Parent already has dark theme, text color will be inherited or set by global styles */
+  padding: 0.8rem;
   flex-grow: 1;
 }
 
-/* .book-title, .book-author, .book-rating, .book-date, .book-pages will inherit from App.css */
-/* Or can be overridden here if specific styling is needed for this page */
 .monthly-book-item .book-title {
-  font-size: 1rem; /* Slightly smaller */
+  font-size: 1rem;
   margin-bottom: 0.25rem;
+  /* color needs to be #f7fafc if not inherited */
 }
 .monthly-book-item .book-author {
   font-size: 0.8rem;
   margin-bottom: 0.25rem;
+  /* color needs to be #a0aec0 if not inherited */
 }
 .monthly-book-item .book-rating {
   font-size: 0.85rem;
   margin-bottom: 0.25rem;
+  /* color for rating, e.g. #ecc94b if not inherited */
 }
 .monthly-book-item .book-date, .monthly-book-item .book-pages {
   font-size: 0.75rem;
+  /* color needs to be #a0aec0 if not inherited */
 }
 
-
-.no-books-message { /* Style for no books message */
+.no-books-message {
   text-align: center;
   padding: 1.5rem;
-  color: var(--night-owl-text);
+  color: #f7fafc !important; /* var(--night-owl-text) */
   font-style: italic;
   font-size: 0.9rem;
 }
 
-/* Responsive adjustments */
+/* Light Theme Overrides */
+body.light-theme .monthly-progress-page {
+  color: #212529 !important;
+}
+
+body.light-theme .year-selector {
+  background-color: #F8F9FA !important;
+  border-color: #DEE2E6 !important;
+}
+
+body.light-theme .year-selector label {
+  color: #212529 !important;
+}
+
+body.light-theme .year-selector select {
+  border-color: #DEE2E6 !important;
+  background-color: #fff !important; /* Light input background */
+  color: #212529 !important;
+}
+body.light-theme .year-selector select:focus {
+  border-color: #5e35b1 !important; /* Light theme accent1 (slightly darker for visibility) */
+  box-shadow: 0 0 0 2px #5e35b14D !important;
+}
+
+body.light-theme .calendar-month {
+  background-color: #F8F9FA !important;
+  border-color: #DEE2E6 !important;
+}
+
+body.light-theme .calendar-month.has-books {
+  border-left-color: #5e35b1 !important; /* Light theme accent1 */
+}
+
+body.light-theme .month-name {
+  color: #212529 !important;
+}
+
+body.light-theme .month-book-count {
+  color: #4285f4 !important; /* Light theme accent2 (e.g. a standard blue) */
+}
+
+body.light-theme .month-intensity {
+  background-color: #5e35b11A !important; /* Light theme accent1 with low opacity */
+}
+
+body.light-theme .monthly-books {
+  background-color: #F8F9FA !important;
+  border-color: #DEE2E6 !important;
+  /* box-shadow: original var(--card-shadow) if it was different for light theme */
+}
+
+body.light-theme .monthly-book-item {
+  background-color: #e9ecef !important; /* Lighter gray for item background */
+  border-color: #4285f433 !important; /* Light theme accent2 with low opacity */
+}
+
+body.light-theme .book-month-tag {
+  background-color: #5e35b1 !important; /* Light theme accent1 */
+  color: #fff !important; /* White text for contrast on accent bg */
+}
+
+/* Assuming global styles handle .book-title, .book-author, .book-rating etc for light theme */
+/* If not, they would need specific color overrides here:
+body.light-theme .monthly-book-item .book-title { color: #212529 !important; }
+body.light-theme .monthly-book-item .book-author { color: #495057 !important; }
+body.light-theme .monthly-book-item .book-rating { color: #ffab00 !important; } // Example rating color
+body.light-theme .monthly-book-item .book-date,
+body.light-theme .monthly-book-item .book-pages { color: #6c757d !important; }
+*/
+
+body.light-theme .no-books-message {
+  color: #212529 !important;
+}
+
+
+/* Responsive adjustments - structure remains, theming applied above */
 @media (max-width: 992px) {
   .charts-container {
     grid-template-columns: 1fr; /* Stack charts */
@@ -234,6 +301,10 @@
   .calendar-month { padding: 0.6rem; min-height: 70px;}
   .month-name { font-size: 0.75rem; }
   .month-book-count { font-size: 0.8rem; }
-  .year-selector { flex-direction: column; align-items: flex-start; background: none; padding: 0; border: none; }
+  /* year-selector specific dark/light overrides for background/border if needed at this breakpoint */
+  body.light-theme .year-selector {
+    /* background: transparent !important; already covered by general selector if it applies*/
+    /* border: none !important; already covered */
+  }
   .year-selector select { width: 100%; }
 }
