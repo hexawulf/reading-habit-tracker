@@ -79,7 +79,7 @@
   .stat-value { /* This is already in App.css, ensure consistency or override */
     font-size: 2rem; /* Kept from previous densification */
     font-weight: 700;
-    color: var(--night-owl-accent2); 
+  color: var(--current-text);
     margin-bottom: 0.1rem; 
   }
   
