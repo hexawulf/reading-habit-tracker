@@ -1,6 +1,10 @@
+/* client/src/pages/Settings.css */
 
 .settings-page {
   padding: 2rem;
+  background-color: #2d3748 !important; /* Dark theme page background */
+  color: #f7fafc !important;           /* Default text color for the page */
+  min-height: 100vh;                  /* Ensure full page background */
 }
 
 .settings-container {
@@ -9,12 +13,18 @@
 }
 
 .settings-card {
-  background: var(--current-card-background); /* Themed */
+  background: #2d3748 !important; /* var(--current-card-background) */
   border-radius: 10px;
   padding: 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Shadow theming can be addressed later */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Adjusted shadow for dark theme if needed, or use a variable */
   text-align: center;
-  border: 1px solid var(--current-border); /* Themed */
+  border: 1px solid #4a5568 !important; /* var(--current-border) */
+  color: #f7fafc !important; /* Ensure text inside the card is themed */
+}
+
+.settings-card h2 { /* Assuming there's an h2 title in the card */
+  color: #f7fafc !important;
+  margin-bottom: 1.5rem; /* Spacing for title */
 }
 
 .upcoming-features {
@@ -26,6 +36,179 @@
 .upcoming-features li {
   margin: 1rem 0;
   font-size: 1.1rem;
-  color: var(--current-text); /* Themed */
-  opacity: 0.8; /* Make it slightly less prominent */
+  color: #f7fafc !important; /* var(--current-text) */
+  opacity: 0.8;
+}
+
+/* Theme Switcher Styles - if they were to be added here */
+.theme-switcher {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #1a202c !important; /* Slightly different dark shade for the switcher panel */
+  border: 1px solid #4a5568 !important;
+  border-radius: 8px;
+}
+
+.theme-switcher label {
+  color: #f7fafc !important;
+  margin-right: 0.5rem;
+  font-weight: 500;
+}
+
+.theme-switcher select {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #4a5568 !important;
+  background-color: #2d3748 !important;
+  color: #f7fafc !important;
+}
+.theme-switcher select:focus {
+  outline: none;
+  border-color: #7e57c2 !important; /* Accent color for focus */
+  box-shadow: 0 0 0 2px #7e57c24D !important;
+}
+
+/* General form elements styling if settings page had forms */
+.settings-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #2d3748 !important;
+  border: 1px solid #4a5568 !important;
+  border-radius: 8px;
+}
+
+.settings-section h3 {
+  color: #f7fafc !important;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #4a5568 !important;
+  padding-bottom: 0.5rem;
+}
+
+.settings-section label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #a0aec0 !important; /* Lighter text for labels */
+  font-size: 0.9rem;
+}
+
+.settings-section input[type="text"],
+.settings-section input[type="email"],
+.settings-section input[type="password"],
+.settings-section select {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #4a5568 !important;
+  background-color: #1a202c !important; /* Darker input background */
+  color: #f7fafc !important;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+.settings-section input[type="text"]:focus,
+.settings-section input[type="email"]:focus,
+.settings-section input[type="password"]:focus,
+.settings-section select:focus {
+  outline: none;
+  border-color: #7e57c2 !important; /* Accent color for focus */
+  box-shadow: 0 0 0 2px #7e57c24D !important;
+}
+
+.settings-page button,
+.settings-section button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #7e57c2 !important; /* Accent color for buttons */
+  color: #f7fafc !important;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.settings-page button:hover,
+.settings-section button:hover {
+  background-color: #673ab7 !important; /* Darker accent on hover */
+}
+
+
+/* Light Theme Overrides */
+body.light-theme .settings-page {
+  background-color: #F8F9FA !important;
+  color: #212529 !important;
+}
+
+body.light-theme .settings-card {
+  background: #fff !important; /* Standard light card background */
+  border-color: #DEE2E6 !important;
+  color: #212529 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Original shadow */
+}
+
+body.light-theme .settings-card h2 {
+  color: #212529 !important;
+}
+
+body.light-theme .upcoming-features li {
+  color: #212529 !important;
+}
+
+body.light-theme .theme-switcher {
+  background-color: #e9ecef !important; /* Light background for switcher panel */
+  border-color: #DEE2E6 !important;
+}
+
+body.light-theme .theme-switcher label {
+  color: #212529 !important;
+}
+
+body.light-theme .theme-switcher select {
+  border-color: #DEE2E6 !important;
+  background-color: #fff !important;
+  color: #212529 !important;
+}
+body.light-theme .theme-switcher select:focus {
+  border-color: #5e35b1 !important; /* Light theme accent */
+  box-shadow: 0 0 0 2px #5e35b14D !important;
+}
+
+body.light-theme .settings-section {
+  background-color: #fff !important;
+  border-color: #DEE2E6 !important;
+}
+
+body.light-theme .settings-section h3 {
+  color: #212529 !important;
+  border-bottom-color: #DEE2E6 !important;
+}
+
+body.light-theme .settings-section label {
+  color: #495057 !important; /* Standard light theme label color */
+}
+
+body.light-theme .settings-section input[type="text"],
+body.light-theme .settings-section input[type="email"],
+body.light-theme .settings-section input[type="password"],
+body.light-theme .settings-section select {
+  border-color: #DEE2E6 !important;
+  background-color: #fff !important;
+  color: #212529 !important;
+}
+body.light-theme .settings-section input[type="text"]:focus,
+body.light-theme .settings-section input[type="email"]:focus,
+body.light-theme .settings-section input[type="password"]:focus,
+body.light-theme .settings-section select:focus {
+  border-color: #5e35b1 !important; /* Light theme accent */
+  box-shadow: 0 0 0 2px #5e35b14D !important;
+}
+
+body.light-theme .settings-page button,
+body.light-theme .settings-section button {
+  background-color: #5e35b1 !important; /* Light theme accent for buttons */
+  color: #fff !important;
+}
+
+body.light-theme .settings-page button:hover,
+body.light-theme .settings-section button:hover {
+  background-color: #512da8 !important; /* Darker light theme accent on hover */
 }
