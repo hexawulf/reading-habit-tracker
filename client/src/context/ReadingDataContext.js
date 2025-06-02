@@ -43,70 +43,69 @@ export const ReadingDataProvider = ({ children }) => {
     monthly: { current: 0, target: 0, percentage: 0 }
   });
 
-  useEffect(() => {
-    const loadLocalData = async () => {
-      try {
-        const saved = await storageService.loadData();
-        if (Array.isArray(saved?.readingData)) {
-          setReadingData(saved.readingData);
-        } else if (saved?.readingData?.books) {
-          // migrate old shape { books, stats }
-          setReadingData(saved.readingData.books);
-        } else {
-          setReadingData([]);
-        }
-        if (saved?.stats) {
-          setStats(saved.stats);
-        }
-        if (saved?.goalProgress) {
-          setGoalProgress(saved.goalProgress);
-        }
-      } catch (err) {
-        setError(err.message);
-        setReadingData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+useEffect(() => {
+  const loadLocalData = async () => {
+    try {
+      const saved = await storageService.loadData();
+      let books = [];
 
-    loadLocalData();
-  }, []);
+      if (Array.isArray(saved?.readingData)) {
+        books = saved.readingData;
+      } else if (saved?.readingData?.books) {
+        books = saved.readingData.books;
+      }
+
+      // ✅ FORCE RECALCULATION - Don't load cached stats
+      if (books.length > 0) {
+        const freshStats = calculateStats(books); // Ensure calculateStats is available here
+        const freshGoalProgress = calculateGoalProgress(books); // Ensure calculateGoalProgress is available here
+
+        setReadingData(books);
+        setStats(freshStats);
+        setGoalProgress(freshGoalProgress);
+
+        // Save the recalculated stats
+        storageService.saveData({
+          readingData: books,
+          stats: freshStats,
+          goalProgress: freshGoalProgress
+        });
+      }
+
+    } catch (err) {
+      setError(err.message);
+      setReadingData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadLocalData();
+}, [calculateStats, calculateGoalProgress]); // Add dependencies if they are defined outside the effect
 
   const processReadingData = (data) => {
     console.log("processReadingData called with:", data);
-    console.log("Current readingData state:", readingData);
+    // console.log("Current readingData state:", readingData); // readingData might be stale here, prefer 'data'
     console.log("Data type:", typeof data, "Array?", Array.isArray(data));
     setLoading(true);
     try {
-      if (data && data.books && data.stats) {
-        setReadingData(data.books);
-        setStats(data.stats);
-        const gp = calculateGoalProgress(data.books);
-        setGoalProgress(gp);
-        storageService.saveData({ 
-          readingData: data.books,
-          stats: data.stats,
-          goalProgress: gp 
-        });
-        return;
-      }
+      // ✅ ALWAYS recalculate stats, never trust pre-calculated ones
+      const booksToProcess = (data && data.books) ? data.books : (Array.isArray(data) ? data : readingData);
+      const calculatedStats = calculateStats(booksToProcess);
+      const calculatedGoalProgress = calculateGoalProgress(booksToProcess);
 
-    // ✅ FIX: Use the 'data' parameter, not 'readingData' state
-    const booksToProcess = data || readingData;  // Handle both cases
-    const calculatedStats = calculateStats(booksToProcess);
-    const calculatedGoalProgress = calculateGoalProgress(booksToProcess);
+      setReadingData(booksToProcess);
+      setStats(calculatedStats);
+      setGoalProgress(calculatedGoalProgress);
 
-    setReadingData(booksToProcess);
-    setStats(calculatedStats);
-    setGoalProgress(calculatedGoalProgress);
-
-    storageService.saveData({
-      readingData: booksToProcess,
-      stats: calculatedStats,
-      goalProgress: calculatedGoalProgress
-    });
+      storageService.saveData({
+        readingData: booksToProcess,
+        stats: calculatedStats,
+        goalProgress: calculatedGoalProgress
+      });
     } catch (error) {
-      setError(error);
+      console.error("Error in processReadingData:", error); // It's good to log the actual error
+      setError(error.message); // Set error message
     } finally {
       setLoading(false);
     }
@@ -149,6 +148,38 @@ export const ReadingDataProvider = ({ children }) => {
       monthly: { current: 0, target: 0, percentage: 0 }
     });
   };
+
+const forceClearAndRecalculate = () => {
+  storageService.clearData();
+  if (readingData && readingData.length > 0) { // Ensure readingData is not null and has items
+    const freshStats = calculateStats(readingData);
+    const freshGoalProgress = calculateGoalProgress(readingData);
+    setStats(freshStats);
+    setGoalProgress(freshGoalProgress);
+    storageService.saveData({
+      readingData, // readingData itself doesn't change here, just its stats
+      stats: freshStats,
+      goalProgress: freshGoalProgress
+    });
+  } else {
+    // If readingData is empty, still clear stats and goalProgress from state
+    setStats({
+      totalBooks: 0,
+      averageRating: 0,
+      readingByYear: {},
+      readingByMonth: {},
+      ratingDistribution: {},
+      readingPace: { booksPerMonth: 0, booksPerYear: 0, pagesPerDay: 0 },
+      pageStats: { totalPages: 0, averageLength: 0, longestBook: { title: '', pages: 0 } },
+      topAuthors: [],
+      readingByGenre: {}
+    });
+    setGoalProgress({
+      yearly: { current: 0, target: 0, percentage: 0 },
+      monthly: { current: 0, target: 0, percentage: 0 }
+    });
+  }
+};
 
   const calculateStats = (books) => {
     // If books is empty or undefined, return the current stats object (which has defaults)
@@ -334,7 +365,8 @@ export const ReadingDataProvider = ({ children }) => {
     goalProgress,
     processReadingData,
     updateGoals,
-    clearAllData
+    clearAllData,
+    forceClearAndRecalculate // <--- new function added
   };
 
   return (
