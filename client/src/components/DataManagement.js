@@ -4,7 +4,7 @@ import { useReadingData } from '../context/ReadingDataContext';
 import './DataManagement.css';
 
 const DataManagement = () => {
-  const { readingData, stats, goalProgress, processReadingData, clearAllData } = useReadingData();
+  const { readingData, stats, goalProgress, processReadingData, clearAllData, forceClearAndRecalculate } = useReadingData();
   const [importError, setImportError] = useState(null);
   const [exportSuccess, setExportSuccess] = useState(false);
   const [importSuccess, setImportSuccess] = useState(false);
@@ -147,6 +147,21 @@ const DataManagement = () => {
             onClick={handleClearData}
           >
             Clear Data
+          </button>
+
+          {/* New Button Below */}
+          <h3>Force Cache Clear & Recalculate</h3>
+          <p>This is a temporary tool to clear cached stats from local storage and force recalculation. Use if stats seem incorrect.</p>
+          <button
+            className="action-button warning-button" // You might need to add styling for 'warning-button'
+            onClick={() => {
+              if (window.confirm('Are you sure you want to clear cached stats and force recalculation? This may be helpful for troubleshooting display issues.')) {
+                forceClearAndRecalculate();
+                alert('Cache cleared and stats recalculated. Refresh the dashboard to see changes.');
+              }
+            }}
+          >
+            Force Recalculate Stats
           </button>
         </div>
       </div>
