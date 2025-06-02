@@ -69,7 +69,7 @@ const Header = () => { // Removed toggleSidebar prop
     <header className="app-header">
       <div className="header-content">
         <Link to="/" className="logo">
-          <img src="/generated-icon.png" alt="Reading Habit Tracker" className="header-logo" />
+          <img src="/reading-habit-tracker-logo.png" alt="Reading Habit Tracker Logo" className="header-logo" />
           <h1>Reading Tracker</h1> {/* Simplified title */}
         </Link>
         
