@@ -43,144 +43,6 @@ export const ReadingDataProvider = ({ children }) => {
     monthly: { current: 0, target: 0, percentage: 0 }
   });
 
-useEffect(() => {
-  const loadLocalData = async () => {
-    try {
-      const saved = await storageService.loadData();
-      let books = [];
-
-      if (Array.isArray(saved?.readingData)) {
-        books = saved.readingData;
-      } else if (saved?.readingData?.books) {
-        books = saved.readingData.books;
-      }
-
-      // ✅ FORCE RECALCULATION - Don't load cached stats
-      if (books.length > 0) {
-        const freshStats = calculateStats(books); // Ensure calculateStats is available here
-        const freshGoalProgress = calculateGoalProgress(books); // Ensure calculateGoalProgress is available here
-
-        setReadingData(books);
-        setStats(freshStats);
-        setGoalProgress(freshGoalProgress);
-
-        // Save the recalculated stats
-        storageService.saveData({
-          readingData: books,
-          stats: freshStats,
-          goalProgress: freshGoalProgress
-        });
-      }
-
-    } catch (err) {
-      setError(err.message);
-      setReadingData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  loadLocalData();
-}, [calculateStats, calculateGoalProgress]); // Add dependencies if they are defined outside the effect
-
-  const processReadingData = (data) => {
-    console.log("processReadingData called with:", data);
-    // console.log("Current readingData state:", readingData); // readingData might be stale here, prefer 'data'
-    console.log("Data type:", typeof data, "Array?", Array.isArray(data));
-    setLoading(true);
-    try {
-      // ✅ ALWAYS recalculate stats, never trust pre-calculated ones
-      const booksToProcess = (data && data.books) ? data.books : (Array.isArray(data) ? data : readingData);
-      const calculatedStats = calculateStats(booksToProcess);
-      const calculatedGoalProgress = calculateGoalProgress(booksToProcess);
-
-      setReadingData(booksToProcess);
-      setStats(calculatedStats);
-      setGoalProgress(calculatedGoalProgress);
-
-      storageService.saveData({
-        readingData: booksToProcess,
-        stats: calculatedStats,
-        goalProgress: calculatedGoalProgress
-      });
-    } catch (error) {
-      console.error("Error in processReadingData:", error); // It's good to log the actual error
-      setError(error.message); // Set error message
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateGoals = (yearlyGoal, monthlyGoal) => {
-    const newGoalProgress = {
-      yearly: {
-        current: stats.readingByYear[new Date().getFullYear()] || 0,
-        target: yearlyGoal,
-        percentage: yearlyGoal > 0 ? Math.round(((stats.readingByYear[new Date().getFullYear()] || 0) / yearlyGoal) * 100) : 0
-      },
-      monthly: {
-        current: stats.readingByMonth?.[new Date().getFullYear()]?.[new Date().getMonth()] || 0,
-        target: monthlyGoal,
-        percentage: monthlyGoal > 0 ? Math.round(((stats.readingByMonth?.[new Date().getFullYear()]?.[new Date().getMonth()] || 0) / monthlyGoal) * 100) : 0
-      }
-    };
-
-    setGoalProgress(newGoalProgress);
-    storageService.saveData({ readingData, stats, goalProgress: newGoalProgress });
-  };
-
-  const clearAllData = () => {
-    storageService.clearData();
-    setReadingData([]);
-    setStats({
-      totalBooks: 0,
-      averageRating: 0,
-      readingByYear: {},
-      readingByMonth: {},
-      ratingDistribution: {},
-      readingPace: { booksPerMonth: 0, booksPerYear: 0, pagesPerDay: 0 },
-      pageStats: { totalPages: 0, averageLength: 0, longestBook: { title: '', pages: 0 } },
-      topAuthors: [],
-      readingByGenre: {}
-    });
-    setGoalProgress({
-      yearly: { current: 0, target: 0, percentage: 0 },
-      monthly: { current: 0, target: 0, percentage: 0 }
-    });
-  };
-
-const forceClearAndRecalculate = () => {
-  storageService.clearData();
-  if (readingData && readingData.length > 0) { // Ensure readingData is not null and has items
-    const freshStats = calculateStats(readingData);
-    const freshGoalProgress = calculateGoalProgress(readingData);
-    setStats(freshStats);
-    setGoalProgress(freshGoalProgress);
-    storageService.saveData({
-      readingData, // readingData itself doesn't change here, just its stats
-      stats: freshStats,
-      goalProgress: freshGoalProgress
-    });
-  } else {
-    // If readingData is empty, still clear stats and goalProgress from state
-    setStats({
-      totalBooks: 0,
-      averageRating: 0,
-      readingByYear: {},
-      readingByMonth: {},
-      ratingDistribution: {},
-      readingPace: { booksPerMonth: 0, booksPerYear: 0, pagesPerDay: 0 },
-      pageStats: { totalPages: 0, averageLength: 0, longestBook: { title: '', pages: 0 } },
-      topAuthors: [],
-      readingByGenre: {}
-    });
-    setGoalProgress({
-      yearly: { current: 0, target: 0, percentage: 0 },
-      monthly: { current: 0, target: 0, percentage: 0 }
-    });
-  }
-};
-
   const calculateStats = (books) => {
     // If books is empty or undefined, return the current stats object (which has defaults)
     if (!books || books.length === 0) {
@@ -356,6 +218,144 @@ const forceClearAndRecalculate = () => {
       }
     };
   };
+
+useEffect(() => {
+  const loadLocalData = async () => {
+    try {
+      const saved = await storageService.loadData();
+      let books = [];
+
+      if (Array.isArray(saved?.readingData)) {
+        books = saved.readingData;
+      } else if (saved?.readingData?.books) {
+        books = saved.readingData.books;
+      }
+
+      // ✅ FORCE RECALCULATION - Don't load cached stats
+      if (books.length > 0) {
+        const freshStats = calculateStats(books); // Ensure calculateStats is available here
+        const freshGoalProgress = calculateGoalProgress(books); // Ensure calculateGoalProgress is available here
+
+        setReadingData(books);
+        setStats(freshStats);
+        setGoalProgress(freshGoalProgress);
+
+        // Save the recalculated stats
+        storageService.saveData({
+          readingData: books,
+          stats: freshStats,
+          goalProgress: freshGoalProgress
+        });
+      }
+
+    } catch (err) {
+      setError(err.message);
+      setReadingData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadLocalData();
+}, [calculateStats, calculateGoalProgress]); // Add dependencies if they are defined outside the effect
+
+  const processReadingData = (data) => {
+    console.log("processReadingData called with:", data);
+    // console.log("Current readingData state:", readingData); // readingData might be stale here, prefer 'data'
+    console.log("Data type:", typeof data, "Array?", Array.isArray(data));
+    setLoading(true);
+    try {
+      // ✅ ALWAYS recalculate stats, never trust pre-calculated ones
+      const booksToProcess = (data && data.books) ? data.books : (Array.isArray(data) ? data : readingData);
+      const calculatedStats = calculateStats(booksToProcess);
+      const calculatedGoalProgress = calculateGoalProgress(booksToProcess);
+
+      setReadingData(booksToProcess);
+      setStats(calculatedStats);
+      setGoalProgress(calculatedGoalProgress);
+
+      storageService.saveData({
+        readingData: booksToProcess,
+        stats: calculatedStats,
+        goalProgress: calculatedGoalProgress
+      });
+    } catch (error) {
+      console.error("Error in processReadingData:", error); // It's good to log the actual error
+      setError(error.message); // Set error message
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateGoals = (yearlyGoal, monthlyGoal) => {
+    const newGoalProgress = {
+      yearly: {
+        current: stats.readingByYear[new Date().getFullYear()] || 0,
+        target: yearlyGoal,
+        percentage: yearlyGoal > 0 ? Math.round(((stats.readingByYear[new Date().getFullYear()] || 0) / yearlyGoal) * 100) : 0
+      },
+      monthly: {
+        current: stats.readingByMonth?.[new Date().getFullYear()]?.[new Date().getMonth()] || 0,
+        target: monthlyGoal,
+        percentage: monthlyGoal > 0 ? Math.round(((stats.readingByMonth?.[new Date().getFullYear()]?.[new Date().getMonth()] || 0) / monthlyGoal) * 100) : 0
+      }
+    };
+
+    setGoalProgress(newGoalProgress);
+    storageService.saveData({ readingData, stats, goalProgress: newGoalProgress });
+  };
+
+  const clearAllData = () => {
+    storageService.clearData();
+    setReadingData([]);
+    setStats({
+      totalBooks: 0,
+      averageRating: 0,
+      readingByYear: {},
+      readingByMonth: {},
+      ratingDistribution: {},
+      readingPace: { booksPerMonth: 0, booksPerYear: 0, pagesPerDay: 0 },
+      pageStats: { totalPages: 0, averageLength: 0, longestBook: { title: '', pages: 0 } },
+      topAuthors: [],
+      readingByGenre: {}
+    });
+    setGoalProgress({
+      yearly: { current: 0, target: 0, percentage: 0 },
+      monthly: { current: 0, target: 0, percentage: 0 }
+    });
+  };
+
+const forceClearAndRecalculate = () => {
+  storageService.clearData();
+  if (readingData && readingData.length > 0) { // Ensure readingData is not null and has items
+    const freshStats = calculateStats(readingData);
+    const freshGoalProgress = calculateGoalProgress(readingData);
+    setStats(freshStats);
+    setGoalProgress(freshGoalProgress);
+    storageService.saveData({
+      readingData, // readingData itself doesn't change here, just its stats
+      stats: freshStats,
+      goalProgress: freshGoalProgress
+    });
+  } else {
+    // If readingData is empty, still clear stats and goalProgress from state
+    setStats({
+      totalBooks: 0,
+      averageRating: 0,
+      readingByYear: {},
+      readingByMonth: {},
+      ratingDistribution: {},
+      readingPace: { booksPerMonth: 0, booksPerYear: 0, pagesPerDay: 0 },
+      pageStats: { totalPages: 0, averageLength: 0, longestBook: { title: '', pages: 0 } },
+      topAuthors: [],
+      readingByGenre: {}
+    });
+    setGoalProgress({
+      yearly: { current: 0, target: 0, percentage: 0 },
+      monthly: { current: 0, target: 0, percentage: 0 }
+    });
+  }
+};
 
   const contextValue = {
     readingData,
