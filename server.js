@@ -1,4 +1,5 @@
 require('dotenv').config();
+const logger = require('./src/logger'); // Import Winston logger
 
 const express = require('express');
 const multer = require('multer');
@@ -27,8 +28,9 @@ const parseDate = (s)=>{ if(!s||!s.trim())return null;
   const d=dayjs(s.trim(),['YYYY/MM/DD','MM/DD/YYYY','DD/MM/YYYY','YYYY-MM-DD'],true);
   return d.isValid()?d.toDate():null; };
 
-console.log('🔎 DEBUG Firebase env vars:');
-console.log({
+logger.info('✅ Winston logger initialized – startup check');
+
+logger.debug('🔎 DEBUG Firebase env vars:', {
   FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
   FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
   FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY ? '(exists)' : '(missing)',
@@ -53,16 +55,16 @@ try {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
   });
-  console.log('Firebase Admin initialized successfully');
+  logger.info('Firebase Admin initialized successfully');
 } catch (error) {
-  console.error('Error initializing Firebase Admin:', error);
+  logger.error('Error initializing Firebase Admin:', { error });
   process.exit(1);
 }
 
 // Connect to MongoDB
 const mongoURI = process.env.MONGO_URI;
 if (!mongoURI) {
-  console.error('MONGO_URI environment variable is not set');
+  logger.error('MONGO_URI environment variable is not set');
   process.exit(1);
 }
 
@@ -71,11 +73,11 @@ mongoose.connect(mongoURI, {
   useUnifiedTopology: true,
   retryWrites: true,
   serverSelectionTimeoutMS: 5000
-}).then(() => console.log('Connected to MongoDB'))
+}).then(() => logger.info('Connected to MongoDB'))
   .catch(err => {
-    console.error('MongoDB connection error:', err);
+    logger.error('MongoDB connection error:', { error: err });
     // Continue without DB for now
-    console.log('Continuing without database connection...');
+    logger.warn('Continuing without database connection...');
   });
 
 const parseGoodreadsCsv = (filePath) =>
@@ -181,7 +183,7 @@ app.post('/api/auth/register', async (req, res) => {
     req.session.username = user.username;
     res.json({ user: { ...user.toJSON(), password: undefined } });
   } catch (error) {
-    console.error('Registration error:', error);
+    logger.error('Registration error:', { error, username: req.body.username });
     res.status(500).json({ error: 'Registration failed. Please try again.' });
   }
 });
@@ -252,7 +254,7 @@ app.post('/api/auth/google', async (req, res) => {
     }
 
     const userId = decodedToken.uid;
-    console.log('Decoded token:', decodedToken);
+    logger.info('Decoded Google Auth token:', { userId, email: decodedToken.email });
 
     // Store additional user info in session
     req.session.userPicture = decodedToken.picture;
@@ -288,7 +290,7 @@ app.post('/api/auth/google', async (req, res) => {
     req.session.userId = user._id;
     res.json({ user });
   } catch (error) {
-    console.error('Google auth error:', error);
+    logger.error('Google auth error:', { error, tokenProvided: !!req.body.token });
     res.status(500).json({ 
       error: 'Authentication failed',
       details: error.message 
@@ -306,6 +308,7 @@ app.get('/api/auth/status', async (req, res) => {
 
     const user = await User.findById(req.session.userId);
     if (!user) {
+      logger.warn('Auth status check: User not found in DB for session ID', { sessionUserId: req.session.userId });
       return res.status(401).json({ 
         isAuthenticated: false 
       });
@@ -322,7 +325,7 @@ app.get('/api/auth/status', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Auth status error:', error);
+    logger.error('Auth status error:', { error, sessionUserId: req.session.userId });
     res.status(500).json({ error: error.message });
   }
 });
@@ -337,7 +340,7 @@ const storage = multer.diskStorage({
       : path.join(baseDir, 'guest');
     fs.mkdir(dest, { recursive: true }, (err) => {
       if (err) {
-        console.error('Upload dir error:', err);
+        logger.error('Upload dir creation error:', { error: err, destination: dest });
         return cb(new Error('Upload directory error'));
       }
       cb(null, dest);
@@ -356,18 +359,22 @@ app.post('/api/upload', (req, res) => {
   uploadSingle(req, res, async (multerErr) => {
     try {
       if (multerErr) {
-        console.error('Multer error:', multerErr);
+        logger.error('Multer error during file upload:', { error: multerErr, file: req.file });
         return res.status(400).json({ error: 'File upload failed. ' + multerErr.message });
       }
-      if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+      if (!req.file) {
+        logger.warn('No file uploaded in /api/upload');
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
       if (!req.file.path || !fs.existsSync(req.file.path)) {
-        console.error('File not saved:', req.file);
+        logger.error('Uploaded file not saved or path missing', { file: req.file });
         return res.status(400).json({ error: 'Upload failed – file not saved' });
       }
 
       try {
         const books = await parseGoodreadsCsv(req.file.path);
         if (!Array.isArray(books)) {
+          logger.error('Failed to parse books data from CSV', { filePath: req.file.path });
           throw new Error('Failed to parse books data');
         }
 
@@ -378,15 +385,18 @@ app.post('/api/upload', (req, res) => {
             { _id: req.session.userId },
             { $set: { 'readingData.books': books, 'readingData.stats': stats } }
           ).exec();
+          logger.info('User data updated after CSV upload', { userId: req.session.userId, booksCount: books.length });
+        } else {
+          logger.info('Guest CSV uploaded and parsed', { booksCount: books.length, filePath: req.file.path });
         }
 
         return res.json({ data: { books, stats } });
       } catch (parseError) {
-        console.error('Error parsing CSV:', parseError);
+        logger.error('Error parsing CSV:', { error: parseError, filePath: req.file.path });
         return res.status(400).json({ error: 'Failed to parse CSV file. Please ensure it is a valid Goodreads export.' });
       }
     } catch (err) {
-      console.error('Upload processing error:', err);
+      logger.error('Upload processing error:', { error: err, file: req.file });
       await cleanupFile(req.file?.path);
       return res.status(400).json({
         error: err.message?.includes('CSV') ? 
@@ -402,8 +412,9 @@ async function cleanupFile(filePath) {
   if (filePath && fs.existsSync(filePath)) {
     try {
       await fs.promises.unlink(filePath);
+      logger.info('Cleaned up uploaded file:', { filePath });
     } catch (err) {
-      console.error('Error cleaning up file:', err);
+      logger.error('Error cleaning up file:', { error: err, filePath });
     }
   }
 }
@@ -436,7 +447,7 @@ app.get('/api/files/list', async (req, res) => {
 
     res.json({ files: fileStats });
   } catch (error) {
-    console.error('Error listing files:', error);
+    logger.error('Error listing files:', { error, userEmail: req.session.userEmail });
     res.status(500).json({ error: 'Failed to list files' });
   }
 });
@@ -445,6 +456,7 @@ app.get('/api/files/list', async (req, res) => {
 app.delete('/api/files/delete/:filename', async (req, res) => {
   try {
     if (!req.session.userEmail) {
+      logger.warn('Attempt to delete file without authentication');
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
@@ -454,13 +466,15 @@ app.delete('/api/files/delete/:filename', async (req, res) => {
 
     // Check if file exists and is in user's directory
     if (!fs.existsSync(filePath) || !filePath.startsWith(userDir)) {
+      logger.warn('Attempt to delete non-existent or unauthorized file', { filename, userEmail: req.session.userEmail, filePath });
       return res.status(404).json({ error: 'File not found' });
     }
 
     await fs.promises.unlink(filePath);
+    logger.info('File deleted successfully', { filename, userEmail: req.session.userEmail });
     res.json({ message: 'File deleted successfully' });
   } catch (error) {
-    console.error('Error deleting file:', error);
+    logger.error('Error deleting file:', { error, filename: req.params.filename, userEmail: req.session.userEmail });
     res.status(500).json({ error: 'Failed to delete file' });
   }
 });
@@ -473,6 +487,7 @@ app.get('/api/user/data', async (req, res) => {
 
     const user = await User.findById(req.session.userId);
     if (!user) {
+      logger.warn('User data requested but user not found in DB', { sessionUserId: req.session.userId });
       return res.status(404).json({ error: 'User not found' });
     }
 
@@ -482,7 +497,7 @@ app.get('/api/user/data', async (req, res) => {
       goals: user.readingData.goals || { yearly: 52, monthly: 4 }
     });
   } catch (err) {
-    console.error('GET /api/user/data error:', err);
+    logger.error('GET /api/user/data error:', { error: err, userId: req.session.userId });
     res.status(500).json({ error: 'Failed to fetch user data' });
   }
 });
@@ -495,6 +510,7 @@ app.post('/api/user/data', async (req, res) => {
 
     const user = await User.findById(req.session.userId);
     if (!user) {
+      logger.warn('Attempt to post user data but user not found in DB', { sessionUserId: req.session.userId });
       return res.status(404).json({ error: 'User not found' });
     }
 
@@ -513,10 +529,10 @@ app.post('/api/user/data', async (req, res) => {
     }
 
     await user.save();
-
+    logger.info('User data saved successfully', { userId: req.session.userId });
     res.json({ success: true });
   } catch (err) {
-    console.error('POST /api/user/data error:', err);
+    logger.error('POST /api/user/data error:', { error: err, userId: req.session.userId });
     res.status(500).json({ error: 'Failed to save user data' });
   }
 });
@@ -528,6 +544,7 @@ app.delete('/api/user/data', async (req, res) => {
     }
     const user = await User.findById(req.session.userId);
     if (!user) {
+      logger.warn('Attempt to delete user data but user not found in DB', { sessionUserId: req.session.userId });
       return res.status(404).json({ error: 'User not found' });
     }
     user.readingData = {
@@ -536,9 +553,10 @@ app.delete('/api/user/data', async (req, res) => {
       goals: { yearly: 52, monthly: 4 }
     };
     await user.save();
+    logger.info('User data deleted successfully', { userId: req.session.userId });
     res.json({ success: true });
   } catch (err) {
-    console.error('DELETE /api/user/data error:', err);
+    logger.error('DELETE /api/user/data error:', { error: err, userId: req.session.userId });
     res.status(500).json({ error: 'Failed to delete user data' });
   }
 });
@@ -548,11 +566,13 @@ app.get('/api/stats', async (req, res) => {
   // For now, we'll just use the most recent upload if available
   const uploadDir = path.join(__dirname, 'uploads');
   if (!fs.existsSync(uploadDir)) {
+    logger.warn('/api/stats called but upload directory does not exist');
     return res.status(404).json({ error: 'No data available' });
   }
 
   const files = fs.readdirSync(uploadDir);
   if (files.length === 0) {
+    logger.warn('/api/stats called but no files in upload directory');
     return res.status(404).json({ error: 'No data available' });
   }
 
@@ -563,18 +583,20 @@ app.get('/api/stats', async (req, res) => {
     .reverse()[0];
 
   if (!mostRecentFile) {
+    logger.warn('/api/stats called but no Goodreads files found in upload directory');
     return res.status(404).json({ error: 'No data available' });
   }
 
   try {
     const results = await parseGoodreadsCsv(path.join(uploadDir, mostRecentFile));
+    logger.info('Successfully retrieved stats from most recent file', { file: mostRecentFile });
     return res.json({ 
       success: true, 
       stats: generateStats(results),
       data: results
     });
   } catch (error) {
-    console.error('Error retrieving stats:', error);
+    logger.error('Error retrieving stats from file:', { error, file: mostRecentFile });
     return res.status(500).json({ error: 'Error retrieving stats' });
   }
 });
@@ -720,7 +742,7 @@ function findAvailablePort(startPort, callback) {
 // Start server with fixed port for piapps.dev
 const PORT = process.env.PORT || 5003;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
+  logger.info(`Server running on port ${PORT}`);
 });
 
 
@@ -728,8 +750,18 @@ app.listen(PORT, '0.0.0.0', () => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error('Unhandled exception:', err);
-  res.status(400).json({ error: 'Unexpected error', detail: err.message });
+  logger.error('Unhandled exception in global error handler:', {
+    error: {
+        message: err.message,
+        stack: err.stack,
+        // Include any other relevant properties from the error object
+        ...(typeof err === 'object' && err !== null ? err : {})
+    },
+    url: req.originalUrl,
+    method: req.method,
+    ip: req.ip
+  });
+  res.status(500).json({ error: 'Unexpected server error. Please try again later.' });
 });
 
 module.exports = app; // For testing purposes
