@@ -1,6 +1,6 @@
 module.exports = {
   apps: [{
-    name: "reading-habit-tracker",
+    name: "mybooks",  // ← Match existing PM2 name
     script: "npm",
     args: "start",
     cwd: "/home/zk/projects/reading-habit-tracker",
