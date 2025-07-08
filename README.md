@@ -66,6 +66,8 @@ cd ..
 
 # Create an uploads directory
 mkdir uploads
+cp .env.example .env
+# Edit .env and add your secrets
 🏃 Running the Application
 bash
 Copy
@@ -151,6 +153,8 @@ You — the reader, the tracker, the book lover!
  Social sharing
 
  Friend stats comparison
+## 🔒 Maintenance
+Run `npm audit` regularly or schedule it in your CI or a cron job to catch vulnerable dependencies.
 
 📬 Contact
 hexawulf
