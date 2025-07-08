@@ -44,6 +44,9 @@ A web application for tracking and visualizing your reading habits using Goodrea
 
 - Node.js (v14 or higher)
 - npm or yarn
+- ImageMagick (provides the `convert` command used by `generate_favicons.sh`)
+
+To generate application favicons place your source image in `client/public` and run `./generate_favicons.sh`.
 
 ### 🚀 Installation
 
@@ -62,6 +65,8 @@ cd ..
 
 # Create an uploads directory
 mkdir uploads
+cp .env.example .env
+# Edit .env and add your secrets
 🏃 Running the Application
 bash
 Copy
@@ -147,6 +152,8 @@ You — the reader, the tracker, the book lover!
  Social sharing
 
  Friend stats comparison
+## 🔒 Maintenance
+Run `npm audit` regularly or schedule it in your CI or a cron job to catch vulnerable dependencies.
 
 📬 Contact
 hexawulf
