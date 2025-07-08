@@ -143,7 +143,7 @@ const Dashboard = () => {
   const ratingData = Object.entries(stats.ratingDistribution)
     .map(([rating, count]) => ({ rating: parseInt(rating), count }))
     .filter(item => item.count > 0 && item.rating > 0);
-  
+
   // Updated RATING_COLORS for Night Owl theme
   const RATING_COLORS = [
     '#ff5370', // 1 star (a bit more vibrant red)
@@ -155,7 +155,17 @@ const Dashboard = () => {
 
   const safeData = Array.isArray(readingData) ? readingData : [];
   // Display more recent books for a denser layout, e.g., 10
-  const recentBooks = safeData.slice(0, 10); 
+  const recentBooks = safeData.slice(0, 10);
+
+  const readThisYear = stats.readingByYear[currentYear] || 0;
+
+  // Log key stats only when values change to avoid console spam
+  React.useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Total books:', stats.totalBooks);
+      console.log(`Read in ${currentYear}:`, readThisYear);
+    }
+  }, [stats.totalBooks, readThisYear, currentYear]);
   
   const tickFormatter = (value) => {
     if (typeof value === 'number' && value > 1000) {
