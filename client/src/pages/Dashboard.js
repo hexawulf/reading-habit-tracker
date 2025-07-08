@@ -35,19 +35,24 @@ const lightThemeStyles = {
 const Dashboard = () => {
   const { stats, readingData, loading, error, goalProgress } = useReadingData();
 
- const readThisYear = stats.readingByYear[currentYear] || 0;
+  // Determine current year as soon as the component renders so it's available
+  // for other calculations
+  const currentYear = new Date().getFullYear().toString();
+  const previousYear = (parseInt(currentYear) - 1).toString();
 
-// Log key stats only when values change to avoid console spam
-React.useEffect(() => {
-  if (
-    process.env.NODE_ENV !== 'production' &&
-    typeof stats.totalBooks === 'number' &&
-    typeof readThisYear === 'number'
-  ) {
-    console.log('Total books:', stats.totalBooks);
-    console.log(`Read in ${currentYear}:`, readThisYear);
-  }
-}, [stats.totalBooks, readThisYear, currentYear]);
+  const readThisYear = stats.readingByYear[currentYear] || 0;
+
+  // Log key stats only when values change to avoid console spam
+  React.useEffect(() => {
+    if (
+      process.env.NODE_ENV !== 'production' &&
+      typeof stats.totalBooks === 'number' &&
+      typeof readThisYear === 'number'
+    ) {
+      console.log('Total books:', stats.totalBooks);
+      console.log(`Read in ${currentYear}:`, readThisYear);
+    }
+  }, [stats.totalBooks, readThisYear, currentYear]);
   
 
   // Function to determine active theme styles
@@ -141,8 +146,6 @@ React.useEffect(() => {
   stats.ratingDistribution = stats.ratingDistribution || {};
   
   // Prepare data for charts
-  const currentYear = new Date().getFullYear().toString();
-  const previousYear = (parseInt(currentYear) - 1).toString();
   
   const yearlyData = Object.entries(stats.readingByYear)
     .map(([year, count]) => ({ year, count }))
