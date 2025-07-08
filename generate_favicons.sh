@@ -1,13 +1,9 @@
 #!/bin/bash
 
-# Install ImageMagick if not already present
-if ! command -v convert &> /dev/null
-then
-    echo "ImageMagick not found. Installing..."
-    apt-get update && apt-get install -y imagemagick
-    echo "ImageMagick installed."
-else
-    echo "ImageMagick is already installed."
+# Verify ImageMagick is available
+if ! command -v convert >/dev/null 2>&1; then
+    echo "Error: ImageMagick 'convert' command not found. Please install ImageMagick before running this script." >&2
+    exit 1
 fi
 
 # Navigate to the public directory
@@ -16,7 +12,13 @@ mkdir -p client/public
 cd client/public
 
 # Define the source image
-SOURCE_IMAGE="generated-icon.png"
+SOURCE_IMAGE="${1:-generated-icon.png}"
+
+# Basic validation to avoid command injection
+if [[ "$SOURCE_IMAGE" =~ [^a-zA-Z0-9._/-] ]]; then
+    echo "Error: invalid characters in source image path." >&2
+    exit 1
+fi
 
 # Check if the source image exists
 if [ ! -f "$SOURCE_IMAGE" ]; then
