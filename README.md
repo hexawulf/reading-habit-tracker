@@ -156,8 +156,7 @@ You — the reader, the tracker, the book lover!
 Run `npm audit` regularly or schedule it in your CI or a cron job to catch vulnerable dependencies.
 
 📬 Contact
-hexawulf
-Twitter: @hexawulf
-📧 hexawulf@gmail.com
+0xWulf
+📧 dev@0xWulf.dev
 
 GitHub Project: https://github.com/hexawulf/reading-habit-tracker
