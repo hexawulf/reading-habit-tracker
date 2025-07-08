@@ -1,9 +1,5 @@
 ## 📚 Reading Habit Tracker
 
-<p align="center">
-  <img src="generated-icon.png" alt="Book Icon" width="180"/>
-</p>
-
 # Reading Habit Tracker
 
 A web application for tracking and visualizing your reading habits using Goodreads export data. This tool allows you to upload your Goodreads library export CSV and provides insightful visualizations and statistics about your reading history.
