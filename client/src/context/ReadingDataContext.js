@@ -50,14 +50,17 @@ export const ReadingDataProvider = ({ children }) => {
     }
 
     const booksWithValidDates = books.filter(book => book.dateRead && !isNaN(new Date(book.dateRead)));
-    console.log("Total books (original input):", books.length);
-    console.log("Total books (with valid dates):", booksWithValidDates.length);
+    // eslint-disable-next-line no-console
+    console.debug("Total books (original input):", books.length);
+    // eslint-disable-next-line no-console
+    console.debug("Total books (with valid dates):", booksWithValidDates.length);
 
     const booksIn2025 = booksWithValidDates.filter(book => {
       const year = new Date(book.dateRead).getFullYear();
       return year === 2025;
     });
-    console.log("Books read in 2025 (with valid dates):", booksIn2025.length);
+    // eslint-disable-next-line no-console
+    console.debug("Books read in 2025 (with valid dates):", booksIn2025.length);
 
     // If no books have valid dates, return existing stats or a default for readingPace
     if (booksWithValidDates.length === 0) {
@@ -260,9 +263,11 @@ useEffect(() => {
 }, [calculateStats, calculateGoalProgress]); // Add dependencies if they are defined outside the effect
 
   const processReadingData = (data) => {
-    console.log("processReadingData called with:", data);
+    // eslint-disable-next-line no-console
+    console.debug("processReadingData called with:", data);
     // console.log("Current readingData state:", readingData); // readingData might be stale here, prefer 'data'
-    console.log("Data type:", typeof data, "Array?", Array.isArray(data));
+    // eslint-disable-next-line no-console
+    console.debug("Data type:", typeof data, "Array?", Array.isArray(data));
     setLoading(true);
     try {
       // ✅ ALWAYS recalculate stats, never trust pre-calculated ones
