@@ -27,13 +27,12 @@ npm install
 mkdir uploads
 ```
 
-3. Create a `.env` file in the root directory with the following content:
+3. Copy `.env.example` to `.env` and fill in your secrets:
 
+```bash
+cp .env.example .env
+# edit .env to add your credentials
 ```
-PORT=5000
-NODE_ENV=development
-```
-
 ### 3. Set Up the Frontend
 
 1. Navigate to the client directory:
@@ -271,6 +270,7 @@ jobs:
 ```
 
 2. Push the changes to GitHub to trigger the deployment workflow.
+3. Schedule a regular security check with `npm audit` using your CI or a cron job.
 
 ## Troubleshooting
 

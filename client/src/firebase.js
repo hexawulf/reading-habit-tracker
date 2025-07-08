@@ -2,11 +2,10 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
-// Log actual env values for debugging
-console.log("Attempting to load Firebase config from process.env:");
-console.log("REACT_APP_FIREBASE_API_KEY:", process.env.REACT_APP_FIREBASE_API_KEY);
-console.log("REACT_APP_FIREBASE_AUTH_DOMAIN:", process.env.REACT_APP_FIREBASE_AUTH_DOMAIN);
-console.log("REACT_APP_FIREBASE_PROJECT_ID:", process.env.REACT_APP_FIREBASE_PROJECT_ID);
+// Use debug level logging to avoid cluttering the console in production
+// and prevent accidental exposure of sensitive environment variables.
+// eslint-disable-next-line no-console
+console.debug("Initializing Firebase with provided environment configuration");
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -20,16 +19,20 @@ const firebaseConfig = {
 let app;
 if (!getApps().length) {
   app = initializeApp(firebaseConfig);
-  console.log("✅ Firebase initialized a new app.");
+  // eslint-disable-next-line no-console
+  console.info("✅ Firebase initialized a new app.");
 } else {
   app = getApp();
-  console.log("ℹ️ Firebase using existing app.");
+  // eslint-disable-next-line no-console
+  console.info("ℹ️ Firebase using existing app.");
 }
 
 const auth = getAuth(app);
 
 // Final sanity check
-console.log("🔥 Firebase App Name:", app.name);
-console.log("🔥 Firebase API Key used:", firebaseConfig.apiKey);
+// eslint-disable-next-line no-console
+console.info("🔥 Firebase App Name:", app.name);
+// eslint-disable-next-line no-console
+console.info("🔥 Firebase API Key used:", firebaseConfig.apiKey);
 
 export { app, auth };
