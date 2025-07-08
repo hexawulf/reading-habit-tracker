@@ -159,13 +159,18 @@ const Dashboard = () => {
 
   const readThisYear = stats.readingByYear[currentYear] || 0;
 
-  // Log key stats only when values change to avoid console spam
-  React.useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Total books:', stats.totalBooks);
-      console.log(`Read in ${currentYear}:`, readThisYear);
-    }
-  }, [stats.totalBooks, readThisYear, currentYear]);
+// Log key stats only when values change to avoid console spam
+React.useEffect(() => {
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    typeof stats.totalBooks === 'number' &&
+    typeof readThisYear === 'number'
+  ) {
+    console.log('Total books:', stats.totalBooks);
+    console.log(`Read in ${currentYear}:`, readThisYear);
+  }
+}, [stats.totalBooks, readThisYear, currentYear]);
+
   
   const tickFormatter = (value) => {
     if (typeof value === 'number' && value > 1000) {
