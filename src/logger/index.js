@@ -2,7 +2,11 @@ const winston = require('winston');
 const path = require('path');
 const fs = require('fs');
 
-const centralizedLogFile = '/home/zk/logs/mybooks.log';
+// Allow overriding the log directory via environment variable.
+// Defaults to a local "logs" folder within the project root for safety.
+const logDir = process.env.LOG_DIR ||
+  path.resolve(__dirname, '../../logs');
+const centralizedLogFile = path.join(logDir, 'mybooks.log');
 const centralizedLogDir = path.dirname(centralizedLogFile);
 
 // Create the directory if it doesn't exist.
