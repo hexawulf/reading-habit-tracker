@@ -35,6 +35,21 @@ const lightThemeStyles = {
 const Dashboard = () => {
   const { stats, readingData, loading, error, goalProgress } = useReadingData();
 
+ const readThisYear = stats.readingByYear[currentYear] || 0;
+
+// Log key stats only when values change to avoid console spam
+React.useEffect(() => {
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    typeof stats.totalBooks === 'number' &&
+    typeof readThisYear === 'number'
+  ) {
+    console.log('Total books:', stats.totalBooks);
+    console.log(`Read in ${currentYear}:`, readThisYear);
+  }
+}, [stats.totalBooks, readThisYear, currentYear]);
+  
+
   // Function to determine active theme styles
   const getActiveThemeStyles = () => {
     const currentTheme = localStorage.getItem('theme') || 'dark';
@@ -157,19 +172,7 @@ const Dashboard = () => {
   // Display more recent books for a denser layout, e.g., 10
   const recentBooks = safeData.slice(0, 10);
 
-  const readThisYear = stats.readingByYear[currentYear] || 0;
-
-// Log key stats only when values change to avoid console spam
-React.useEffect(() => {
-  if (
-    process.env.NODE_ENV !== 'production' &&
-    typeof stats.totalBooks === 'number' &&
-    typeof readThisYear === 'number'
-  ) {
-    console.log('Total books:', stats.totalBooks);
-    console.log(`Read in ${currentYear}:`, readThisYear);
-  }
-}, [stats.totalBooks, readThisYear, currentYear]);
+ 
 
   
   const tickFormatter = (value) => {
