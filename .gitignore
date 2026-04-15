@@ -1,10 +1,40 @@
+# ── Dependencies ──────────────────────────────────────────────────────────────
 node_modules/
+.npm/
+.yarn/
+.pnp.*
+
+# ── Environment & Secrets ─────────────────────────────────────────────────────
+# NEVER commit .env files — they contain real credentials
+.env
+.env.*
+!.env.example
+
+# ── Build Outputs ─────────────────────────────────────────────────────────────
+client/build/
+build/
+dist/
 .cache/
+
+# ── User Data & Uploads ───────────────────────────────────────────────────────
+# These contain real user reading data — never commit them
 uploads/
 user_data/
-.env
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+logs/
 *.log
+*.log.gz
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# ── OS & Editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+
+# ── Misc ──────────────────────────────────────────────────────────────────────
+*.tgz
+coverage/
