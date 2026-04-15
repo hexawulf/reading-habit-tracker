@@ -151,7 +151,7 @@ const RecentBooks = () => {
                   {'★'.repeat(book.myRating || 0)}
                   {'☆'.repeat(5 - (book.myRating || 0))}
                 </td>
-                <td>{new Date(book.dateRead).toLocaleDateString()}</td>
+                <td>{book.dateRead ? new Date(book.dateRead).toLocaleDateString() : 'N/A'}</td>
                 <td>{book.pages || 'N/A'}</td>
               </tr>
             ))}

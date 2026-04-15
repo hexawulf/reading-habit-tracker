@@ -11,256 +11,241 @@ export const useReadingData = () => {
   return context;
 };
 
-export const ReadingDataProvider = ({ children }) => {
-  const [readingData, setReadingData] = useState([]);
-  const [stats, setStats] = useState({
-    totalBooks: 0,
-    averageRating: 0,
-    readingByYear: {},
-    readingByMonth: {},
-    ratingDistribution: {},
-    bestYear: null,
-    worstYear: null,
-    averagePerYear: 0,
-    averagePerMonth: 0,
+const EMPTY_STATS = {
+  totalBooks: 0,
+  averageRating: 0,
+  readingByYear: {},
+  readingByMonth: {},
+  ratingDistribution: {},
+  bestYear: null,
+  worstYear: null,
+  averagePerYear: 0,
+  averagePerMonth: 0,
+  readingPace: { booksPerMonth: 0, booksPerYear: 0, pagesPerDay: 0 },
+  pageStats: { totalPages: 0, averageLength: 0, longestBook: { title: '', pages: 0 } },
+  topAuthors: [],
+  readingByGenre: {}
+};
+
+const EMPTY_GOAL_PROGRESS = {
+  yearly: { current: 0, target: 52, percentage: 0 },
+  monthly: { current: 0, target: 4, percentage: 0 }
+};
+
+// Pure functions — defined outside the component so their references are stable
+// and can be safely listed as useEffect dependencies without causing infinite loops.
+
+function calculateStats(books) {
+  if (!books || books.length === 0) {
+    return { ...EMPTY_STATS };
+  }
+
+  const booksWithValidDates = books.filter(
+    book => book.dateRead && !isNaN(new Date(book.dateRead))
+  );
+
+  if (booksWithValidDates.length === 0) {
+    return { ...EMPTY_STATS, totalBooks: books.length };
+  }
+
+  let earliestDate = new Date(booksWithValidDates[0].dateRead);
+  let latestDate = new Date(booksWithValidDates[0].dateRead);
+
+  booksWithValidDates.forEach(book => {
+    const currentDate = new Date(book.dateRead);
+    if (currentDate < earliestDate) earliestDate = currentDate;
+    if (currentDate > latestDate) latestDate = currentDate;
+  });
+
+  const totalReadingDays = Math.max(
+    1,
+    Math.ceil((latestDate - earliestDate) / (1000 * 60 * 60 * 24))
+  );
+
+  let totalReadingMonths =
+    (latestDate.getFullYear() - earliestDate.getFullYear()) * 12 +
+    (latestDate.getMonth() - earliestDate.getMonth()) + 1;
+  totalReadingMonths = Math.max(1, totalReadingMonths);
+
+  const readingByYear = {};
+  const readingByMonth = {};
+  let totalPagesWithValidDates = 0;
+
+  booksWithValidDates.forEach(book => {
+    const year = new Date(book.dateRead).getFullYear().toString();
+    const month = new Date(book.dateRead).getMonth();
+
+    readingByYear[year] = (readingByYear[year] || 0) + 1;
+
+    if (!readingByMonth[year]) readingByMonth[year] = Array(12).fill(0);
+    readingByMonth[year][month]++;
+    totalPagesWithValidDates += (book.pages || 0);
+  });
+
+  const authorCounts = {};
+  booksWithValidDates.forEach(book => {
+    if (book.author) {
+      authorCounts[book.author] = (authorCounts[book.author] || 0) + 1;
+    }
+  });
+
+  const topAuthors = Object.entries(authorCounts)
+    .map(([author, count]) => ({ author, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const numBooksWithValidDates = booksWithValidDates.length;
+
+  const currentYear = new Date().getFullYear();
+  const booksThisYear = booksWithValidDates.filter(
+    book => new Date(book.dateRead).getFullYear() === currentYear
+  );
+  const monthsElapsedThisYear = new Date().getMonth() + 1;
+  const booksPerMonthCurrentYear =
+    monthsElapsedThisYear > 0 ? booksThisYear.length / monthsElapsedThisYear : 0;
+
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const recentBooks = booksWithValidDates.filter(
+    book => new Date(book.dateRead) >= thirtyDaysAgo
+  );
+  const recentPages = recentBooks.reduce((sum, book) => sum + (book.pages || 0), 0);
+  const pagesPerDayLast30Days = recentBooks.length > 0 ? recentPages / 30 : 0;
+
+  return {
+    totalBooks: books.length,
+    averageRating:
+      numBooksWithValidDates > 0
+        ? booksWithValidDates.reduce((sum, book) => sum + (book.myRating || 0), 0) /
+          numBooksWithValidDates
+        : 0,
+    readingByYear,
+    readingByMonth,
+    ratingDistribution:
+      numBooksWithValidDates > 0
+        ? booksWithValidDates.reduce(
+            (dist, book) => {
+              const rating = Number(book.myRating);
+              if (rating >= 1 && rating <= 5) {
+                dist[rating] = (dist[rating] || 0) + 1;
+              }
+              return dist;
+            },
+            { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+          )
+        : { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
     readingPace: {
-      booksPerMonth: 0,
-      booksPerYear: 0,
-      pagesPerDay: 0
+      booksPerMonth: booksPerMonthCurrentYear,
+      booksPerYear: numBooksWithValidDates,
+      pagesPerDay: pagesPerDayLast30Days
     },
     pageStats: {
-      totalPages: 0,
-      averageLength: 0,
-      longestBook: { title: '', pages: 0 }
-    },
-    topAuthors: [],
-    readingByGenre: {}
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [goalProgress, setGoalProgress] = useState({
-    yearly: { current: 0, target: 0, percentage: 0 },
-    monthly: { current: 0, target: 0, percentage: 0 }
-  });
-
-  const calculateStats = (books) => {
-    // If books is empty or undefined, return the current stats object (which has defaults)
-    if (!books || books.length === 0) {
-      return stats;
-    }
-
-    const booksWithValidDates = books.filter(book => book.dateRead && !isNaN(new Date(book.dateRead)));
-
-    const booksIn2025 = booksWithValidDates.filter(book => {
-      const year = new Date(book.dateRead).getFullYear();
-      return year === 2025;
-    });
-
-    // If no books have valid dates, return existing stats or a default for readingPace
-    if (booksWithValidDates.length === 0) {
-      return {
-        ...stats, // Return existing stats
-        readingPace: { // Ensure readingPace is explicitly zeroed out
-          booksPerMonth: 0,
-          booksPerYear: 0,
-          pagesPerDay: 0
-        }
-      };
-    }
-
-    let earliestDate = new Date(booksWithValidDates[0].dateRead);
-    let latestDate = new Date(booksWithValidDates[0].dateRead);
-
-    booksWithValidDates.forEach(book => {
-      const currentDate = new Date(book.dateRead);
-      if (currentDate < earliestDate) {
-        earliestDate = currentDate;
-      }
-      if (currentDate > latestDate) {
-        latestDate = currentDate;
-      }
-    });
-
-    let totalReadingDays = Math.max(1, Math.ceil((latestDate - earliestDate) / (1000 * 60 * 60 * 24)));
-    if (earliestDate.getTime() === latestDate.getTime()) {
-      totalReadingDays = 1;
-    }
-
-    let totalReadingMonths =
-      (latestDate.getFullYear() - earliestDate.getFullYear()) * 12 +
-      (latestDate.getMonth() - earliestDate.getMonth()) + 1;
-    totalReadingMonths = Math.max(1, totalReadingMonths);
-
-
-    // Group books by year and month using booksWithValidDates
-    const readingByYear = {};
-    const readingByMonth = {};
-    let totalPagesWithValidDates = 0;
-
-    booksWithValidDates.forEach(book => {
-      const year = new Date(book.dateRead).getFullYear().toString();
-      const month = new Date(book.dateRead).getMonth();
-
-      readingByYear[year] = (readingByYear[year] || 0) + 1;
-
-      if (!readingByMonth[year]) readingByMonth[year] = Array(12).fill(0);
-      readingByMonth[year][month]++;
-      totalPagesWithValidDates += (book.pages || 0);
-    });
-
-    // Calculate top authors using booksWithValidDates
-    const authorCounts = {};
-    booksWithValidDates.forEach(book => {
-      if (book.author) {
-        authorCounts[book.author] = (authorCounts[book.author] || 0) + 1;
-      }
-    });
-
-    const topAuthors = Object.entries(authorCounts)
-      .map(([author, count]) => ({ author, count }))
-      .sort((a, b) => b.count - a.count);
-
-    const numBooksWithValidDates = booksWithValidDates.length;
-
-    // New logic for Books/Month
-    const currentYear = new Date().getFullYear();
-    const booksThisYear = booksWithValidDates.filter(book => {
-      const year = new Date(book.dateRead).getFullYear();
-      return year === currentYear;
-    });
-    const monthsElapsedThisYear = new Date().getMonth() + 1; // January is 0, so add 1
-    const booksPerMonthCurrentYear = monthsElapsedThisYear > 0 ? booksThisYear.length / monthsElapsedThisYear : 0;
-
-    // New logic for Pages/Day
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    const recentBooks = booksWithValidDates.filter(book => {
-      const readDate = new Date(book.dateRead);
-      return readDate >= thirtyDaysAgo;
-    });
-
-    const recentPages = recentBooks.reduce((sum, book) => sum + (book.pages || 0), 0);
-    const pagesPerDayLast30Days = recentBooks.length > 0 ? recentPages / 30 : 0;
-
-    return {
-      totalBooks: books.length, // Original total books
-      averageRating: numBooksWithValidDates > 0
-        ? booksWithValidDates.reduce((sum, book) => sum + (book.myRating || 0), 0) / numBooksWithValidDates
-        : 0,
-      readingByYear,
-      readingByMonth,
-      ratingDistribution: numBooksWithValidDates > 0
-        ? booksWithValidDates.reduce((dist, book) => {
-            const rating = Number(book.myRating);
-            if (rating >= 1 && rating <= 5) {
-              dist[rating] = (dist[rating] || 0) + 1;
-            }
-            return dist;
-          }, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 })
-        : { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }, // Default if no books with valid dates
-      readingPace: {
-        booksPerMonth: booksPerMonthCurrentYear, // Updated calculation
-        booksPerYear: numBooksWithValidDates, // As per instruction, keep this based on count
-        pagesPerDay: pagesPerDayLast30Days, // Updated calculation
-      },
-      pageStats: {
-        totalPages: totalPagesWithValidDates,
-        averageLength: numBooksWithValidDates > 0 ? totalPagesWithValidDates / numBooksWithValidDates : 0,
-        longestBook: numBooksWithValidDates > 0
-          ? booksWithValidDates.reduce((longest, book) =>
-              (book.pages > (longest?.pages || 0)) ? book : longest,
+      totalPages: totalPagesWithValidDates,
+      averageLength:
+        numBooksWithValidDates > 0
+          ? totalPagesWithValidDates / numBooksWithValidDates
+          : 0,
+      longestBook:
+        numBooksWithValidDates > 0
+          ? booksWithValidDates.reduce(
+              (longest, book) =>
+                book.pages > (longest?.pages || 0) ? book : longest,
               { title: '', pages: 0 }
             )
-          : { title: '', pages: 0 } // Default if no books with valid dates
-      },
-      topAuthors,
-      readingByGenre: {} // Assuming this will be populated elsewhere or is fine as default
-    };
+          : { title: '', pages: 0 }
+    },
+    topAuthors,
+    readingByGenre: {}
   };
+}
 
-  const calculateGoalProgress = (books) => {
-    if (!books || !books.length) {
-      return {
-        yearly: { current: 0, target: 52, percentage: 0 },
-        monthly: { current: 0, target: 4, percentage: 0 }
-      };
-    }
+function calculateGoalProgress(books) {
+  if (!books || !books.length) {
+    return { ...EMPTY_GOAL_PROGRESS };
+  }
 
-    // Time variables removed as they're not currently used
+  const currentYear = new Date().getFullYear().toString();
+  const currentMonth = new Date().getMonth();
 
-    const currentYear = new Date().getFullYear().toString();
-    const currentMonth = new Date().getMonth();
+  const booksThisYear = books.filter(book => {
+    if (!book.dateRead) return false;
+    return new Date(book.dateRead).getFullYear().toString() === currentYear;
+  }).length;
 
-    const booksThisYear = books.filter(book => 
-      new Date(book.dateRead).getFullYear().toString() === currentYear
-    ).length;
+  const booksThisMonth = books.filter(book => {
+    if (!book.dateRead) return false;
+    const date = new Date(book.dateRead);
+    return (
+      date.getFullYear().toString() === currentYear &&
+      date.getMonth() === currentMonth
+    );
+  }).length;
 
-    const booksThisMonth = books.filter(book => {
-      const date = new Date(book.dateRead);
-      return date.getFullYear().toString() === currentYear && 
-             date.getMonth() === currentMonth;
-    }).length;
-
-    return {
-      yearly: {
-        current: booksThisYear,
-        target: 52,
-        percentage: Math.round((booksThisYear / 52) * 100)
-      },
-      monthly: {
-        current: booksThisMonth,
-        target: 4,
-        percentage: Math.round((booksThisMonth / 4) * 100)  
-      }
-    };
-  };
-
-useEffect(() => {
-  const loadLocalData = async () => {
-    try {
-      const saved = await storageService.loadData();
-      let books = [];
-
-      if (Array.isArray(saved?.readingData)) {
-        books = saved.readingData;
-      } else if (saved?.readingData?.books) {
-        books = saved.readingData.books;
-      }
-
-      // ✅ FORCE RECALCULATION - Don't load cached stats
-      if (books.length > 0) {
-        const freshStats = calculateStats(books); // Ensure calculateStats is available here
-        const freshGoalProgress = calculateGoalProgress(books); // Ensure calculateGoalProgress is available here
-
-        setReadingData(books);
-        setStats(freshStats);
-        setGoalProgress(freshGoalProgress);
-
-        // Save the recalculated stats
-        storageService.saveData({
-          readingData: books,
-          stats: freshStats,
-          goalProgress: freshGoalProgress
-        });
-      }
-
-    } catch (err) {
-      setError(err.message);
-      setReadingData([]);
-    } finally {
-      setLoading(false);
+  return {
+    yearly: {
+      current: booksThisYear,
+      target: 52,
+      percentage: Math.round((booksThisYear / 52) * 100)
+    },
+    monthly: {
+      current: booksThisMonth,
+      target: 4,
+      percentage: Math.round((booksThisMonth / 4) * 100)
     }
   };
+}
 
-  loadLocalData();
-}, [calculateStats, calculateGoalProgress]); // Add dependencies if they are defined outside the effect
+export const ReadingDataProvider = ({ children }) => {
+  const [readingData, setReadingData] = useState([]);
+  const [stats, setStats] = useState({ ...EMPTY_STATS });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [goalProgress, setGoalProgress] = useState({ ...EMPTY_GOAL_PROGRESS });
+
+  useEffect(() => {
+    const loadLocalData = async () => {
+      try {
+        const saved = await storageService.loadData();
+        let books = [];
+
+        if (Array.isArray(saved?.readingData)) {
+          books = saved.readingData;
+        } else if (saved?.readingData?.books) {
+          books = saved.readingData.books;
+        }
+
+        if (books.length > 0) {
+          const freshStats = calculateStats(books);
+          const freshGoalProgress = calculateGoalProgress(books);
+
+          setReadingData(books);
+          setStats(freshStats);
+          setGoalProgress(freshGoalProgress);
+
+          storageService.saveData({
+            readingData: books,
+            stats: freshStats,
+            goalProgress: freshGoalProgress
+          });
+        }
+      } catch (err) {
+        setError(err.message);
+        setReadingData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadLocalData();
+  }, []); // calculateStats and calculateGoalProgress are module-level — stable references
 
   const processReadingData = (data) => {
     setLoading(true);
     try {
-      // ✅ ALWAYS recalculate stats, never trust pre-calculated ones
-      const booksToProcess = (data && data.books) ? data.books : (Array.isArray(data) ? data : readingData);
+      const booksToProcess = data?.books
+        ? data.books
+        : Array.isArray(data)
+        ? data
+        : readingData;
       const calculatedStats = calculateStats(booksToProcess);
       const calculatedGoalProgress = calculateGoalProgress(booksToProcess);
 
@@ -273,25 +258,30 @@ useEffect(() => {
         stats: calculatedStats,
         goalProgress: calculatedGoalProgress
       });
-    } catch (error) {
-      console.error("Error in processReadingData:", error); // It's good to log the actual error
-      setError(error.message); // Set error message
+    } catch (err) {
+      console.error('Error in processReadingData:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   const updateGoals = (yearlyGoal, monthlyGoal) => {
+    const currentYear = new Date().getFullYear().toString();
+    const currentMonth = new Date().getMonth();
+    const yearCount = stats.readingByYear[currentYear] || 0;
+    const monthCount = stats.readingByMonth?.[currentYear]?.[currentMonth] || 0;
+
     const newGoalProgress = {
       yearly: {
-        current: stats.readingByYear[new Date().getFullYear()] || 0,
+        current: yearCount,
         target: yearlyGoal,
-        percentage: yearlyGoal > 0 ? Math.round(((stats.readingByYear[new Date().getFullYear()] || 0) / yearlyGoal) * 100) : 0
+        percentage: yearlyGoal > 0 ? Math.round((yearCount / yearlyGoal) * 100) : 0
       },
       monthly: {
-        current: stats.readingByMonth?.[new Date().getFullYear()]?.[new Date().getMonth()] || 0,
+        current: monthCount,
         target: monthlyGoal,
-        percentage: monthlyGoal > 0 ? Math.round(((stats.readingByMonth?.[new Date().getFullYear()]?.[new Date().getMonth()] || 0) / monthlyGoal) * 100) : 0
+        percentage: monthlyGoal > 0 ? Math.round((monthCount / monthlyGoal) * 100) : 0
       }
     };
 
@@ -302,54 +292,27 @@ useEffect(() => {
   const clearAllData = () => {
     storageService.clearData();
     setReadingData([]);
-    setStats({
-      totalBooks: 0,
-      averageRating: 0,
-      readingByYear: {},
-      readingByMonth: {},
-      ratingDistribution: {},
-      readingPace: { booksPerMonth: 0, booksPerYear: 0, pagesPerDay: 0 },
-      pageStats: { totalPages: 0, averageLength: 0, longestBook: { title: '', pages: 0 } },
-      topAuthors: [],
-      readingByGenre: {}
-    });
-    setGoalProgress({
-      yearly: { current: 0, target: 0, percentage: 0 },
-      monthly: { current: 0, target: 0, percentage: 0 }
-    });
+    setStats({ ...EMPTY_STATS });
+    setGoalProgress({ ...EMPTY_GOAL_PROGRESS });
   };
 
-const forceClearAndRecalculate = () => {
-  storageService.clearData();
-  if (readingData && readingData.length > 0) { // Ensure readingData is not null and has items
-    const freshStats = calculateStats(readingData);
-    const freshGoalProgress = calculateGoalProgress(readingData);
-    setStats(freshStats);
-    setGoalProgress(freshGoalProgress);
-    storageService.saveData({
-      readingData, // readingData itself doesn't change here, just its stats
-      stats: freshStats,
-      goalProgress: freshGoalProgress
-    });
-  } else {
-    // If readingData is empty, still clear stats and goalProgress from state
-    setStats({
-      totalBooks: 0,
-      averageRating: 0,
-      readingByYear: {},
-      readingByMonth: {},
-      ratingDistribution: {},
-      readingPace: { booksPerMonth: 0, booksPerYear: 0, pagesPerDay: 0 },
-      pageStats: { totalPages: 0, averageLength: 0, longestBook: { title: '', pages: 0 } },
-      topAuthors: [],
-      readingByGenre: {}
-    });
-    setGoalProgress({
-      yearly: { current: 0, target: 0, percentage: 0 },
-      monthly: { current: 0, target: 0, percentage: 0 }
-    });
-  }
-};
+  const forceClearAndRecalculate = () => {
+    storageService.clearData();
+    if (readingData && readingData.length > 0) {
+      const freshStats = calculateStats(readingData);
+      const freshGoalProgress = calculateGoalProgress(readingData);
+      setStats(freshStats);
+      setGoalProgress(freshGoalProgress);
+      storageService.saveData({
+        readingData,
+        stats: freshStats,
+        goalProgress: freshGoalProgress
+      });
+    } else {
+      setStats({ ...EMPTY_STATS });
+      setGoalProgress({ ...EMPTY_GOAL_PROGRESS });
+    }
+  };
 
   const contextValue = {
     readingData,
@@ -360,13 +323,11 @@ const forceClearAndRecalculate = () => {
     processReadingData,
     updateGoals,
     clearAllData,
-    forceClearAndRecalculate // <--- new function added
+    forceClearAndRecalculate
   };
 
   return (
-    <ReadingDataContext.Provider 
-      value={contextValue}
-    >
+    <ReadingDataContext.Provider value={contextValue}>
       {children}
     </ReadingDataContext.Provider>
   );

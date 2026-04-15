@@ -58,12 +58,14 @@ const storageService = {
     }
   },
 
-  clearData: () => {
+  clearData: async () => {
     try {
       localStorage.removeItem('readingData');
       localStorage.removeItem('stats');
+      // Note: intentionally does not remove 'user' — clearing reading data is
+      // separate from logging out. Call removeItem('user') explicitly on logout.
       if (storageService.isLoggedIn()) {
-        fetch('/api/user/data', {
+        await fetch('/api/user/data', {
           method: 'DELETE',
           credentials: 'include'
         });
