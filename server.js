@@ -708,21 +708,27 @@ function calculateAverageBooksPerMonth(books) {
   return parseFloat((books.length / totalMonths).toFixed(2));
 }
 
-// Serve static files from the client/build folder if in production
-if (process.env.NODE_ENV === 'production') {
-  // Serve static files
-  app.use(express.static(path.join(__dirname, 'client/build')));
+// Health check endpoint (must come before static files)
+app.get('/healthz', (req, res) => {
+  res.status(200).json({ ok: true, timestamp: new Date().toISOString() });
+});
 
-  // For any request that doesn't match an API route, send the index.html file
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
-  });
-} else {
-  // In development mode, add a basic root route
-  app.get('/', (req, res) => {
-    res.send('Reading Habits API is running... Use the API endpoints to interact with the service or connect your frontend application.');
-  });
-}
+// Serve static files from the client build directory
+const staticDir = path.join(__dirname, 'client', 'build');
+app.use(express.static(staticDir, {
+  maxAge: process.env.NODE_ENV === 'production' ? '1y' : 0,
+  etag: true
+}));
+
+// SPA fallback: send index.html for non-API routes
+app.get('*', (req, res) => {
+  // Don't intercept API 404s
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  // Serve the SPA entry point for all other routes
+  res.sendFile(path.join(staticDir, 'index.html'));
+});
 
 // Function to find an available port
 function findAvailablePort(startPort, callback) {

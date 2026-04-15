@@ -7,12 +7,15 @@ const workingDir = process.env.PM2_CWD || path.resolve(__dirname);
 module.exports = {
   apps: [{
     name: "mybooks",  // ← Match existing PM2 name
-    script: "npm",
-    args: "start",
+    script: "server.js",  // Run server.js directly, not via npm
     cwd: workingDir,
     env: {
-      NODE_ENV: "production"
+      NODE_ENV: "production",
+      PORT: 5003,
+      LOG_DIR: path.join(workingDir, 'logs')
     },
+    error_file: path.join(workingDir, 'logs', 'mybooks-error.log'),
+    out_file: path.join(workingDir, 'logs', 'mybooks-out.log'),
     instances: 1,
     autorestart: true,
     watch: false,
