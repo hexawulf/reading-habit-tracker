@@ -4,7 +4,6 @@ import { ReadingDataProvider } from './context/ReadingDataContext';
 import './App.css';
 
 // Import components
-import Auth from './components/Auth';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Footer from './components/Footer';

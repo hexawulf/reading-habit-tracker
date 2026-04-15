@@ -2,9 +2,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useReadingData } from '../context/ReadingDataContext';
-import { 
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
+import {
+  BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import './Dashboard.css';
 
@@ -33,7 +33,7 @@ const lightThemeStyles = {
 };
 
 const Dashboard = () => {
-  const { stats, readingData, loading, error, goalProgress } = useReadingData();
+  const { stats, readingData, loading, error } = useReadingData();
 
   // Determine current year as soon as the component renders so it's available
   // for other calculations
@@ -57,7 +57,6 @@ const Dashboard = () => {
 
   // Function to determine active theme styles
   const getActiveThemeStyles = () => {
-    const currentTheme = localStorage.getItem('theme') || 'dark';
     const isLight = document.body.classList.contains('light-theme');
 
     // Prioritize body class if it's set and potentially out of sync with localStorage

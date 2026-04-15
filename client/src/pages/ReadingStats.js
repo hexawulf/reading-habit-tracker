@@ -1,11 +1,10 @@
 import React from 'react';
 import { useReadingData } from '../context/ReadingDataContext';
-import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import './ReadingStats.css';
 
 // Night Owl theme colors from Dashboard.js (or a shared constants file)
 const NIGHT_OWL_ACCENT_1 = "var(--night-owl-accent1)";
-const NIGHT_OWL_ACCENT_2 = "var(--night-owl-accent2)";
 const NIGHT_OWL_TEXT = "var(--night-owl-text)";
 const NIGHT_OWL_BORDER = "var(--night-owl-border)";
 const RATING_COLORS = [ // Night Owl friendly rating colors

@@ -1,11 +1,11 @@
 
-import React, { useContext } from 'react';
+import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useReadingData } from '../context/ReadingDataContext';
 
 export default function AuthorBooks() {
   const { name } = useParams();
-  const { stats, readingData } = useReadingData();
+  const { readingData } = useReadingData();
   
   const displayName = decodeURIComponent(name);
   
