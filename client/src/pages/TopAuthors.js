@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useReadingData } from '../context/ReadingDataContext';
-import { FiUser } from 'react-icons/fi'; // Generic user icon
 import './TopAuthors.css';
 
 const TopAuthors = () => {

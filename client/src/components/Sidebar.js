@@ -10,7 +10,6 @@ import {
   FiBookOpen,
   FiUsers,
   FiSettings,
-  FiTarget, // Added for Goals
   FiUploadCloud // Added for Upload
 } from 'react-icons/fi';
 import './Sidebar.css';

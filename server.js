@@ -61,6 +61,7 @@ if (!mongoURI) {
   process.exit(1);
 }
 
+mongoose.set('strictQuery', false);
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -711,13 +712,19 @@ app.get('*', (req, res) => {
 
 // Global error handler — must be registered before listen()
 app.use((err, req, res, _next) => {
-  logger.error('Unhandled exception in global error handler:', {
-    error: { message: err.message, stack: err.stack },
-    url: req.originalUrl,
-    method: req.method,
-    ip: req.ip
-  });
-  res.status(500).json({ error: 'Unexpected server error. Please try again later.' });
+  const status = err.status || err.statusCode || 500;
+  // 4xx errors are client/scanner noise — log at warn to keep error logs meaningful
+  if (status >= 400 && status < 500) {
+    logger.warn('Client error:', { status, url: req.originalUrl, message: err.message, ip: req.ip });
+  } else {
+    logger.error('Unhandled server error:', {
+      error: { message: err.message, stack: err.stack },
+      url: req.originalUrl,
+      method: req.method,
+      ip: req.ip
+    });
+  }
+  res.status(status).json({ error: err.message || 'Unexpected server error. Please try again later.' });
 });
 
 const PORT = process.env.PORT || 5003;

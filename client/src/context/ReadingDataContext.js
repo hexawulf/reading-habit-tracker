@@ -57,16 +57,6 @@ function calculateStats(books) {
     if (currentDate > latestDate) latestDate = currentDate;
   });
 
-  const totalReadingDays = Math.max(
-    1,
-    Math.ceil((latestDate - earliestDate) / (1000 * 60 * 60 * 24))
-  );
-
-  let totalReadingMonths =
-    (latestDate.getFullYear() - earliestDate.getFullYear()) * 12 +
-    (latestDate.getMonth() - earliestDate.getMonth()) + 1;
-  totalReadingMonths = Math.max(1, totalReadingMonths);
-
   const readingByYear = {};
   const readingByMonth = {};
   let totalPagesWithValidDates = 0;

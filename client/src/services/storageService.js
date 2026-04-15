@@ -1,6 +1,4 @@
 
-const STORAGE_KEY = 'reading-habit-tracker-data';
-
 const storageService = {
   isLoggedIn: () => {
     return !!localStorage.getItem('user');
