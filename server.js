@@ -1,5 +1,5 @@
 require('dotenv').config();
-const logger = require('./src/logger'); // Import Winston logger
+const logger = require('./src/logger');
 
 const express = require('express');
 const multer = require('multer');
@@ -16,13 +16,6 @@ const User = require('./models/User');
 const fs = require('fs');
 const path = require('path');
 const csvParser = require('csv-parser');
-
-// Backend for Reading Habit Tracker
-// File: server.js
-
-const net = require('net'); // Add this for the port finder
-
-dayjs.extend(customParse);
 
 const parseDate = (s)=>{ if(!s||!s.trim())return null;
   const d=dayjs(s.trim(),['YYYY/MM/DD','MM/DD/YYYY','DD/MM/YYYY','YYYY-MM-DD'],true);
@@ -352,7 +345,17 @@ const storage = multer.diskStorage({
   }
 });
 
-const uploadSingle = multer({ storage }).single('file');
+const uploadSingle = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB cap
+  fileFilter: (_req, file, cb) => {
+    const ok = file.mimetype === 'text/csv' ||
+                file.mimetype === 'application/vnd.ms-excel' ||
+                path.extname(file.originalname).toLowerCase() === '.csv';
+    if (ok) return cb(null, true);
+    cb(new Error('Only CSV files are allowed'));
+  }
+}).single('file');
 
 // API endpoint for uploading Goodreads CSV
 app.post('/api/upload', (req, res) => {
@@ -461,11 +464,11 @@ app.delete('/api/files/delete/:filename', async (req, res) => {
     }
 
     const filename = req.params.filename;
-    const userDir = path.join(__dirname, 'uploads', req.session.userEmail);
-    const filePath = path.join(userDir, filename);
+    const userDir = path.resolve(__dirname, 'uploads', req.session.userEmail);
+    const filePath = path.resolve(userDir, filename);
 
-    // Check if file exists and is in user's directory
-    if (!fs.existsSync(filePath) || !filePath.startsWith(userDir)) {
+    // path.resolve normalises ".." segments; verify the resolved path is still inside userDir
+    if (!filePath.startsWith(userDir + path.sep) || !fs.existsSync(filePath)) {
       logger.warn('Attempt to delete non-existent or unauthorized file', { filename, userEmail: req.session.userEmail, filePath });
       return res.status(404).json({ error: 'File not found' });
     }
@@ -562,36 +565,33 @@ app.delete('/api/user/data', async (req, res) => {
 });
 
 app.get('/api/stats', async (req, res) => {
-  // In a production app, this would retrieve data from a database
-  // For now, we'll just use the most recent upload if available
-  const uploadDir = path.join(__dirname, 'uploads');
-  if (!fs.existsSync(uploadDir)) {
-    logger.warn('/api/stats called but upload directory does not exist');
+  // Serve stats for the authenticated user; fall back to the guest bucket.
+  const subDir = req.session?.userEmail || 'guest';
+  const userDir = path.join(__dirname, 'uploads', subDir);
+
+  let files;
+  try {
+    files = await fs.promises.readdir(userDir);
+  } catch {
+    logger.warn('/api/stats: upload directory not found', { subDir });
     return res.status(404).json({ error: 'No data available' });
   }
 
-  const files = fs.readdirSync(uploadDir);
-  if (files.length === 0) {
-    logger.warn('/api/stats called but no files in upload directory');
-    return res.status(404).json({ error: 'No data available' });
-  }
-
-  // Get the most recent file
   const mostRecentFile = files
-    .filter(file => file.startsWith('goodreads-'))
+    .filter(f => f.startsWith('goodreads-'))
     .sort()
     .reverse()[0];
 
   if (!mostRecentFile) {
-    logger.warn('/api/stats called but no Goodreads files found in upload directory');
+    logger.warn('/api/stats: no Goodreads files found', { subDir });
     return res.status(404).json({ error: 'No data available' });
   }
 
   try {
-    const results = await parseGoodreadsCsv(path.join(uploadDir, mostRecentFile));
-    logger.info('Successfully retrieved stats from most recent file', { file: mostRecentFile });
-    return res.json({ 
-      success: true, 
+    const results = await parseGoodreadsCsv(path.join(userDir, mostRecentFile));
+    logger.info('Successfully retrieved stats', { file: mostRecentFile, subDir });
+    return res.json({
+      success: true,
       stats: generateStats(results),
       data: results
     });
@@ -689,25 +689,6 @@ function generateStats(books) {
   };
 }
 
-// Helper function to calculate average books per month
-function calculateAverageBooksPerMonth(books) {
-  if (!books || books.length === 0) return 0;
-
-  // Get unique years with at least one book read
-  const yearsWithReading = new Set();
-  books.forEach(book => {
-    if (book.dateRead) {
-      yearsWithReading.add(book.dateRead.getFullYear());
-    }
-  });
-
-  // Calculate total months of active reading
-  const totalMonths = yearsWithReading.size * 12;
-
-  // Return average
-  return parseFloat((books.length / totalMonths).toFixed(2));
-}
-
 // Health check endpoint (must come before static files)
 app.get('/healthz', (req, res) => {
   res.status(200).json({ ok: true, timestamp: new Date().toISOString() });
@@ -722,52 +703,26 @@ app.use(express.static(staticDir, {
 
 // SPA fallback: send index.html for non-API routes
 app.get('*', (req, res) => {
-  // Don't intercept API 404s
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
-  // Serve the SPA entry point for all other routes
   res.sendFile(path.join(staticDir, 'index.html'));
 });
 
-// Function to find an available port
-function findAvailablePort(startPort, callback) {
-  const server = net.createServer();
-
-  server.listen(startPort, () => {
-    const port = server.address().port;
-    server.close(() => callback(port));
-  });
-
-  server.on('error', () => {
-    // Port is in use, try the next one
-    findAvailablePort(startPort + 1, callback);
-  });
-}
-
-// Start server with fixed port for piapps.dev
-const PORT = process.env.PORT || 5003;
-app.listen(PORT, '0.0.0.0', () => {
-  logger.info(`Server running on port ${PORT}`);
-});
-
-
-
-
-// Global error handler
-app.use((err, req, res, next) => {
+// Global error handler — must be registered before listen()
+app.use((err, req, res, _next) => {
   logger.error('Unhandled exception in global error handler:', {
-    error: {
-        message: err.message,
-        stack: err.stack,
-        // Include any other relevant properties from the error object
-        ...(typeof err === 'object' && err !== null ? err : {})
-    },
+    error: { message: err.message, stack: err.stack },
     url: req.originalUrl,
     method: req.method,
     ip: req.ip
   });
   res.status(500).json({ error: 'Unexpected server error. Please try again later.' });
+});
+
+const PORT = process.env.PORT || 5003;
+app.listen(PORT, '0.0.0.0', () => {
+  logger.info(`Server running on port ${PORT}`);
 });
 
 module.exports = app; // For testing purposes

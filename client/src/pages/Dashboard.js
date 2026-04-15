@@ -40,7 +40,7 @@ const Dashboard = () => {
   const currentYear = new Date().getFullYear().toString();
   const previousYear = (parseInt(currentYear) - 1).toString();
 
-  const readThisYear = stats.readingByYear[currentYear] || 0;
+  const readThisYear = (stats.readingByYear || {})[currentYear] || 0;
 
   // Log key stats only when values change to avoid console spam
   React.useEffect(() => {
@@ -136,29 +136,29 @@ const Dashboard = () => {
     );
   }
   
-  // Initialize missing objects/properties to prevent errors
-  stats.readingPace = stats.readingPace || { booksPerMonth: 0, booksPerYear: 0, pagesPerDay: 0 };
-  stats.pageStats = stats.pageStats || { averageLength: 0, longestBook: { title: 'N/A', pages: 0 } };
-  stats.readingByGenre = stats.readingByGenre || {};
-  stats.topAuthors = stats.topAuthors || [];
-  stats.readingByYear = stats.readingByYear || {};
-  stats.readingByMonth = stats.readingByMonth || {};
-  stats.ratingDistribution = stats.ratingDistribution || {};
-  
+  // Safe accessors — never mutate context state directly
+  const readingPace = stats.readingPace || { booksPerMonth: 0, booksPerYear: 0, pagesPerDay: 0 };
+  const pageStats = stats.pageStats || { totalPages: 0, averageLength: 0, longestBook: { title: '', pages: 0 } };
+  const topAuthors = stats.topAuthors || [];
+  const readingByYear = stats.readingByYear || {};
+  const readingByMonth = stats.readingByMonth || {};
+  const ratingDistribution = stats.ratingDistribution || {};
+  const readingByGenre = stats.readingByGenre || {};
+
   // Prepare data for charts
-  
-  const yearlyData = Object.entries(stats.readingByYear)
+
+  const yearlyData = Object.entries(readingByYear)
     .map(([year, count]) => ({ year, count }))
     .sort((a, b) => a.year.localeCompare(b.year));
   
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const monthlyComparisonData = monthNames.map((month, index) => ({
     month,
-    [currentYear]: stats.readingByMonth[currentYear]?.[index] || 0,
-    [previousYear]: stats.readingByMonth[previousYear]?.[index] || 0
+    [currentYear]: readingByMonth[currentYear]?.[index] || 0,
+    [previousYear]: readingByMonth[previousYear]?.[index] || 0
   }));
-  
-  const ratingData = Object.entries(stats.ratingDistribution)
+
+  const ratingData = Object.entries(ratingDistribution)
     .map(([rating, count]) => ({ rating: parseInt(rating), count }))
     .filter(item => item.count > 0 && item.rating > 0);
 
@@ -172,8 +172,11 @@ const Dashboard = () => {
   ];
 
   const safeData = Array.isArray(readingData) ? readingData : [];
-  // Display more recent books for a denser layout, e.g., 10
-  const recentBooks = safeData.slice(0, 10);
+  // Sort by dateRead descending so the most recently read books appear first
+  const recentBooks = [...safeData]
+    .filter(b => b.dateRead)
+    .sort((a, b) => new Date(b.dateRead) - new Date(a.dateRead))
+    .slice(0, 10);
 
  
 
@@ -204,7 +207,7 @@ const Dashboard = () => {
           </div>
           <div className="stat-card this-year" style={cardStyles}>
             <h3>Read in {currentYear}</h3>
-            <div className="stat-value">{stats.readingByYear[currentYear] || 0}</div>
+            <div className="stat-value">{readingByYear[currentYear] || 0}</div>
           </div>
           <div className="stat-card rating" style={cardStyles}>
             <h3>Average Rating</h3>
@@ -217,16 +220,16 @@ const Dashboard = () => {
           <div className="stat-card reading-pace" style={cardStyles}>
             <h3>Books/Month</h3>
             <div className="stat-value">
-              {stats.readingPace.booksPerMonth.toFixed(1)}
+              {(readingPace.booksPerMonth || 0).toFixed(1)}
             </div>
           </div>
-           <div className="stat-card" style={cardStyles}>
+          <div className="stat-card" style={cardStyles}>
             <h3>Pages/Day</h3>
-            <div className="stat-value">{stats.readingPace.pagesPerDay.toFixed(1)}</div>
+            <div className="stat-value">{(readingPace.pagesPerDay || 0).toFixed(1)}</div>
           </div>
           <div className="stat-card" style={cardStyles}>
             <h3>Avg. Length</h3>
-            <div className="stat-value">{Math.round(stats.pageStats.averageLength)}</div>
+            <div className="stat-value">{Math.round(pageStats.averageLength || 0)}</div>
           </div>
         </div>
       </div>
@@ -299,15 +302,15 @@ const Dashboard = () => {
         <div className="chart-card authors-list-card">
           <h3>Top Authors</h3>
           <ul className="top-authors">
-            {(stats.topAuthors || []).slice(0, 5).map((author, index) => (
+            {topAuthors.slice(0, 5).map((author, index) => (
               <li key={index} className="author-item">
                 <span className="author-name">{author.author}</span>
                 <span className="author-count">{author.count} books</span>
                 <div className="author-bar">
-                  <div 
+                  <div
                     className="author-bar-fill"
-                    style={{ 
-                      width: `${(author.count / (stats.topAuthors[0]?.count || 1)) * 100}%`,
+                    style={{
+                      width: `${(author.count / (topAuthors[0]?.count || 1)) * 100}%`,
                       backgroundColor: index % 2 === 0 ? NIGHT_OWL_ACCENT_1 : NIGHT_OWL_ACCENT_2
                     }}
                   ></div>
@@ -315,7 +318,7 @@ const Dashboard = () => {
               </li>
             ))}
           </ul>
-          {stats.topAuthors.length > 5 && 
+          {topAuthors.length > 5 &&
             <Link to="/top-authors" className="see-more-link">See More Authors</Link>}
         </div>
       </div>
@@ -346,32 +349,32 @@ const Dashboard = () => {
         <div className="insights-grid">
           <div className="insight-card">
             <h3>Total Pages</h3>
-            <p>{(stats.totalPages || 0).toLocaleString()}</p>
+            <p>{(pageStats.totalPages || stats.totalPages || 0).toLocaleString()}</p>
           </div>
           <div className="insight-card">
             <h3>Avg. Pages/Book</h3>
-            <p>{stats.pageStats.averageLength.toFixed(0)}</p>
+            <p>{(pageStats.averageLength || 0).toFixed(0)}</p>
           </div>
           <div className="insight-card">
             <h3>Books/Year</h3>
-            <p>{stats.readingPace.booksPerYear.toFixed(1)}</p>
+            <p>{(readingPace.booksPerYear || 0).toFixed(1)}</p>
           </div>
           <div className="insight-card">
             <h3>Longest Book</h3>
-            <p title={stats.pageStats.longestBook.title}>
-              {stats.pageStats.longestBook.title.length > 25 
-                ? stats.pageStats.longestBook.title.substring(0,22) + '...' 
-                : stats.pageStats.longestBook.title}
+            <p title={pageStats.longestBook?.title || ''}>
+              {(pageStats.longestBook?.title || '').length > 25
+                ? pageStats.longestBook.title.substring(0, 22) + '...'
+                : (pageStats.longestBook?.title || 'N/A')}
             </p>
-            <p>{(stats.pageStats.longestBook.pages || 0).toLocaleString()} pages</p>
+            <p>{(pageStats.longestBook?.pages || 0).toLocaleString()} pages</p>
           </div>
           <div className="insight-card">
             <h3>Most Read Genre</h3>
-            <p>{Object.entries(stats.readingByGenre).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A"}</p>
+            <p>{Object.entries(readingByGenre).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'}</p>
           </div>
-           <div className="insight-card">
+          <div className="insight-card">
             <h3>Favorite Author</h3>
-            <p>{stats.topAuthors[0]?.author || "N/A"}</p>
+            <p>{topAuthors[0]?.author || 'N/A'}</p>
           </div>
         </div>
       </div>
