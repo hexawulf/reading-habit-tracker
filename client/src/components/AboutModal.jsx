@@ -16,7 +16,7 @@ const AboutModal = ({ onClose }) => {
         <h2>About Reading Habit Tracker</h2>
         <p>A web application for tracking and visualizing your reading habits using Goodreads export data.</p>
 
-        <p>Version 1.1.0</p>
+        <p>Version 1.2.0</p>
         <p>Released: November 2026</p>
 
         <h3>Overview</h3>
@@ -47,7 +47,7 @@ const AboutModal = ({ onClose }) => {
 
         <h3>🛠️ Tech Stack</h3>
         <ul>
-          <li><strong>Frontend:</strong> React, React Router, Recharts, Chart.js</li>
+          <li><strong>Frontend:</strong> React, React Router, Recharts, Chart.js, Vite</li>
           <li><strong>Backend:</strong> Node.js, Express, MongoDB (Mongoose)</li>
           <li><strong>Auth:</strong> Firebase (Google sign-in), sessions</li>
           <li><strong>Security:</strong> Helmet (CSP), rate limiting</li>
@@ -55,12 +55,12 @@ const AboutModal = ({ onClose }) => {
           <li><strong>Styling:</strong> Custom CSS</li>
         </ul>
 
-        <h3>What's new in 1.1.0</h3>
+        <h3>What's new in 1.2.0</h3>
         <ul>
-          <li>Security fixes: uploads are no longer stored on the server, and anonymous stats access was removed</li>
-          <li>Safer sign-in sessions and a real log-out</li>
-          <li>More accurate statistics, and reading goals are now saved</li>
-          <li>Faster loading thanks to better caching</li>
+          <li>Faster builds: the app now uses Vite instead of Create React App</li>
+          <li>The client component tests run again (and pass) in continuous integration</li>
+          <li>Google Fonts load correctly again (the content security policy allows them)</li>
+          <li>Security updates across the client dependencies</li>
         </ul>
 
         <h3>Contact</h3>
