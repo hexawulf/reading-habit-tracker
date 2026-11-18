@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import storageService from '../services/storageService';
+import { generateStats as sharedGenerateStats, calculateGoalProgress as sharedGoalProgress } from '../lib/stats';
 
 export const ReadingDataContext = createContext(null);
 
@@ -32,156 +33,25 @@ const EMPTY_GOAL_PROGRESS = {
   monthly: { current: 0, target: 4, percentage: 0 }
 };
 
-// Pure functions — defined outside the component so their references are stable
-// and can be safely listed as useEffect dependencies without causing infinite loops.
+// Pure functions — thin wrappers over the shared stats module (RH-09) so the
+// client and server compute the same numbers. Defined at module scope so their
+// references are stable for useEffect deps.
 
 function calculateStats(books) {
   if (!books || books.length === 0) {
     return { ...EMPTY_STATS };
   }
-
-  const booksWithValidDates = books.filter(
-    book => book.dateRead && !isNaN(new Date(book.dateRead))
-  );
-
-  if (booksWithValidDates.length === 0) {
-    return { ...EMPTY_STATS, totalBooks: books.length };
-  }
-
-  let earliestDate = new Date(booksWithValidDates[0].dateRead);
-  let latestDate = new Date(booksWithValidDates[0].dateRead);
-
-  booksWithValidDates.forEach(book => {
-    const currentDate = new Date(book.dateRead);
-    if (currentDate < earliestDate) earliestDate = currentDate;
-    if (currentDate > latestDate) latestDate = currentDate;
-  });
-
-  const readingByYear = {};
-  const readingByMonth = {};
-  let totalPagesWithValidDates = 0;
-
-  booksWithValidDates.forEach(book => {
-    const year = new Date(book.dateRead).getFullYear().toString();
-    const month = new Date(book.dateRead).getMonth();
-
-    readingByYear[year] = (readingByYear[year] || 0) + 1;
-
-    if (!readingByMonth[year]) readingByMonth[year] = Array(12).fill(0);
-    readingByMonth[year][month]++;
-    totalPagesWithValidDates += (book.pages || 0);
-  });
-
-  const authorCounts = {};
-  booksWithValidDates.forEach(book => {
-    if (book.author) {
-      authorCounts[book.author] = (authorCounts[book.author] || 0) + 1;
-    }
-  });
-
-  const topAuthors = Object.entries(authorCounts)
-    .map(([author, count]) => ({ author, count }))
-    .sort((a, b) => b.count - a.count);
-
-  const numBooksWithValidDates = booksWithValidDates.length;
-
-  const currentYear = new Date().getFullYear();
-  const booksThisYear = booksWithValidDates.filter(
-    book => new Date(book.dateRead).getFullYear() === currentYear
-  );
-  const monthsElapsedThisYear = new Date().getMonth() + 1;
-  const booksPerMonthCurrentYear =
-    monthsElapsedThisYear > 0 ? booksThisYear.length / monthsElapsedThisYear : 0;
-
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const recentBooks = booksWithValidDates.filter(
-    book => new Date(book.dateRead) >= thirtyDaysAgo
-  );
-  const recentPages = recentBooks.reduce((sum, book) => sum + (book.pages || 0), 0);
-  const pagesPerDayLast30Days = recentBooks.length > 0 ? recentPages / 30 : 0;
-
-  return {
-    totalBooks: books.length,
-    averageRating:
-      numBooksWithValidDates > 0
-        ? booksWithValidDates.reduce((sum, book) => sum + (book.myRating || 0), 0) /
-          numBooksWithValidDates
-        : 0,
-    readingByYear,
-    readingByMonth,
-    ratingDistribution:
-      numBooksWithValidDates > 0
-        ? booksWithValidDates.reduce(
-            (dist, book) => {
-              const rating = Number(book.myRating);
-              if (rating >= 1 && rating <= 5) {
-                dist[rating] = (dist[rating] || 0) + 1;
-              }
-              return dist;
-            },
-            { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-          )
-        : { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
-    readingPace: {
-      booksPerMonth: booksPerMonthCurrentYear,
-      booksPerYear: numBooksWithValidDates,
-      pagesPerDay: pagesPerDayLast30Days
-    },
-    pageStats: {
-      totalPages: totalPagesWithValidDates,
-      averageLength:
-        numBooksWithValidDates > 0
-          ? totalPagesWithValidDates / numBooksWithValidDates
-          : 0,
-      longestBook:
-        numBooksWithValidDates > 0
-          ? booksWithValidDates.reduce(
-              (longest, book) =>
-                book.pages > (longest?.pages || 0) ? book : longest,
-              { title: '', pages: 0 }
-            )
-          : { title: '', pages: 0 }
-    },
-    topAuthors,
-    readingByGenre: {}
-  };
+  return { ...EMPTY_STATS, ...sharedGenerateStats(books) };
 }
 
-function calculateGoalProgress(books) {
+function calculateGoalProgress(books, goals) {
   if (!books || !books.length) {
-    return { ...EMPTY_GOAL_PROGRESS };
+    return {
+      yearly: { current: 0, target: (goals && goals.yearly) || 52, percentage: 0 },
+      monthly: { current: 0, target: (goals && goals.monthly) || 4, percentage: 0 },
+    };
   }
-
-  const currentYear = new Date().getFullYear().toString();
-  const currentMonth = new Date().getMonth();
-
-  const booksThisYear = books.filter(book => {
-    if (!book.dateRead) return false;
-    return new Date(book.dateRead).getFullYear().toString() === currentYear;
-  }).length;
-
-  const booksThisMonth = books.filter(book => {
-    if (!book.dateRead) return false;
-    const date = new Date(book.dateRead);
-    return (
-      date.getFullYear().toString() === currentYear &&
-      date.getMonth() === currentMonth
-    );
-  }).length;
-
-  return {
-    yearly: {
-      current: booksThisYear,
-      target: 52,
-      percentage: Math.round((booksThisYear / 52) * 100)
-    },
-    monthly: {
-      current: booksThisMonth,
-      target: 4,
-      percentage: Math.round((booksThisMonth / 4) * 100)
-    }
-  };
+  return sharedGoalProgress(books, goals);
 }
 
 export const ReadingDataProvider = ({ children }) => {
@@ -189,6 +59,7 @@ export const ReadingDataProvider = ({ children }) => {
   const [stats, setStats] = useState({ ...EMPTY_STATS });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [goals, setGoals] = useState({ yearly: 52, monthly: 4 });
   const [goalProgress, setGoalProgress] = useState({ ...EMPTY_GOAL_PROGRESS });
 
   useEffect(() => {
@@ -203,19 +74,18 @@ export const ReadingDataProvider = ({ children }) => {
           books = saved.readingData.books;
         }
 
+        const savedGoals = saved?.goals && saved.goals.yearly
+          ? { yearly: saved.goals.yearly, monthly: saved.goals.monthly }
+          : { yearly: 52, monthly: 4 };
+        setGoals(savedGoals);
+
         if (books.length > 0) {
           const freshStats = calculateStats(books);
-          const freshGoalProgress = calculateGoalProgress(books);
+          const freshGoalProgress = calculateGoalProgress(books, savedGoals);
 
           setReadingData(books);
           setStats(freshStats);
           setGoalProgress(freshGoalProgress);
-
-          storageService.saveData({
-            readingData: books,
-            stats: freshStats,
-            goalProgress: freshGoalProgress
-          });
         }
       } catch (err) {
         setError(err.message);
@@ -237,7 +107,7 @@ export const ReadingDataProvider = ({ children }) => {
         ? data
         : readingData;
       const calculatedStats = calculateStats(booksToProcess);
-      const calculatedGoalProgress = calculateGoalProgress(booksToProcess);
+      const calculatedGoalProgress = calculateGoalProgress(booksToProcess, goals);
 
       setReadingData(booksToProcess);
       setStats(calculatedStats);
@@ -257,25 +127,13 @@ export const ReadingDataProvider = ({ children }) => {
   };
 
   const updateGoals = (yearlyGoal, monthlyGoal) => {
-    const currentYear = new Date().getFullYear().toString();
-    const currentMonth = new Date().getMonth();
-    const yearCount = stats.readingByYear[currentYear] || 0;
-    const monthCount = stats.readingByMonth?.[currentYear]?.[currentMonth] || 0;
+    const newGoals = { yearly: yearlyGoal, monthly: monthlyGoal };
+    setGoals(newGoals);
 
-    const newGoalProgress = {
-      yearly: {
-        current: yearCount,
-        target: yearlyGoal,
-        percentage: yearlyGoal > 0 ? Math.round((yearCount / yearlyGoal) * 100) : 0
-      },
-      monthly: {
-        current: monthCount,
-        target: monthlyGoal,
-        percentage: monthlyGoal > 0 ? Math.round((monthCount / monthlyGoal) * 100) : 0
-      }
-    };
-
+    const newGoalProgress = calculateGoalProgress(readingData, newGoals);
     setGoalProgress(newGoalProgress);
+
+    // Persist the goals so they survive a reload (RH-09).
     storageService.saveData({ readingData, stats, goalProgress: newGoalProgress });
   };
 
@@ -290,7 +148,7 @@ export const ReadingDataProvider = ({ children }) => {
     storageService.clearData();
     if (readingData && readingData.length > 0) {
       const freshStats = calculateStats(readingData);
-      const freshGoalProgress = calculateGoalProgress(readingData);
+      const freshGoalProgress = calculateGoalProgress(readingData, goals);
       setStats(freshStats);
       setGoalProgress(freshGoalProgress);
       storageService.saveData({
@@ -309,6 +167,7 @@ export const ReadingDataProvider = ({ children }) => {
     stats,
     loading,
     error,
+    goals,
     goalProgress,
     processReadingData,
     updateGoals,

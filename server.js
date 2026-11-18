@@ -17,6 +17,7 @@ const User = require('./models/User');
 const fs = require('fs');
 const path = require('path');
 const csvParser = require('csv-parser');
+const { generateStats } = require('./shared/stats');
 
 const parseDate = (s)=>{ if(!s||!s.trim())return null;
   const d=dayjs(s.trim(),['YYYY/MM/DD','MM/DD/YYYY','DD/MM/YYYY','YYYY-MM-DD'],true);
@@ -563,91 +564,8 @@ app.delete('/api/user/data', async (req, res) => {
   }
 });
 
-// Function to generate reading statistics
-function generateStats(books) {
-  const totalBooks = books.length;
-  const totalPages = books.reduce((sum, book) => sum + (book.pages || 0), 0);
-
-  // Calculate average rating
-  const ratedBooks = books.filter(b => b.myRating && b.myRating > 0);
-  const averageRating = ratedBooks.length 
-    ? parseFloat((ratedBooks.reduce((sum, b) => sum + b.myRating, 0) / ratedBooks.length).toFixed(2))
-    : 0;
-
-  // Reading history
-  const readingByYear = {};
-  const readingByMonth = {};
-  books.forEach(book => {
-    if (book.dateRead) {
-      const year = book.dateRead.getFullYear();
-      const month = book.dateRead.getMonth();
-      readingByYear[year] = (readingByYear[year] || 0) + 1;
-      if (!readingByMonth[year]) readingByMonth[year] = Array(12).fill(0);
-      readingByMonth[year][month]++;
-    }
-  });
-
-  // Top authors
-  const authorCounts = {};
-  books.forEach(book => {
-    if (book.author) {
-      authorCounts[book.author] = (authorCounts[book.author] || 0) + 1;
-    }
-  });
-  const topAuthors = Object.entries(authorCounts)
-    .map(([author, count]) => ({ author, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 10);
-
-  // Rating distribution
-  const ratingDistribution = {1:0, 2:0, 3:0, 4:0, 5:0};
-  books.forEach(book => {
-    if (book.myRating > 0) {
-      ratingDistribution[book.myRating]++;
-    }
-  });
-
-  // Reading pace
-  const readingPace = {
-    booksPerYear: books.length,
-    booksPerMonth: parseFloat((books.length / 12).toFixed(2)),
-    pagesPerDay: parseFloat((totalPages / 365).toFixed(2))
-  };
-
-  // Page statistics
-  let longestBook = { title: '', author: '', pages: 0 };
-  let shortestBook = { title: '', author: '', pages: Number.MAX_SAFE_INTEGER };
-  books.forEach(book => {
-    if (book.pages > longestBook.pages) {
-      longestBook = { title: book.title, author: book.author, pages: book.pages };
-    }
-    if (book.pages > 0 && book.pages < shortestBook.pages) {
-      shortestBook = { title: book.title, author: book.author, pages: book.pages };
-    }
-  });
-  if (shortestBook.pages === Number.MAX_SAFE_INTEGER) {
-    shortestBook = { title: '', author: '', pages: 0 };
-  }
-  const averageLength = books.length ? Math.round(totalPages / books.length) : 0;
-
-  return {
-    totalBooks,
-    totalPages,
-    averageRating,
-    readingByYear,
-    readingByMonth,
-    readingByGenre: {},
-    topAuthors,
-    ratingDistribution,
-    readingPace,
-    pageStats: {
-      totalPages,
-      averageLength,
-      longestBook,
-      shortestBook
-    }
-  };
-}
+// Reading statistics come from the shared module (RH-09), so the server and
+// client agree on the numbers.
 
 // Health check endpoint (must come before static files)
 app.get('/healthz', (req, res) => {

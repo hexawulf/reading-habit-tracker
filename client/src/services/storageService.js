@@ -36,7 +36,11 @@ const storageService = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ readingData, stats: payload.stats }),
+          body: JSON.stringify({
+            readingData,
+            stats: payload.stats,
+            goalProgress: payload.goalProgress,
+          }),
         });
         if (!response.ok) {
           console.error('Failed to save data to server:', response.status);
@@ -48,6 +52,9 @@ const storageService = {
       // Guest: store locally only.
       localStorage.setItem('readingData', JSON.stringify(readingData));
       localStorage.setItem('stats', JSON.stringify(payload.stats));
+      if (payload.goalProgress) {
+        localStorage.setItem('goalProgress', JSON.stringify(payload.goalProgress));
+      }
       return true;
     } catch (error) {
       console.error('Error saving data:', error);
