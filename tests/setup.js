@@ -1,13 +1,10 @@
-// Shared test setup: an in-memory MongoDB for the test files that need it.
+// Per-file test setup. One in-memory MongoDB is started once for the whole run
+// in tests/globalSetup.js; each DB-using file just connects mongoose to it.
 // Tests never touch MONGO_URI from .env or any production database.
-const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongoose = require('mongoose');
 
 // Pure unit tests (e.g. the shared stats module) do not touch the database or
-// require server.js. Starting and tearing down an in-memory MongoDB for them is
-// pointless and, in CI, the teardown raced with a client a sibling file had
-// already stopped (intermittent MongoClientClosedError). Only the files that
-// exercise the Express app / database get a MongoDB.
+// require server.js, so they skip the connection entirely.
 const DB_SUITES = [
   'auth.test.js',
   'user-data.test.js',
@@ -19,8 +16,6 @@ const DB_SUITES = [
 const testPath = expect.getState().testPath || '';
 const needsDb = DB_SUITES.some((name) => testPath.endsWith(name));
 
-let mongod;
-
 beforeAll(async () => {
   // Fixed test secrets so session signing is deterministic. Not real secrets.
   process.env.SESSION_SECRET = 'test-session-secret';
@@ -31,12 +26,15 @@ beforeAll(async () => {
 
   if (!needsDb) return;
 
-  mongod = await MongoMemoryServer.create();
-  const uri = mongod.getUri();
-  process.env.MONGO_URI = uri;
-
-  // Connect through the app's own helper so connect-mongo's clientPromise
-  // resolves with this in-memory client.
+  // MONGO_URI points at the shared in-memory MongoDB (globalSetup). Give each
+  // Jest worker its own database inside it, so parallel files never wipe each
+  // other's data in afterEach. Connect through the app's own helper so
+  // connect-mongo's clientPromise resolves with this worker's client.
+  const dbName = `jest_${process.env.JEST_WORKER_ID || '1'}`;
+  const raw = process.env.MONGO_URI;
+  const uri = raw.includes('?')
+    ? raw.replace(/\/?\?/, `/${dbName}?`)
+    : `${raw.replace(/\/$/, '')}/${dbName}`;
   const app = require('../server.js');
   await app.connectMongo(uri);
 });
@@ -52,10 +50,9 @@ afterEach(async () => {
 
 afterAll(async () => {
   if (!needsDb) return;
-  // Disconnect only if still connected, so teardown never closes an already
-  // closed client.
+  // Only disconnect this worker's mongoose client; the shared in-memory MongoDB
+  // is stopped once in tests/globalTeardown.js.
   if (mongoose.connection.readyState !== 0) {
     await mongoose.disconnect();
   }
-  if (mongod) await mongod.stop();
 });
