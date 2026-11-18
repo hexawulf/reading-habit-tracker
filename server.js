@@ -107,7 +107,7 @@ app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
@@ -146,6 +146,27 @@ function validateCredentials(body, mode) {
     if (password.length < 1 || password.length > 128) {
       return 'Invalid credentials';
     }
+  }
+  return null;
+}
+
+// Validate a saved book array (RH-10). Returns an error string, or null.
+const MAX_BOOKS = 20000;
+function validateBooks(books) {
+  if (!Array.isArray(books)) {
+    return 'readingData must be an array';
+  }
+  if (books.length > MAX_BOOKS) {
+    return `Too many books (max ${MAX_BOOKS})`;
+  }
+  for (const b of books) {
+    if (b === null || typeof b !== 'object' || Array.isArray(b)) {
+      return 'Each book must be an object';
+    }
+    if (b.title !== undefined && typeof b.title !== 'string') return 'Invalid book title';
+    if (b.author !== undefined && typeof b.author !== 'string') return 'Invalid book author';
+    if (b.myRating !== undefined && typeof b.myRating !== 'number') return 'Invalid book rating';
+    if (b.pages !== undefined && typeof b.pages !== 'number') return 'Invalid page count';
   }
   return null;
 }
@@ -511,13 +532,21 @@ app.post('/api/user/data', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // Validate the book array before touching the database (RH-10).
+    const { readingData, stats, goalProgress } = req.body;
+    if (readingData !== undefined) {
+      const validationError = validateBooks(readingData);
+      if (validationError) {
+        return res.status(400).json({ error: validationError });
+      }
+    }
+
     const user = await User.findById(req.session.userId);
     if (!user) {
-      logger.warn('Attempt to post user data but user not found in DB', { sessionUserId: req.session.userId });
+      logger.warn('Attempt to post user data but user not found in DB', { sessionUserId: String(req.session.userId) });
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const { readingData, stats, goalProgress } = req.body;
     if (Array.isArray(readingData)) {
       user.readingData.books = readingData;
     }
