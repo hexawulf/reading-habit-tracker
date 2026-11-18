@@ -12,11 +12,12 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 const admin = require('firebase-admin');
 const User = require('./models/User');
-const fs = require('fs');
 const path = require('path');
 const csvParser = require('csv-parser');
+const { generateStats } = require('./shared/stats');
 
 const parseDate = (s)=>{ if(!s||!s.trim())return null;
   const d=dayjs(s.trim(),['YYYY/MM/DD','MM/DD/YYYY','DD/MM/YYYY','YYYY-MM-DD'],true);
@@ -94,6 +95,31 @@ const parseGoodreadsBuffer = (buffer) =>
   parseGoodreadsStream(Readable.from(buffer));
 
 const app = express();
+
+// Behind nginx (production), trust the first proxy so secure cookies work and
+// express-rate-limit / req.ip see the real client address.
+app.set('trust proxy', 1);
+app.disable('x-powered-by');
+
+// Security headers (RH-12). The CSP allows the Firebase Google sign-in popup
+// (apis.google.com, accounts.google.com, the Firebase auth domain) and the
+// XHR/WebSocket endpoints the Firebase SDK uses.
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", 'https://apis.google.com', 'https://www.gstatic.com'],
+      connectSrc: ["'self'", 'https://*.googleapis.com', 'https://securetoken.googleapis.com', 'https://identitytoolkit.googleapis.com'],
+      frameSrc: ["'self'", 'https://*.firebaseapp.com', 'https://accounts.google.com'],
+      imgSrc: ["'self'", 'data:', 'https:'],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      objectSrc: ["'none'"],
+    },
+  },
+  // Let the Google popup communicate back to the opener.
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+}));
+
 // We'll determine the port dynamically below
 // const PORT = process.env.PORT || 7070;
 
@@ -102,7 +128,7 @@ app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
@@ -114,22 +140,65 @@ app.use(session({
   }),
   cookie: {
     secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'lax',
     maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
   }
 }));
 
 // Auth endpoints
+
+// Validate auth request bodies. Returns an error string, or null if valid.
+// `mode` is 'register' (strict length) or 'login' (type-only, so existing
+// 6+ character passwords still work).
+function validateCredentials(body, mode) {
+  const { username, password } = body || {};
+  if (typeof username !== 'string' || typeof password !== 'string') {
+    return 'Username and password are required';
+  }
+  if (username.length < 3 || username.length > 64) {
+    return 'Username must be between 3 and 64 characters';
+  }
+  if (mode === 'register') {
+    if (password.length < 8 || password.length > 128) {
+      return 'Password must be between 8 and 128 characters';
+    }
+  } else {
+    if (password.length < 1 || password.length > 128) {
+      return 'Invalid credentials';
+    }
+  }
+  return null;
+}
+
+// Validate a saved book array (RH-10). Returns an error string, or null.
+const MAX_BOOKS = 20000;
+function validateBooks(books) {
+  if (!Array.isArray(books)) {
+    return 'readingData must be an array';
+  }
+  if (books.length > MAX_BOOKS) {
+    return `Too many books (max ${MAX_BOOKS})`;
+  }
+  for (const b of books) {
+    if (b === null || typeof b !== 'object' || Array.isArray(b)) {
+      return 'Each book must be an object';
+    }
+    if (b.title !== undefined && typeof b.title !== 'string') return 'Invalid book title';
+    if (b.author !== undefined && typeof b.author !== 'string') return 'Invalid book author';
+    if (b.myRating !== undefined && typeof b.myRating !== 'number') return 'Invalid book rating';
+    if (b.pages !== undefined && typeof b.pages !== 'number') return 'Invalid page count';
+  }
+  return null;
+}
+
 app.post('/api/auth/register', async (req, res) => {
   try {
+    const validationError = validateCredentials(req.body, 'register');
+    if (validationError) {
+      return res.status(400).json({ error: validationError });
+    }
     const { username, password } = req.body;
-
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password are required' });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
-    }
 
     // Check if user exists
     const existingUser = await User.findOne({ username });
@@ -154,11 +223,17 @@ app.post('/api/auth/register', async (req, res) => {
       }
     });
 
-    req.session.userId = user._id;
-    req.session.username = user.username;
-    res.json({ user: { ...user.toJSON(), password: undefined } });
+    req.session.regenerate((err) => {
+      if (err) {
+        logger.error('Session regenerate error on register');
+        return res.status(500).json({ error: 'Registration failed. Please try again.' });
+      }
+      req.session.userId = user._id;
+      req.session.username = user.username;
+      res.json({ user: { id: user._id, name: user.username, email: user.email || null, picture: null } });
+    });
   } catch (error) {
-    logger.error('Registration error:', { error, username: req.body.username });
+    logger.error('Registration error:', { message: error.message });
     res.status(500).json({ error: 'Registration failed. Please try again.' });
   }
 });
@@ -166,6 +241,10 @@ app.post('/api/auth/register', async (req, res) => {
 // Login endpoint
 app.post('/api/auth/login', async (req, res) => {
   try {
+    const validationError = validateCredentials(req.body, 'login');
+    if (validationError) {
+      return res.status(400).json({ error: validationError });
+    }
     // Username/password login
     const { username, password } = req.body;
     const user = await User.findOne({ username });
@@ -179,8 +258,15 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    req.session.userId = user._id;
-    res.json({ user: { ...user.toJSON(), password: undefined } });
+    req.session.regenerate((err) => {
+      if (err) {
+        logger.error('Session regenerate error on login');
+        return res.status(500).json({ error: 'Login failed. Please try again.' });
+      }
+      req.session.userId = user._id;
+      req.session.username = user.username;
+      res.json({ user: { id: user._id, name: user.username, email: user.email || null, picture: null } });
+    });
   } catch (error) {
     logger.error('Login error:', { error });
     res.status(500).json({ error: 'Login failed. Please try again.' });
@@ -205,12 +291,7 @@ app.post('/api/auth/google', async (req, res) => {
     }
 
     const userId = decodedToken.uid;
-    logger.info('Decoded Google Auth token:', { userId, email: decodedToken.email });
-
-    // Store additional user info in session
-    req.session.userPicture = decodedToken.picture;
-    req.session.userEmail = decodedToken.email;
-    req.session.userName = decodedToken.name;
+    logger.info('Google auth: token verified', { googleId: userId });
 
     let user = await User.findOne({ googleId: userId });
     if (!user) {
@@ -238,14 +319,28 @@ app.post('/api/auth/google', async (req, res) => {
       });
     }
 
-    req.session.userId = user._id;
-    res.json({ user });
-  } catch (error) {
-    logger.error('Google auth error:', { error, tokenProvided: !!req.body.token });
-    res.status(500).json({ 
-      error: 'Authentication failed',
-      details: error.message 
+    req.session.regenerate((err) => {
+      if (err) {
+        logger.error('Session regenerate error on Google auth');
+        return res.status(500).json({ error: 'Authentication failed' });
+      }
+      // Store user info in the fresh session.
+      req.session.userId = user._id;
+      req.session.userPicture = decodedToken.picture || null;
+      req.session.userEmail = decodedToken.email || null;
+      req.session.userName = decodedToken.name || null;
+      res.json({
+        user: {
+          id: user._id,
+          name: user.username,
+          email: user.email || null,
+          picture: decodedToken.picture || null
+        }
+      });
     });
+  } catch (error) {
+    logger.error('Google auth error:', { message: error.message });
+    res.status(500).json({ error: 'Authentication failed' });
   }
 });
 
@@ -276,9 +371,25 @@ app.get('/api/auth/status', async (req, res) => {
       }
     });
   } catch (error) {
-    logger.error('Auth status error:', { error, sessionUserId: req.session.userId });
-    res.status(500).json({ error: error.message });
+    logger.error('Auth status error:', { message: error.message });
+    res.status(500).json({ error: 'Failed to check authentication status' });
   }
+});
+
+// Logout: destroy the session and clear the cookie.
+app.post('/api/auth/logout', (req, res) => {
+  if (!req.session) {
+    res.clearCookie('connect.sid');
+    return res.json({ success: true });
+  }
+  req.session.destroy((err) => {
+    if (err) {
+      logger.error('Logout error:', { message: err.message });
+      return res.status(500).json({ error: 'Logout failed' });
+    }
+    res.clearCookie('connect.sid');
+    res.json({ success: true });
+  });
 });
 
 
@@ -354,65 +465,6 @@ app.post('/api/upload', uploadLimiter, (req, res) => {
   });
 });
 
-// File listing endpoint
-app.get('/api/files/list', async (req, res) => {
-  try {
-    if (!req.session.userEmail) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
-
-    const userDir = path.join(__dirname, 'uploads', req.session.userEmail);
-    if (!fs.existsSync(userDir)) {
-      return res.json({ files: [] });
-    }
-
-    const files = await fs.promises.readdir(userDir);
-    const fileStats = await Promise.all(
-      files.map(async (filename) => {
-        const filePath = path.join(userDir, filename);
-        const stats = await fs.promises.stat(filePath);
-        return {
-          name: filename,
-          size: stats.size,
-          uploadDate: stats.mtime
-        };
-      })
-    );
-
-    res.json({ files: fileStats });
-  } catch (error) {
-    logger.error('Error listing files:', { error, userEmail: req.session.userEmail });
-    res.status(500).json({ error: 'Failed to list files' });
-  }
-});
-
-// File deletion endpoint
-app.delete('/api/files/delete/:filename', async (req, res) => {
-  try {
-    if (!req.session.userEmail) {
-      logger.warn('Attempt to delete file without authentication');
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
-
-    const filename = req.params.filename;
-    const userDir = path.resolve(__dirname, 'uploads', req.session.userEmail);
-    const filePath = path.resolve(userDir, filename);
-
-    // path.resolve normalises ".." segments; verify the resolved path is still inside userDir
-    if (!filePath.startsWith(userDir + path.sep) || !fs.existsSync(filePath)) {
-      logger.warn('Attempt to delete non-existent or unauthorized file', { filename, userEmail: req.session.userEmail, filePath });
-      return res.status(404).json({ error: 'File not found' });
-    }
-
-    await fs.promises.unlink(filePath);
-    logger.info('File deleted successfully', { filename, userEmail: req.session.userEmail });
-    res.json({ message: 'File deleted successfully' });
-  } catch (error) {
-    logger.error('Error deleting file:', { error, filename: req.params.filename, userEmail: req.session.userEmail });
-    res.status(500).json({ error: 'Failed to delete file' });
-  }
-});
-
 app.get('/api/user/data', async (req, res) => {
   try {
     if (!req.session.userId) {
@@ -421,7 +473,7 @@ app.get('/api/user/data', async (req, res) => {
 
     const user = await User.findById(req.session.userId);
     if (!user) {
-      logger.warn('User data requested but user not found in DB', { sessionUserId: req.session.userId });
+      logger.warn('User data requested but user not found in DB', { sessionUserId: String(req.session.userId) });
       return res.status(404).json({ error: 'User not found' });
     }
 
@@ -442,13 +494,21 @@ app.post('/api/user/data', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // Validate the book array before touching the database (RH-10).
+    const { readingData, stats, goalProgress } = req.body;
+    if (readingData !== undefined) {
+      const validationError = validateBooks(readingData);
+      if (validationError) {
+        return res.status(400).json({ error: validationError });
+      }
+    }
+
     const user = await User.findById(req.session.userId);
     if (!user) {
-      logger.warn('Attempt to post user data but user not found in DB', { sessionUserId: req.session.userId });
+      logger.warn('Attempt to post user data but user not found in DB', { sessionUserId: String(req.session.userId) });
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const { readingData, stats, goalProgress } = req.body;
     if (Array.isArray(readingData)) {
       user.readingData.books = readingData;
     }
@@ -495,109 +555,42 @@ app.delete('/api/user/data', async (req, res) => {
   }
 });
 
-// Function to generate reading statistics
-function generateStats(books) {
-  const totalBooks = books.length;
-  const totalPages = books.reduce((sum, book) => sum + (book.pages || 0), 0);
-
-  // Calculate average rating
-  const ratedBooks = books.filter(b => b.myRating && b.myRating > 0);
-  const averageRating = ratedBooks.length 
-    ? parseFloat((ratedBooks.reduce((sum, b) => sum + b.myRating, 0) / ratedBooks.length).toFixed(2))
-    : 0;
-
-  // Reading history
-  const readingByYear = {};
-  const readingByMonth = {};
-  books.forEach(book => {
-    if (book.dateRead) {
-      const year = book.dateRead.getFullYear();
-      const month = book.dateRead.getMonth();
-      readingByYear[year] = (readingByYear[year] || 0) + 1;
-      if (!readingByMonth[year]) readingByMonth[year] = Array(12).fill(0);
-      readingByMonth[year][month]++;
-    }
-  });
-
-  // Top authors
-  const authorCounts = {};
-  books.forEach(book => {
-    if (book.author) {
-      authorCounts[book.author] = (authorCounts[book.author] || 0) + 1;
-    }
-  });
-  const topAuthors = Object.entries(authorCounts)
-    .map(([author, count]) => ({ author, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 10);
-
-  // Rating distribution
-  const ratingDistribution = {1:0, 2:0, 3:0, 4:0, 5:0};
-  books.forEach(book => {
-    if (book.myRating > 0) {
-      ratingDistribution[book.myRating]++;
-    }
-  });
-
-  // Reading pace
-  const readingPace = {
-    booksPerYear: books.length,
-    booksPerMonth: parseFloat((books.length / 12).toFixed(2)),
-    pagesPerDay: parseFloat((totalPages / 365).toFixed(2))
-  };
-
-  // Page statistics
-  let longestBook = { title: '', author: '', pages: 0 };
-  let shortestBook = { title: '', author: '', pages: Number.MAX_SAFE_INTEGER };
-  books.forEach(book => {
-    if (book.pages > longestBook.pages) {
-      longestBook = { title: book.title, author: book.author, pages: book.pages };
-    }
-    if (book.pages > 0 && book.pages < shortestBook.pages) {
-      shortestBook = { title: book.title, author: book.author, pages: book.pages };
-    }
-  });
-  if (shortestBook.pages === Number.MAX_SAFE_INTEGER) {
-    shortestBook = { title: '', author: '', pages: 0 };
-  }
-  const averageLength = books.length ? Math.round(totalPages / books.length) : 0;
-
-  return {
-    totalBooks,
-    totalPages,
-    averageRating,
-    readingByYear,
-    readingByMonth,
-    readingByGenre: {},
-    topAuthors,
-    ratingDistribution,
-    readingPace,
-    pageStats: {
-      totalPages,
-      averageLength,
-      longestBook,
-      shortestBook
-    }
-  };
-}
+// Reading statistics come from the shared module (RH-09), so the server and
+// client agree on the numbers.
 
 // Health check endpoint (must come before static files)
 app.get('/healthz', (req, res) => {
   res.status(200).json({ ok: true, timestamp: new Date().toISOString() });
 });
 
-// Serve static files from the client build directory
+// Serve static files from the client build directory.
+// RH-11: hashed assets under /static/ are immutable and cached for a year;
+// everything else (the HTML shell) is no-cache so a deploy is picked up.
 const staticDir = path.join(__dirname, 'client', 'build');
 app.use(express.static(staticDir, {
-  maxAge: process.env.NODE_ENV === 'production' ? '1y' : 0,
-  etag: true
+  etag: true,
+  setHeaders: (res, filePath) => {
+    const rel = path.relative(staticDir, filePath);
+    if (rel.startsWith('static' + path.sep)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else {
+      res.setHeader('Cache-Control', 'no-cache');
+    }
+  }
 }));
 
-// SPA fallback: send index.html for non-API routes
+// A missing file under /static/ must 404, not fall through to the SPA shell
+// (otherwise a stale cached shell points at bundles that no longer exist).
+app.get('/static/*', (req, res) => {
+  res.status(404).json({ error: 'Not found' });
+});
+
+// SPA fallback: send index.html (no-cache) for non-API routes.
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
+  res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(staticDir, 'index.html'));
 });
 
@@ -619,11 +612,20 @@ app.use((err, req, res, _next) => {
 });
 
 const PORT = process.env.PORT || 5003;
-const HOST = process.env.HOST || '0.0.0.0';
+const HOST = process.env.HOST || '127.0.0.1';
 
 // Boot sequence: init Firebase, connect Mongo, then listen. Kept out of module
 // import so tests can require the app without credentials or a live database.
 async function start() {
+  // Fail fast on missing required secrets/config (RH-12).
+  if (!process.env.SESSION_SECRET) {
+    logger.error('SESSION_SECRET is not set');
+    process.exit(1);
+  }
+  if (!process.env.MONGO_URI) {
+    logger.error('MONGO_URI is not set');
+    process.exit(1);
+  }
   try {
     initFirebase();
   } catch (error) {

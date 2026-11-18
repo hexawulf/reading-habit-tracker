@@ -17,7 +17,6 @@ import RecentBooks from './pages/RecentBooks';
 import TopAuthors from './pages/TopAuthors';
 import ReadingStats from './pages/ReadingStats';
 import DataManagement from './pages/DataManagement';
-import Account from './components/Account';
 import Settings from './pages/Settings';
 import AuthorBooks from './pages/AuthorBooks';
 
@@ -44,7 +43,6 @@ function App() {
               <Route path="/top-authors" element={<TopAuthors />} />
               <Route path="/data-management" element={<DataManagement />} />
               <Route path="/upload" element={<FileUpload />} />
-              <Route path="/account" element={<Account />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/reading-stats" element={<ReadingStats />} />
               <Route path="/author/:name" element={<AuthorBooks />} />

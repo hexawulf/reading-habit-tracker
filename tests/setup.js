@@ -9,6 +9,9 @@ beforeAll(async () => {
   // Fixed test secrets so session signing is deterministic. Not real secrets.
   process.env.SESSION_SECRET = 'test-session-secret';
   process.env.NODE_ENV = 'test';
+  // Quieten the Winston logger during tests.
+  const logger = require('../src/logger');
+  logger.transports.forEach((t) => { t.silent = true; });
 
   mongod = await MongoMemoryServer.create();
   const uri = mongod.getUri();
