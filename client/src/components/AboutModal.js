@@ -16,12 +16,12 @@ const AboutModal = ({ onClose }) => {
         <h2>About Reading Habit Tracker</h2>
         <p>A web application for tracking and visualizing your reading habits using Goodreads export data.</p>
 
-        <p>Version 1.0.0</p>
-        <p>Released: May 2025</p>
+        <p>Version 1.1.0</p>
+        <p>Released: November 2026</p>
 
         <h3>Overview</h3>
         <p>
-          Reading Habit Tracker allows you to upload your Goodreads library export CSV and provides insightful visualizations and statistics about your reading history. It's a privacy-friendly, client-focused tool that runs entirely in your browser.
+          Reading Habit Tracker allows you to upload your Goodreads library export CSV and provides insightful visualizations and statistics about your reading history. Your CSV is parsed in memory and never stored on the server. Your data stays in your browser, and if you sign in, it is saved to your own account so you can see it on other devices.
         </p>
 
         <h3>✨ Features</h3>
@@ -33,6 +33,7 @@ const AboutModal = ({ onClose }) => {
           <li>Top Author & Genre Statistics</li>
           <li>Reading Pace & Progress Insights</li>
           <li>Fully Responsive Design (Desktop & Mobile)</li>
+          <li>Optional sign-in (Google or email) to keep your data in your account</li>
         </ul>
 
         <h3>📤 How to Get Your Goodreads Data</h3>
@@ -46,10 +47,20 @@ const AboutModal = ({ onClose }) => {
 
         <h3>🛠️ Tech Stack</h3>
         <ul>
-          <li><strong>Frontend:</strong> React, React Router, Recharts</li>
-          <li><strong>Backend:</strong> Node.js, Express</li>
+          <li><strong>Frontend:</strong> React, React Router, Recharts, Chart.js</li>
+          <li><strong>Backend:</strong> Node.js, Express, MongoDB (Mongoose)</li>
+          <li><strong>Auth:</strong> Firebase (Google sign-in), sessions</li>
+          <li><strong>Security:</strong> Helmet (CSP), rate limiting</li>
           <li><strong>Data Processing:</strong> CSV Parser, Day.js</li>
           <li><strong>Styling:</strong> Custom CSS</li>
+        </ul>
+
+        <h3>What's new in 1.1.0</h3>
+        <ul>
+          <li>Security fixes: uploads are no longer stored on the server, and anonymous stats access was removed</li>
+          <li>Safer sign-in sessions and a real log-out</li>
+          <li>More accurate statistics, and reading goals are now saved</li>
+          <li>Faster loading thanks to better caching</li>
         </ul>
 
         <h3>Contact</h3>
