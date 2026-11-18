@@ -328,9 +328,25 @@ app.get('/api/auth/status', async (req, res) => {
       }
     });
   } catch (error) {
-    logger.error('Auth status error:', { error, sessionUserId: req.session.userId });
-    res.status(500).json({ error: error.message });
+    logger.error('Auth status error:', { message: error.message });
+    res.status(500).json({ error: 'Failed to check authentication status' });
   }
+});
+
+// Logout: destroy the session and clear the cookie.
+app.post('/api/auth/logout', (req, res) => {
+  if (!req.session) {
+    res.clearCookie('connect.sid');
+    return res.json({ success: true });
+  }
+  req.session.destroy((err) => {
+    if (err) {
+      logger.error('Logout error:', { message: err.message });
+      return res.status(500).json({ error: 'Logout failed' });
+    }
+    res.clearCookie('connect.sid');
+    res.json({ success: true });
+  });
 });
 
 

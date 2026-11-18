@@ -45,6 +45,28 @@ describe('RH-04: session works behind a proxy', () => {
   });
 });
 
+describe('RH-05: server logout', () => {
+  test('logout destroys the session so a follow-up status is 401', async () => {
+    await request(app)
+      .post('/api/auth/register')
+      .send({ username: 'dave', password: 'password123' });
+
+    const agent = request.agent(app);
+    await agent.post('/api/auth/login').send({ username: 'dave', password: 'password123' });
+
+    let status = await agent.get('/api/auth/status');
+    expect(status.body.isAuthenticated).toBe(true);
+
+    const out = await agent.post('/api/auth/logout');
+    expect(out.status).toBe(200);
+    expect(out.body.success).toBe(true);
+
+    status = await agent.get('/api/auth/status');
+    expect(status.status).toBe(401);
+    expect(status.body.isAuthenticated).toBe(false);
+  });
+});
+
 describe('RH-08: auth body validation', () => {
   test('a non-string username gives 400, not 500, and queries nothing', async () => {
     const res = await request(app)

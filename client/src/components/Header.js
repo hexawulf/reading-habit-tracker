@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import './Header.css';
 import Auth from './Auth';
 import AboutModal from './AboutModal';
+import storageService from '../services/storageService';
 import { FiInfo, FiGithub, FiUser, FiLogOut, FiSettings, FiDatabase, FiSun, FiMoon } from 'react-icons/fi'; // Added icons
 
 const Header = () => { // Removed toggleSidebar prop
@@ -10,7 +11,22 @@ const Header = () => { // Removed toggleSidebar prop
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userName, setUserName] = useState(null);
+  const [userPhoto, setUserPhoto] = useState(null);
   const dropdownRef = useRef(null);
+
+  // Signed-in state is authoritative from the server, not localStorage.
+  useEffect(() => {
+    let active = true;
+    storageService.checkAuth().then(({ isAuthenticated: authed, user }) => {
+      if (!active) return;
+      setIsAuthenticated(authed);
+      setUserName(user?.name || null);
+      setUserPhoto(user?.picture || null);
+    });
+    return () => { active = false; };
+  }, []);
 
   // Effect to apply theme class to body and save to localStorage
   useEffect(() => {
@@ -32,17 +48,11 @@ const Header = () => { // Removed toggleSidebar prop
     setShowAboutModal(prev => !prev);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userPicture');
+  const handleLogout = async () => {
+    await storageService.logout();
     setShowUserDropdown(false); // Close dropdown
-    window.location.href = '/'; 
+    window.location.href = '/';
   };
-
-  const userName = localStorage.getItem('userName');
-  const userPhoto = localStorage.getItem('userPicture');
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'; // Ensure boolean comparison
 
   const handleUserIconClick = () => {
     if (!isAuthenticated) {
