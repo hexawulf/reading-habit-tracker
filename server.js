@@ -94,6 +94,10 @@ const parseGoodreadsBuffer = (buffer) =>
   parseGoodreadsStream(Readable.from(buffer));
 
 const app = express();
+
+// Behind nginx (production), trust the first proxy so secure cookies work and
+// express-rate-limit / req.ip see the real client address.
+app.set('trust proxy', 1);
 // We'll determine the port dynamically below
 // const PORT = process.env.PORT || 7070;
 
@@ -114,22 +118,44 @@ app.use(session({
   }),
   cookie: {
     secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'lax',
     maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
   }
 }));
 
 // Auth endpoints
+
+// Validate auth request bodies. Returns an error string, or null if valid.
+// `mode` is 'register' (strict length) or 'login' (type-only, so existing
+// 6+ character passwords still work).
+function validateCredentials(body, mode) {
+  const { username, password } = body || {};
+  if (typeof username !== 'string' || typeof password !== 'string') {
+    return 'Username and password are required';
+  }
+  if (username.length < 3 || username.length > 64) {
+    return 'Username must be between 3 and 64 characters';
+  }
+  if (mode === 'register') {
+    if (password.length < 8 || password.length > 128) {
+      return 'Password must be between 8 and 128 characters';
+    }
+  } else {
+    if (password.length < 1 || password.length > 128) {
+      return 'Invalid credentials';
+    }
+  }
+  return null;
+}
+
 app.post('/api/auth/register', async (req, res) => {
   try {
+    const validationError = validateCredentials(req.body, 'register');
+    if (validationError) {
+      return res.status(400).json({ error: validationError });
+    }
     const { username, password } = req.body;
-
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password are required' });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
-    }
 
     // Check if user exists
     const existingUser = await User.findOne({ username });
@@ -154,11 +180,17 @@ app.post('/api/auth/register', async (req, res) => {
       }
     });
 
-    req.session.userId = user._id;
-    req.session.username = user.username;
-    res.json({ user: { ...user.toJSON(), password: undefined } });
+    req.session.regenerate((err) => {
+      if (err) {
+        logger.error('Session regenerate error on register');
+        return res.status(500).json({ error: 'Registration failed. Please try again.' });
+      }
+      req.session.userId = user._id;
+      req.session.username = user.username;
+      res.json({ user: { id: user._id, name: user.username, email: user.email || null, picture: null } });
+    });
   } catch (error) {
-    logger.error('Registration error:', { error, username: req.body.username });
+    logger.error('Registration error:', { message: error.message });
     res.status(500).json({ error: 'Registration failed. Please try again.' });
   }
 });
@@ -166,6 +198,10 @@ app.post('/api/auth/register', async (req, res) => {
 // Login endpoint
 app.post('/api/auth/login', async (req, res) => {
   try {
+    const validationError = validateCredentials(req.body, 'login');
+    if (validationError) {
+      return res.status(400).json({ error: validationError });
+    }
     // Username/password login
     const { username, password } = req.body;
     const user = await User.findOne({ username });
@@ -179,8 +215,15 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    req.session.userId = user._id;
-    res.json({ user: { ...user.toJSON(), password: undefined } });
+    req.session.regenerate((err) => {
+      if (err) {
+        logger.error('Session regenerate error on login');
+        return res.status(500).json({ error: 'Login failed. Please try again.' });
+      }
+      req.session.userId = user._id;
+      req.session.username = user.username;
+      res.json({ user: { id: user._id, name: user.username, email: user.email || null, picture: null } });
+    });
   } catch (error) {
     logger.error('Login error:', { error });
     res.status(500).json({ error: 'Login failed. Please try again.' });
@@ -205,12 +248,7 @@ app.post('/api/auth/google', async (req, res) => {
     }
 
     const userId = decodedToken.uid;
-    logger.info('Decoded Google Auth token:', { userId, email: decodedToken.email });
-
-    // Store additional user info in session
-    req.session.userPicture = decodedToken.picture;
-    req.session.userEmail = decodedToken.email;
-    req.session.userName = decodedToken.name;
+    logger.info('Google auth: token verified', { googleId: userId });
 
     let user = await User.findOne({ googleId: userId });
     if (!user) {
@@ -238,14 +276,28 @@ app.post('/api/auth/google', async (req, res) => {
       });
     }
 
-    req.session.userId = user._id;
-    res.json({ user });
-  } catch (error) {
-    logger.error('Google auth error:', { error, tokenProvided: !!req.body.token });
-    res.status(500).json({ 
-      error: 'Authentication failed',
-      details: error.message 
+    req.session.regenerate((err) => {
+      if (err) {
+        logger.error('Session regenerate error on Google auth');
+        return res.status(500).json({ error: 'Authentication failed' });
+      }
+      // Store user info in the fresh session.
+      req.session.userId = user._id;
+      req.session.userPicture = decodedToken.picture || null;
+      req.session.userEmail = decodedToken.email || null;
+      req.session.userName = decodedToken.name || null;
+      res.json({
+        user: {
+          id: user._id,
+          name: user.username,
+          email: user.email || null,
+          picture: decodedToken.picture || null
+        }
+      });
     });
+  } catch (error) {
+    logger.error('Google auth error:', { message: error.message });
+    res.status(500).json({ error: 'Authentication failed' });
   }
 });
 
