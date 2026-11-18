@@ -117,15 +117,6 @@ const Auth = ({ onClose }) => {
     }
   };
 
-  const handleReplitLogin = () => {
-    window.addEventListener("message", (e) => {
-      if (e.data === "auth_complete") {
-        window.location.reload();
-      }
-    });
-    window.open(`https://replit.com/auth_with_repl_site?domain=${window.location.host}`, "_blank");
-  };
-
   // The error "Cannot read properties of undefined (reading 'VITE_FIREBASE_API_KEY')"
   // was occurring at Auth.js:8:11 in the original error.
   // Line 8 was the old firebaseConfig: `apiKey: import.meta.env.VITE_FIREBASE_API_KEY,`
@@ -143,8 +134,6 @@ const Auth = ({ onClose }) => {
         </div>
       ) : (
         <div className="auth-options">
-          <button onClick={handleReplitLogin} className="replit-btn">Login with Replit</button>
-          <div className="auth-separator"><span>or</span></div>
           <button onClick={handleGoogleLogin} className="google-btn">Sign in with Google</button>
           <div className="auth-separator"><span>or</span></div>
           <form onSubmit={isRegistering ? handleRegister : handleUsernameLogin} className="login-form">

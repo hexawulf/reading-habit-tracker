@@ -121,25 +121,6 @@ app.use(session({
   }
 }));
 
-// Auth middleware
-const requireAuth = (req, res, next) => {
-  const userId = req.headers['x-replit-user-id'];
-  const username = req.headers['x-replit-user-name'];
-  const sessionUserId = req.session.userId;
-
-  if (!userId && !sessionUserId) {
-    return res.status(401).json({ error: 'Unauthorized - Please login' });
-  }
-
-  // Add user info to request object
-  req.user = {
-    id: userId || sessionUserId,
-    username: username || req.session.username
-  };
-
-  next();
-};
-
 // Auth endpoints
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -188,31 +169,6 @@ app.post('/api/auth/register', async (req, res) => {
 // Login endpoint
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const replitId = req.headers['x-replit-user-id'];
-    const replitName = req.headers['x-replit-user-name'];
-
-    if (replitId && replitName) {
-      // Replit login: find or create user by Replit ID
-      let user = await User.findOne({ replitId });
-      if (!user) {
-        user = await User.create({
-          replitId,
-          username: replitName,
-          readingData: {
-            books: [],
-            stats: {},
-            goals: { yearly: 52, monthly: 4 }
-          }
-        });
-      }
-      // Update last login time and save session info
-      user.lastLogin = new Date();
-      await user.save();
-      req.session.userId = user._id;
-      req.session.replitId = replitId;
-      return res.json({ user });
-    }
-
     // Username/password login
     const { username, password } = req.body;
     const user = await User.findOne({ username });
@@ -229,7 +185,8 @@ app.post('/api/auth/login', async (req, res) => {
     req.session.userId = user._id;
     res.json({ user: { ...user.toJSON(), password: undefined } });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    logger.error('Login error:', { error });
+    res.status(500).json({ error: 'Login failed. Please try again.' });
   }
 });
 
