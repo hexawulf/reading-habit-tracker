@@ -2,20 +2,9 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import {
-  FiGrid,
-  FiTrendingUp,
-  FiCalendar,
-  FiBarChart2,
-  FiBookOpen,
-  FiUsers,
-  FiSettings,
-  FiTarget,
-  FiUploadCloud
-} from 'react-icons/fi';
 
 // Mocking react-icons to simplify testing and avoid rendering actual SVG complexities
-jest.mock('react-icons/fi', () => ({
+vi.mock('react-icons/fi', () => ({
   FiGrid: () => <svg data-testid="fi-grid-icon" />,
   FiTrendingUp: () => <svg data-testid="fi-trending-up-icon" />,
   FiCalendar: () => <svg data-testid="fi-calendar-icon" />,
@@ -23,13 +12,14 @@ jest.mock('react-icons/fi', () => ({
   FiBookOpen: () => <svg data-testid="fi-book-open-icon" />,
   FiUsers: () => <svg data-testid="fi-users-icon" />,
   FiSettings: () => <svg data-testid="fi-settings-icon" />,
-  FiTarget: () => <svg data-testid="fi-target-icon" />,
   FiUploadCloud: () => <svg data-testid="fi-upload-cloud-icon" />,
 }));
 
+// Must match the navItems in Sidebar.jsx. The "Goals" item was removed with the
+// reading-goals feature, so the test no longer lists it (the original test had
+// never run and still expected a Goals link).
 const navItemsConfig = [
   { to: "/", title: "Dashboard", iconTestId: "fi-grid-icon" },
-  { to: "/goals", title: "Goals", iconTestId: "fi-target-icon" },
   { to: "/yearly-progress", title: "Yearly Progress", iconTestId: "fi-trending-up-icon" },
   { to: "/monthly-progress", title: "Monthly Progress", iconTestId: "fi-calendar-icon" },
   { to: "/reading-stats", title: "Reading Stats", iconTestId: "fi-bar-chart-2-icon" },

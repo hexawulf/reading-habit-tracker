@@ -112,7 +112,8 @@ app.use(helmet({
       connectSrc: ["'self'", 'https://*.googleapis.com', 'https://securetoken.googleapis.com', 'https://identitytoolkit.googleapis.com'],
       frameSrc: ["'self'", 'https://*.firebaseapp.com', 'https://accounts.google.com'],
       imgSrc: ["'self'", 'data:', 'https:'],
-      styleSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
       objectSrc: ["'none'"],
     },
   },
@@ -564,14 +565,15 @@ app.get('/healthz', (req, res) => {
 });
 
 // Serve static files from the client build directory.
-// RH-11: hashed assets under /static/ are immutable and cached for a year;
-// everything else (the HTML shell) is no-cache so a deploy is picked up.
+// RH-11: hashed assets under /assets/ (Vite's output dir) are immutable and
+// cached for a year; everything else (the HTML shell) is no-cache so a deploy
+// is picked up.
 const staticDir = path.join(__dirname, 'client', 'build');
 app.use(express.static(staticDir, {
   etag: true,
   setHeaders: (res, filePath) => {
     const rel = path.relative(staticDir, filePath);
-    if (rel.startsWith('static' + path.sep)) {
+    if (rel.startsWith('assets' + path.sep)) {
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     } else {
       res.setHeader('Cache-Control', 'no-cache');
@@ -579,9 +581,9 @@ app.use(express.static(staticDir, {
   }
 }));
 
-// A missing file under /static/ must 404, not fall through to the SPA shell
+// A missing file under /assets/ must 404, not fall through to the SPA shell
 // (otherwise a stale cached shell points at bundles that no longer exist).
-app.get('/static/*', (req, res) => {
+app.get('/assets/*', (req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 

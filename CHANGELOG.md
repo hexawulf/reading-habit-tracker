@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.2.0] - 2026-11-18
+
+Client build-tool release: the React client moves from Create React App
+(react-scripts 5, unmaintained) to Vite. React and all client libraries stay on
+their current majors (RH-07).
+
+### Changed
+- Client built with Vite instead of react-scripts: faster builds, hashed bundles
+  under `/assets/`, build output still in `client/build` (RH-07).
+- The 23 JSX-containing `client/src` files are now `.jsx`; the Firebase config
+  reads `import.meta.env.REACT_APP_FIREBASE_*` via Vite's `envPrefix`, so the
+  existing environment variable names keep working (RH-07).
+- `server.js` serves and caches Vite's `/assets/` bundles (immutable, 1 year);
+  the HTML shell stays `no-cache` and a missing `/assets/*` file returns 404
+  (RH-07, RH-11).
+- CI `client` job now runs lint and the client tests in addition to the build.
+- About modal, README and version bumped to 1.2.0.
+
+### Fixed
+- The four client component tests (Header, Sidebar, Dashboard, TopAuthors) run
+  again — now on Vitest + jsdom + Testing Library — and pass; they had never run
+  under CRA (RH-07, RH-14).
+- Google Fonts (Fira Code) load again: the Content-Security-Policy now allows
+  `fonts.googleapis.com` (style-src) and `fonts.gstatic.com` (font-src) (RH-07).
+- Dashboard no longer crashes on a null `stats` value before its loading/error
+  guards (optional chaining) (RH-07).
+
+### Removed
+- `react-scripts` and its only consumers: the `eslintConfig` and `browserslist`
+  blocks, the unused `web-vitals` dependency, and the `eject` script. Client
+  production `npm audit`: 70 → 6 findings (RH-07).
+
 ## [1.1.0] - 2026-11-18
 
 Security and quality release from the 2026-11-18 audit (PRs #36 and #37).

@@ -186,7 +186,7 @@ const calculateStorageSize = () => {
   try {
     const storageEstimate = JSON.stringify(localStorage).length / 1024;
     return storageEstimate.toFixed(2);
-  } catch (error) {
+  } catch (_error) {
     return '0.00';
   }
 };

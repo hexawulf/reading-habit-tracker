@@ -14,6 +14,20 @@ describe('RH-12: security headers', () => {
     expect(csp).toBeDefined();
     expect(csp).toMatch(/apis\.google\.com/);
   });
+
+  test('the CSP allows Google Fonts (stylesheet + font files)', async () => {
+    const res = await request(app).get('/api/auth/status');
+    const csp = res.headers['content-security-policy'];
+    expect(csp).toMatch(/style-src[^;]*fonts\.googleapis\.com/);
+    expect(csp).toMatch(/font-src[^;]*fonts\.gstatic\.com/);
+  });
+
+  test('the CSP does not allow unsafe-inline scripts', async () => {
+    const res = await request(app).get('/api/auth/status');
+    const csp = res.headers['content-security-policy'];
+    expect(csp).toMatch(/script-src[^;]*'self'/);
+    expect(csp).not.toMatch(/script-src[^;]*'unsafe-inline'/);
+  });
 });
 
 describe('RH-15: the My files routes are gone', () => {

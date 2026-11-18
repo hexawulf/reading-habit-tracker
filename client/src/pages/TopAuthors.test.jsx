@@ -5,10 +5,10 @@ import TopAuthors from './TopAuthors';
 import { useReadingData } from '../context/ReadingDataContext';
 
 // Mock the useReadingData hook
-jest.mock('../context/ReadingDataContext');
+vi.mock('../context/ReadingDataContext');
 
 // Mock react-icons (if needed, though TopAuthors uses initials for avatar)
-// jest.mock('react-icons/fi', () => ({
+// vi.mock('react-icons/fi', () => ({
 //   FiUser: () => <svg data-testid="fi-user-icon" />,
 // }));
 
@@ -50,9 +50,10 @@ describe('TopAuthors Page', () => {
 
   test('renders loading state correctly', () => {
     useReadingData.mockReturnValue(mockLoadingData);
-    renderWithRouter(<TopAuthors />);
+    const { container } = renderWithRouter(<TopAuthors />);
     expect(screen.getByText('Loading top authors...')).toBeInTheDocument();
-    expect(screen.getByTestId('spinner')).toBeInTheDocument(); // Assuming spinner has data-testid
+    // The component renders the spinner as <div class="spinner">.
+    expect(container.querySelector('.spinner')).toBeInTheDocument();
   });
 
   test('renders error state correctly', () => {
@@ -99,9 +100,8 @@ describe('TopAuthors Page', () => {
         const expectedSlug = encodeURIComponent(author.author);
         expect(authorCardLink).toHaveAttribute('href', `/author/${expectedSlug}`);
         
-        // Check avatar placeholder (initials)
-        const initials = author.author.split(' ').map(n => n[0]).join('').toUpperCase();
-        // If only one word, use first char. If multiple, first char of first and last.
+        // Check avatar placeholder (initials): first char of the first and
+        // last name, uppercased (single-word names use only the first char).
         let expectedInitials = '?';
         if (author.author) {
             const names = author.author.split(' ');

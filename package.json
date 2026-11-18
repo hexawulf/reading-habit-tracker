@@ -1,6 +1,6 @@
 {
   "name": "reading-habit-tracker",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "commonjs",
   "description": "A web application to track reading habits using Goodreads export data",
   "main": "server.js",

@@ -40,19 +40,19 @@ const Dashboard = () => {
   const currentYear = new Date().getFullYear().toString();
   const previousYear = (parseInt(currentYear) - 1).toString();
 
-  const readThisYear = (stats.readingByYear || {})[currentYear] || 0;
+  const readThisYear = ((stats && stats.readingByYear) || {})[currentYear] || 0;
 
   // Log key stats only when values change to avoid console spam
   React.useEffect(() => {
     if (
-      process.env.NODE_ENV !== 'production' &&
-      typeof stats.totalBooks === 'number' &&
+      import.meta.env.DEV &&
+      typeof stats?.totalBooks === 'number' &&
       typeof readThisYear === 'number'
     ) {
-      console.log('Total books:', stats.totalBooks);
+      console.log('Total books:', stats?.totalBooks);
       console.log(`Read in ${currentYear}:`, readThisYear);
     }
-  }, [stats.totalBooks, readThisYear, currentYear]);
+  }, [stats?.totalBooks, readThisYear, currentYear]);
   
 
   // Function to determine active theme styles

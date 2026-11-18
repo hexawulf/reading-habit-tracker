@@ -6,8 +6,8 @@
 
 [![Node.js](https://img.shields.io/badge/Node.js-≥22.0-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://reactjs.org)
+[![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&logoColor=white)](https://mongodb.com)
-[![Firebase](https://img.shields.io/badge/Firebase-Auth-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 [**Live Demo →**](https://mybooks.piapps.dev)
@@ -16,19 +16,35 @@
 
 ---
 
+## What it does
+
+Upload the CSV you export from Goodreads and the app turns it into a dashboard:
+totals, reading by year and month, your top authors, how your ratings break down,
+and your reading pace. You can use it signed out, or sign in with Google to save
+your data to your account and see it on another device.
+
+### Privacy
+
+Your uploaded CSV is parsed **in memory** on the server and is **never written to
+disk**. If you are signed out, nothing leaves your browser. If you sign in, only
+the parsed book list and the computed stats are stored against your user account
+in the database — the original file is not kept.
+
+---
+
 ## ✨ Features
 
 | Feature | Description |
 |---|---|
-| 📤 **Goodreads CSV Import** | Upload your library export and instantly visualize your data |
-| 📊 **Interactive Dashboard** | Bar charts, pie charts, and stats cards at a glance |
-| 📅 **Yearly & Monthly Progress** | Track reading trends and compare year-over-year |
-| 👤 **Author Statistics** | Discover your most-read authors with drill-down by title |
-| ⭐ **Rating Distribution** | See how your ratings break down across your library |
-| 🏃 **Reading Pace** | Books/month and pages/day calculated from real date ranges |
-| 🔐 **Google Sign-In** | Firebase Authentication — sign in with your Google account |
-| 💾 **Persistent Storage** | Reading data saved per-user in MongoDB Atlas |
-| 🌗 **Dark / Light Theme** | Night Owl dark theme with a light mode toggle |
+| 📤 **Goodreads CSV Import** | Upload your library export and visualize it immediately |
+| 📊 **Interactive Dashboard** | Bar and pie charts plus key-stat cards |
+| 📅 **Yearly & Monthly Progress** | Reading trends and a year-over-year comparison |
+| 👤 **Author Statistics** | Your most-read authors, with per-author book lists |
+| ⭐ **Rating Distribution** | How your ratings spread across your library |
+| 🏃 **Reading Pace** | Books/month and pages/day from real date ranges |
+| 🔐 **Optional Google Sign-In** | Firebase Authentication (popup flow); use it signed out too |
+| 💾 **Per-user Storage** | Signed-in data saved in MongoDB; guests keep data in the browser |
+| 🌗 **Dark / Light Theme** | Night Owl dark theme with a light-mode toggle |
 | 📱 **Responsive Design** | Works on desktop and mobile |
 
 ---
@@ -36,37 +52,42 @@
 ## 🛠️ Tech Stack
 
 ### Backend
-| Package | Purpose |
-|---|---|
-| **Node.js ≥ 22** | Runtime |
-| **Express 4** | HTTP server & REST API |
-| **Mongoose 6** | MongoDB ODM |
-| **MongoDB Atlas** | Cloud database (user accounts & reading data) |
-| **Firebase Admin SDK 13** | Server-side Google token verification |
-| **express-session + connect-mongo** | Session management with MongoDB store |
-| **multer** | CSV file upload handling (5 MB limit, CSV-only filter) |
-| **csv-parser** | Streaming Goodreads CSV parsing |
-| **dayjs** | Flexible date parsing (multiple formats) |
-| **bcrypt** | Password hashing for local accounts |
-| **winston** | Structured JSON logging with log rotation via PM2 |
+| Package | Version | Purpose |
+|---|---|---|
+| **Node.js** | ≥ 22 | Runtime |
+| **Express** | 4 | HTTP server & REST API |
+| **Mongoose** | 8 | MongoDB ODM |
+| **MongoDB Atlas** | — | Cloud database (accounts & reading data) |
+| **Firebase Admin SDK** | 13 | Server-side Google ID-token verification |
+| **express-session + connect-mongo** | — | Sessions stored in MongoDB |
+| **multer** | 1.4 (lts) | CSV upload, in-memory, 5 MB cap, CSV-only |
+| **csv-parser** | 3 | Streaming Goodreads CSV parsing |
+| **dayjs** | 1 | Flexible date parsing |
+| **bcrypt** | 6 | Password hashing for local accounts (cost 10) |
+| **helmet** | 8 | Security headers / CSP |
+| **express-rate-limit** | 8 | Upload rate limiting (10 / 15 min / IP) |
+| **winston** | 3 | Structured JSON logging |
 
 ### Frontend
-| Package | Purpose |
-|---|---|
-| **React 18** | UI framework |
-| **React Router 6** | Client-side routing / SPA navigation |
-| **Recharts** | Bar, Line, and Pie charts |
-| **Firebase SDK 11** | Client-side Google Sign-In (popup flow) |
-| **axios** | HTTP client for API calls |
-| **react-icons** | Icon set |
-| **Custom CSS** | Night Owl–inspired dark theme |
+| Package | Version | Purpose |
+|---|---|---|
+| **React** | 18 | UI framework |
+| **Vite** | 6 | Build tool and dev server |
+| **React Router** | 6 | Client-side routing / SPA navigation |
+| **Recharts** | 2 | Bar and pie charts |
+| **Chart.js** (react-chartjs-2) | 4 | Additional charts |
+| **Firebase SDK** | 11 | Client-side Google Sign-In (popup) |
+| **axios** | 1 | HTTP client |
+| **react-icons** | 4 | Icon set |
+| **Vitest + Testing Library** | — | Component tests (jsdom) |
+| **Custom CSS** | — | Night Owl–inspired theme |
 
 ### Infrastructure
 | Component | Detail |
 |---|---|
-| **PM2** | Process manager (`mybooks` cluster, auto-restart, 500 MB cap) |
+| **PM2** | Process manager (app name `mybooks`) |
 | **nginx** | Reverse proxy → `http://127.0.0.1:5003`, TLS termination |
-| **piapps.dev** | Homelab server (Raspberry Pi) |
+| **Host** | `piapps` homelab server |
 | **Live URL** | `https://mybooks.piapps.dev` |
 
 ---
@@ -79,24 +100,29 @@ reading-habit-tracker/
 ├── ecosystem.config.js        # PM2 deployment config
 ├── models/
 │   └── User.js                # Mongoose schema (auth + readingData)
+├── shared/
+│   └── stats.js               # Stats algorithm (server side)
 ├── src/
 │   └── logger/index.js        # Winston logger setup
-├── utils/
-│   └── goodreadsParser.js     # CSV parsing & stats generation helpers
-├── .env.example               # Required environment variables (template)
-├── client/                    # React SPA
-│   ├── src/
-│   │   ├── App.js             # Router + provider root
-│   │   ├── context/
-│   │   │   └── ReadingDataContext.js  # Global state & stats calculation
-│   │   ├── components/        # Header, Sidebar, Footer, Auth, FileUpload…
-│   │   ├── pages/             # Dashboard, YearlyProgress, RecentBooks…
-│   │   └── services/
-│   │       └── storageService.js      # localStorage + API persistence layer
-│   └── build/                 # Production build (gitignored)
-├── uploads/                   # User CSV files, per-email subdir (gitignored)
-├── user_data/                 # Legacy JSON store (gitignored)
-└── logs/                      # Winston logs, rotated by PM2 (gitignored)
+├── tests/                     # Server tests (Jest + supertest)
+├── .github/workflows/ci.yml   # CI: server and client jobs
+├── client/                    # React SPA (Vite)
+│   ├── index.html             # Vite HTML entry
+│   ├── vite.config.ts         # Vite config (build.outDir 'build', envPrefix)
+│   ├── vitest.config.ts       # Vitest config (jsdom)
+│   ├── eslint.config.js       # Client ESLint flat config (React + hooks)
+│   ├── public/                # Favicons, logo (served at site root)
+│   └── src/
+│       ├── index.jsx          # React entry
+│       ├── App.jsx            # Router + provider root
+│       ├── firebase.js        # Firebase web config (import.meta.env)
+│       ├── context/           # ReadingDataContext.jsx (global state + stats)
+│       ├── components/        # Header, Sidebar, Footer, Auth, FileUpload…
+│       ├── pages/             # Dashboard, YearlyProgress, RecentBooks…
+│       ├── services/          # storageService.js (session + API persistence)
+│       └── *.test.jsx         # Vitest component tests
+├── uploads/                   # Legacy on-disk CSVs (gitignored; not written to)
+└── logs/                      # Winston logs (gitignored)
 ```
 
 ---
@@ -106,16 +132,14 @@ reading-habit-tracker/
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
 | `POST` | `/api/auth/google` | — | Verify Firebase ID token, create/find user |
-| `POST` | `/api/auth/register` | — | Create local username/password account |
+| `POST` | `/api/auth/register` | — | Create a local username/password account |
 | `POST` | `/api/auth/login` | — | Local login |
-| `GET` | `/api/auth/status` | Session | Current session user |
-| `POST` | `/api/upload` | — | Upload Goodreads CSV, parse & return stats |
-| `GET` | `/api/user/data` | Session | Fetch saved books + stats from DB |
-| `POST` | `/api/user/data` | Session | Save books + stats to DB |
-| `DELETE` | `/api/user/data` | Session | Wipe user reading data |
-| `GET` | `/api/files/list` | Session | List user's uploaded CSV files |
-| `DELETE` | `/api/files/delete/:filename` | Session | Delete a specific CSV file |
-| `GET` | `/api/stats` | — | Stats from most recent upload (guest fallback) |
+| `POST` | `/api/auth/logout` | Session | Destroy the session and clear the cookie |
+| `GET` | `/api/auth/status` | — | Current session user (or signed-out) |
+| `POST` | `/api/upload` | — | Upload a Goodreads CSV, parse in memory, return stats |
+| `GET` | `/api/user/data` | Session | Fetch the signed-in user's saved books + stats |
+| `POST` | `/api/user/data` | Session | Save books + stats for the signed-in user |
+| `DELETE` | `/api/user/data` | Session | Wipe the signed-in user's reading data |
 | `GET` | `/healthz` | — | Health check `{ ok: true }` |
 
 ---
@@ -135,96 +159,172 @@ reading-habit-tracker/
 git clone https://github.com/hexawulf/reading-habit-tracker.git
 cd reading-habit-tracker
 
-# 2. Install server deps
+# 2. Install server deps (postinstall also installs the client)
 npm install
 
-# 3. Install client deps
-npm run install-client
-
-# 4. Configure environment
+# 3. Configure the server environment
 cp .env.example .env
-# Edit .env and fill in your MongoDB URI, Firebase credentials, and session secret
+# Edit .env: MONGO_URI, SESSION_SECRET, and the Firebase Admin values
 
-# 5. Configure client Firebase
-cp client/.env.example client/.env   # if provided, otherwise create manually
-# Add REACT_APP_FIREBASE_* keys from your Firebase project settings
+# 4. Configure the client Firebase web config
+# Create client/.env with the six REACT_APP_FIREBASE_* values
+# (see "Environment Variables" below)
 ```
 
-### Run
+### Run (two terminals)
 
 ```bash
-# Terminal 1 — backend (with nodemon)
+# Terminal 1 — backend on :5003 (nodemon)
 npm run dev
 
-# Terminal 2 — frontend dev server
-npm run client
+# Terminal 2 — Vite dev server on :3000, proxies /api to :5003
+cd client && npm run dev
 ```
 
-Open **http://localhost:3000** — the frontend proxies API requests to the backend.
+Open **http://localhost:3000**.
 
 ### Build for production
 
 ```bash
-npm run build      # builds client/build/
-npm start          # serves built SPA + API on PORT (default 5003)
+npm run build      # Vite builds client/build/
+npm start          # serves the built SPA + API on PORT (default 5003)
 ```
 
 ---
 
-## 📤 How to Export Your Goodreads Data
+## 🧰 Scripts
 
-1. Log in to [Goodreads](https://www.goodreads.com)
-2. Go to **My Books**
-3. Click **Import and Export** in the left sidebar
-4. Click **Export Library**
-5. Wait for the email / page refresh, then download the CSV
-6. Upload it on the **Upload** page of the app
+### Root (`package.json`)
+| Script | Does |
+|---|---|
+| `npm run dev` | Start the API with nodemon (`NODE_ENV=development`) |
+| `npm run build` | Build the client (`cd client && npm run build`) |
+| `npm start` | Start the API server (`node server.js`) |
+| `npm run lint` | ESLint over the server code |
+| `npm test` | Server tests (Jest + supertest) |
+
+### Client (`client/package.json`)
+| Script | Does |
+|---|---|
+| `npm run dev` | Vite dev server on :3000 (proxies `/api` → :5003) |
+| `npm run build` | Production build into `client/build` |
+| `npm run preview` | Preview the production build |
+| `npm run lint` | ESLint over `client/src` (React + hooks) |
+| `npm test` | Component tests (Vitest + jsdom + Testing Library) |
 
 ---
 
 ## 🔐 Environment Variables
 
-Copy `.env.example` to `.env` and fill in all values. **Never commit `.env`.**
+Copy `.env.example` to `.env` for the server. **Never commit `.env` or `client/.env`.**
 
+### Server (`.env`)
 | Variable | Description |
 |---|---|
 | `PORT` | Server port (default `5003`) |
+| `HOST` | Bind address (default `127.0.0.1`) |
 | `NODE_ENV` | `development` or `production` |
 | `MONGO_URI` | MongoDB Atlas connection string |
-| `SESSION_SECRET` | Random secret for `express-session` |
-| `CLIENT_URL` | Frontend origin for CORS (e.g. `http://localhost:3000`) |
+| `SESSION_SECRET` | Secret for `express-session` (required) |
+| `CLIENT_URL` | Allowed CORS origin (e.g. `http://localhost:3000`) |
 | `FIREBASE_PROJECT_ID` | Firebase project ID |
-| `FIREBASE_CLIENT_EMAIL` | Firebase Admin SDK service account email |
-| `FIREBASE_PRIVATE_KEY` | Firebase Admin SDK private key (with `\n` escaping) |
-| `FIREBASE_PRIVATE_KEY_ID` | Key ID from Firebase service account JSON |
+| `FIREBASE_CLIENT_EMAIL` | Firebase Admin service-account email |
+| `FIREBASE_PRIVATE_KEY` | Firebase Admin private key (with `\n` escaping) |
+| `FIREBASE_PRIVATE_KEY_ID` | Key ID from the service-account JSON |
 | `FIREBASE_CLIENT_ID` | Firebase client ID |
 | `FIREBASE_TYPE` | Always `service_account` |
 | `FIREBASE_AUTH_URI` | Firebase auth URI |
 | `FIREBASE_TOKEN_URI` | Firebase token URI |
 | `FIREBASE_AUTH_PROVIDER_X509_CERT_URL` | Firebase cert URL |
 | `FIREBASE_CLIENT_X509_CERT_URL` | Firebase client cert URL |
-| `LOG_DIR` | Directory for Winston logs (default `./logs`) |
+
+### Client (`client/.env`)
+The client build reads these names. Vite's `envPrefix` allows the `REACT_APP_`
+prefix, so the names did not change when the client moved to Vite.
+
+| Variable |
+|---|
+| `REACT_APP_FIREBASE_API_KEY` |
+| `REACT_APP_FIREBASE_AUTH_DOMAIN` |
+| `REACT_APP_FIREBASE_PROJECT_ID` |
+| `REACT_APP_FIREBASE_STORAGE_BUCKET` |
+| `REACT_APP_FIREBASE_MESSAGING_SENDER_ID` |
+| `REACT_APP_FIREBASE_APP_ID` |
+
+---
+
+## 🧪 Testing
+
+```bash
+npm test                 # server: Jest + supertest (API, auth, static, CSP)
+cd client && npm test    # client: Vitest + jsdom (Header, Sidebar, Dashboard,
+                         #         TopAuthors, firebase config)
+```
+
+## 🤖 CI
+
+`.github/workflows/ci.yml` runs on every pull request and on pushes to `main`,
+on Node 22:
+
+- **server**: `npm ci` → `npm run lint` → `npm test`
+- **client**: `npm ci` → `npm run lint` → `npm test` → `npm run build`
+
+---
+
+## 🚢 Deployment
+
+Production runs on `piapps` under PM2 (app `mybooks`) on `127.0.0.1:5003`, with
+nginx terminating TLS in front at `https://mybooks.piapps.dev`.
+
+```bash
+cd /home/zk/projects/reading-habit-tracker
+git pull --ff-only origin main
+npm ci            # root + client (postinstall)
+npm run build     # Vite build into client/build
+pm2 restart mybooks
+```
+
+Post-deploy check (run locally on the host):
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:5003/            # 200
+curl -sSI http://127.0.0.1:5003/ | grep -i '^cache-control'                  # no-cache
+A=$(grep -oE '/assets/[^"]+\.js' client/build/index.html | head -1)
+curl -sSI "http://127.0.0.1:5003$A" | grep -i '^cache-control'               # immutable
+curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:5003/assets/nope.js  # 404
+```
 
 ---
 
 ## 🔒 Security Notes
 
-- **Credentials**: All secrets live in `.env` (gitignored). Rotate any credentials that were previously exposed in version control.
-- **File uploads**: Limited to 5 MB, CSV files only. Uploaded to per-user subdirectories. Path traversal is prevented via `path.resolve` boundary checks.
-- **Sessions**: Stored in MongoDB with a 14-day TTL. Cookies are `secure: true` in production.
-- **Passwords**: Hashed with bcrypt (cost factor 10).
-- **Dependencies**: Run `npm audit` regularly to catch vulnerable packages.
+- **Secrets** live in `.env` / `client/.env` (gitignored); never commit them.
+- **Uploads** are capped at 5 MB, CSV only, parsed in memory, never stored on disk.
+- **Rate limit**: 10 uploads per 15 minutes per IP.
+- **Sessions** are stored in MongoDB (14-day TTL); cookies are `httpOnly`,
+  `sameSite`, and `secure` in production.
+- **Passwords** are hashed with bcrypt (cost 10).
+- **Headers**: helmet sets a Content-Security-Policy; `x-powered-by` is off.
+- Run `npm audit` regularly.
 
 ---
 
 ## 🗺️ Roadmap
 
 - [ ] 📖 Open Library API integration for cover art & metadata
-- [ ] 🎯 Custom reading goal targets (currently fixed at 52/year, 4/month)
-- [ ] 📧 Weekly reading summary emails
+- [ ] 📧 Weekly reading-summary emails
 - [ ] 🏆 Reading challenges & badges
-- [ ] 👥 Friend stats comparison
 - [ ] 🔖 Manual book entry (without Goodreads)
+
+---
+
+## 📜 Version History
+
+| Version | Date | Highlights |
+|---|---|---|
+| **1.2.0** | 2026-11 | Client moved from Create React App to Vite; client tests run on Vitest; Google Fonts allowed by the CSP; client security updates |
+| **1.1.0** | 2026-11 | Security & quality release: in-memory uploads, real logout, hardened sessions and headers, accurate stats, CI |
+| **1.0.0-secure** | 2025-07 | Initial tagged release |
 
 ---
 
@@ -232,7 +332,7 @@ Copy `.env.example` to `.env` and fill in all values. **Never commit `.env`.**
 
 1. Fork the repo
 2. Create a branch: `git checkout -b feature/my-feature`
-3. Commit your changes: `git commit -m 'feat: add my feature'`
+3. Commit: `git commit -m 'feat: add my feature'`
 4. Push: `git push origin feature/my-feature`
 5. Open a Pull Request
 
