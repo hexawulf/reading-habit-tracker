@@ -49,35 +49,33 @@ try {
     credential: admin.credential.cert(serviceAccount)
   });
   logger.info('Firebase Admin initialized successfully');
-} catch (error) {
-  logger.error('Error initializing Firebase Admin:', { error });
-  process.exit(1);
 }
 
-// Connect to MongoDB
-const mongoURI = process.env.MONGO_URI;
-if (!mongoURI) {
-  logger.error('MONGO_URI environment variable is not set');
-  process.exit(1);
-}
+// Connect to MongoDB. Also pulled into a function; tests inject an in-memory
+// database and never read MONGO_URI from .env.
+let resolveClient;
+const clientPromise = new Promise((resolve) => { resolveClient = resolve; });
 
-mongoose.set('strictQuery', false);
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  retryWrites: true,
-  serverSelectionTimeoutMS: 5000
-}).then(() => logger.info('Connected to MongoDB'))
-  .catch(err => {
-    logger.error('MongoDB connection error:', { error: err });
-    // Continue without DB for now
-    logger.warn('Continuing without database connection...');
+async function connectMongo(uri) {
+  const mongoURI = uri || process.env.MONGO_URI;
+  if (!mongoURI) {
+    throw new Error('MONGO_URI environment variable is not set');
+  }
+  mongoose.set('strictQuery', false);
+  await mongoose.connect(mongoURI, {
+    retryWrites: true,
+    serverSelectionTimeoutMS: 5000
   });
+  resolveClient(mongoose.connection.getClient());
+  logger.info('Connected to MongoDB');
+}
 
-const parseGoodreadsCsv = (filePath) =>
+const { Readable } = require('stream');
+
+const parseGoodreadsStream = (stream) =>
  new Promise((res,rej)=>{
   const books=[];
-  fs.createReadStream(filePath)
+  stream
    .on('error',e=>rej(new Error('File read failed: '+e.message)))
    .pipe(csvParser())
    .on('data',row=>{
@@ -94,6 +92,10 @@ const parseGoodreadsCsv = (filePath) =>
    .on('end',()=>res(books));
 });
 
+// Parse an uploaded CSV held in memory (no file is ever written to disk).
+const parseGoodreadsBuffer = (buffer) =>
+  parseGoodreadsStream(Readable.from(buffer));
+
 const app = express();
 // We'll determine the port dynamically below
 // const PORT = process.env.PORT || 7070;
@@ -109,7 +111,8 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: mongoURI,
+    // Reuse the mongoose connection so tests and production share one client.
+    clientPromise,
     ttl: 14 * 24 * 60 * 60 // Session TTL of 14 days
   }),
   cookie: {
@@ -728,8 +731,33 @@ app.use((err, req, res, _next) => {
 });
 
 const PORT = process.env.PORT || 5003;
-app.listen(PORT, '0.0.0.0', () => {
-  logger.info(`Server running on port ${PORT}`);
-});
+const HOST = process.env.HOST || '0.0.0.0';
+
+// Boot sequence: init Firebase, connect Mongo, then listen. Kept out of module
+// import so tests can require the app without credentials or a live database.
+async function start() {
+  try {
+    initFirebase();
+  } catch (error) {
+    logger.error('Error initializing Firebase Admin:', { error });
+    process.exit(1);
+  }
+  try {
+    await connectMongo();
+  } catch (err) {
+    logger.error('MongoDB connection error:', { error: err });
+    process.exit(1);
+  }
+  return app.listen(PORT, HOST, () => {
+    logger.info(`Server running on port ${PORT}`);
+  });
+}
+
+if (require.main === module) {
+  start();
+}
 
 module.exports = app; // For testing purposes
+module.exports.start = start;
+module.exports.initFirebase = initFirebase;
+module.exports.connectMongo = connectMongo;
