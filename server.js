@@ -601,18 +601,34 @@ app.get('/healthz', (req, res) => {
   res.status(200).json({ ok: true, timestamp: new Date().toISOString() });
 });
 
-// Serve static files from the client build directory
+// Serve static files from the client build directory.
+// RH-11: hashed assets under /static/ are immutable and cached for a year;
+// everything else (the HTML shell) is no-cache so a deploy is picked up.
 const staticDir = path.join(__dirname, 'client', 'build');
 app.use(express.static(staticDir, {
-  maxAge: process.env.NODE_ENV === 'production' ? '1y' : 0,
-  etag: true
+  etag: true,
+  setHeaders: (res, filePath) => {
+    const rel = path.relative(staticDir, filePath);
+    if (rel.startsWith('static' + path.sep)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else {
+      res.setHeader('Cache-Control', 'no-cache');
+    }
+  }
 }));
 
-// SPA fallback: send index.html for non-API routes
+// A missing file under /static/ must 404, not fall through to the SPA shell
+// (otherwise a stale cached shell points at bundles that no longer exist).
+app.get('/static/*', (req, res) => {
+  res.status(404).json({ error: 'Not found' });
+});
+
+// SPA fallback: send index.html (no-cache) for non-API routes.
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
+  res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(staticDir, 'index.html'));
 });
 
