@@ -4,7 +4,7 @@ import './Header.css';
 import Auth from './Auth';
 import AboutModal from './AboutModal';
 import storageService from '../services/storageService';
-import { FiInfo, FiGithub, FiUser, FiLogOut, FiSettings, FiDatabase, FiSun, FiMoon } from 'react-icons/fi'; // Added icons
+import { FiInfo, FiGithub, FiUser, FiLogOut, FiSettings, FiSun, FiMoon } from 'react-icons/fi'; // Added icons
 
 const Header = () => { // Removed toggleSidebar prop
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
@@ -121,9 +121,6 @@ const Header = () => { // Removed toggleSidebar prop
 
             {isAuthenticated && showUserDropdown && (
               <div className="dropdown-menu">
-                <Link to="/account" className="dropdown-item" onClick={() => setShowUserDropdown(false)}>
-                  <FiDatabase /> My Data
-                </Link>
                 <Link to="/settings" className="dropdown-item" onClick={() => setShowUserDropdown(false)}>
                   <FiSettings /> Settings
                 </Link>

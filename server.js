@@ -12,9 +12,9 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 const admin = require('firebase-admin');
 const User = require('./models/User');
-const fs = require('fs');
 const path = require('path');
 const csvParser = require('csv-parser');
 const { generateStats } = require('./shared/stats');
@@ -99,6 +99,27 @@ const app = express();
 // Behind nginx (production), trust the first proxy so secure cookies work and
 // express-rate-limit / req.ip see the real client address.
 app.set('trust proxy', 1);
+app.disable('x-powered-by');
+
+// Security headers (RH-12). The CSP allows the Firebase Google sign-in popup
+// (apis.google.com, accounts.google.com, the Firebase auth domain) and the
+// XHR/WebSocket endpoints the Firebase SDK uses.
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", 'https://apis.google.com', 'https://www.gstatic.com'],
+      connectSrc: ["'self'", 'https://*.googleapis.com', 'https://securetoken.googleapis.com', 'https://identitytoolkit.googleapis.com'],
+      frameSrc: ["'self'", 'https://*.firebaseapp.com', 'https://accounts.google.com'],
+      imgSrc: ["'self'", 'data:', 'https:'],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      objectSrc: ["'none'"],
+    },
+  },
+  // Let the Google popup communicate back to the opener.
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+}));
+
 // We'll determine the port dynamically below
 // const PORT = process.env.PORT || 7070;
 
@@ -444,65 +465,6 @@ app.post('/api/upload', uploadLimiter, (req, res) => {
   });
 });
 
-// File listing endpoint
-app.get('/api/files/list', async (req, res) => {
-  try {
-    if (!req.session.userEmail) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
-
-    const userDir = path.join(__dirname, 'uploads', req.session.userEmail);
-    if (!fs.existsSync(userDir)) {
-      return res.json({ files: [] });
-    }
-
-    const files = await fs.promises.readdir(userDir);
-    const fileStats = await Promise.all(
-      files.map(async (filename) => {
-        const filePath = path.join(userDir, filename);
-        const stats = await fs.promises.stat(filePath);
-        return {
-          name: filename,
-          size: stats.size,
-          uploadDate: stats.mtime
-        };
-      })
-    );
-
-    res.json({ files: fileStats });
-  } catch (error) {
-    logger.error('Error listing files:', { error, userEmail: req.session.userEmail });
-    res.status(500).json({ error: 'Failed to list files' });
-  }
-});
-
-// File deletion endpoint
-app.delete('/api/files/delete/:filename', async (req, res) => {
-  try {
-    if (!req.session.userEmail) {
-      logger.warn('Attempt to delete file without authentication');
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
-
-    const filename = req.params.filename;
-    const userDir = path.resolve(__dirname, 'uploads', req.session.userEmail);
-    const filePath = path.resolve(userDir, filename);
-
-    // path.resolve normalises ".." segments; verify the resolved path is still inside userDir
-    if (!filePath.startsWith(userDir + path.sep) || !fs.existsSync(filePath)) {
-      logger.warn('Attempt to delete non-existent or unauthorized file', { filename, userEmail: req.session.userEmail, filePath });
-      return res.status(404).json({ error: 'File not found' });
-    }
-
-    await fs.promises.unlink(filePath);
-    logger.info('File deleted successfully', { filename, userEmail: req.session.userEmail });
-    res.json({ message: 'File deleted successfully' });
-  } catch (error) {
-    logger.error('Error deleting file:', { error, filename: req.params.filename, userEmail: req.session.userEmail });
-    res.status(500).json({ error: 'Failed to delete file' });
-  }
-});
-
 app.get('/api/user/data', async (req, res) => {
   try {
     if (!req.session.userId) {
@@ -511,7 +473,7 @@ app.get('/api/user/data', async (req, res) => {
 
     const user = await User.findById(req.session.userId);
     if (!user) {
-      logger.warn('User data requested but user not found in DB', { sessionUserId: req.session.userId });
+      logger.warn('User data requested but user not found in DB', { sessionUserId: String(req.session.userId) });
       return res.status(404).json({ error: 'User not found' });
     }
 
@@ -650,11 +612,20 @@ app.use((err, req, res, _next) => {
 });
 
 const PORT = process.env.PORT || 5003;
-const HOST = process.env.HOST || '0.0.0.0';
+const HOST = process.env.HOST || '127.0.0.1';
 
 // Boot sequence: init Firebase, connect Mongo, then listen. Kept out of module
 // import so tests can require the app without credentials or a live database.
 async function start() {
+  // Fail fast on missing required secrets/config (RH-12).
+  if (!process.env.SESSION_SECRET) {
+    logger.error('SESSION_SECRET is not set');
+    process.exit(1);
+  }
+  if (!process.env.MONGO_URI) {
+    logger.error('MONGO_URI is not set');
+    process.exit(1);
+  }
   try {
     initFirebase();
   } catch (error) {
