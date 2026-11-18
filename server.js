@@ -11,6 +11,7 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const bcrypt = require('bcrypt');
+const rateLimit = require('express-rate-limit');
 const admin = require('firebase-admin');
 const User = require('./models/User');
 const fs = require('fs');
@@ -23,15 +24,11 @@ const parseDate = (s)=>{ if(!s||!s.trim())return null;
 
 logger.info('✅ Winston logger initialized – startup check');
 
-logger.debug('🔎 DEBUG Firebase env vars:', {
-  FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
-  FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
-  FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY ? '(exists)' : '(missing)',
-});
 
-
-// Initialize Firebase Admin
-try {
+// Initialize Firebase Admin. Pulled into a function so importing this module
+// for tests does not require real credentials or call process.exit.
+function initFirebase() {
+  if (admin.apps.length) return;
   const serviceAccount = {
     type: process.env.FIREBASE_TYPE,
     project_id: process.env.FIREBASE_PROJECT_ID,
@@ -49,35 +46,33 @@ try {
     credential: admin.credential.cert(serviceAccount)
   });
   logger.info('Firebase Admin initialized successfully');
-} catch (error) {
-  logger.error('Error initializing Firebase Admin:', { error });
-  process.exit(1);
 }
 
-// Connect to MongoDB
-const mongoURI = process.env.MONGO_URI;
-if (!mongoURI) {
-  logger.error('MONGO_URI environment variable is not set');
-  process.exit(1);
-}
+// Connect to MongoDB. Also pulled into a function; tests inject an in-memory
+// database and never read MONGO_URI from .env.
+let resolveClient;
+const clientPromise = new Promise((resolve) => { resolveClient = resolve; });
 
-mongoose.set('strictQuery', false);
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  retryWrites: true,
-  serverSelectionTimeoutMS: 5000
-}).then(() => logger.info('Connected to MongoDB'))
-  .catch(err => {
-    logger.error('MongoDB connection error:', { error: err });
-    // Continue without DB for now
-    logger.warn('Continuing without database connection...');
+async function connectMongo(uri) {
+  const mongoURI = uri || process.env.MONGO_URI;
+  if (!mongoURI) {
+    throw new Error('MONGO_URI environment variable is not set');
+  }
+  mongoose.set('strictQuery', false);
+  await mongoose.connect(mongoURI, {
+    retryWrites: true,
+    serverSelectionTimeoutMS: 5000
   });
+  resolveClient(mongoose.connection.getClient());
+  logger.info('Connected to MongoDB');
+}
 
-const parseGoodreadsCsv = (filePath) =>
+const { Readable } = require('stream');
+
+const parseGoodreadsStream = (stream) =>
  new Promise((res,rej)=>{
   const books=[];
-  fs.createReadStream(filePath)
+  stream
    .on('error',e=>rej(new Error('File read failed: '+e.message)))
    .pipe(csvParser())
    .on('data',row=>{
@@ -94,6 +89,10 @@ const parseGoodreadsCsv = (filePath) =>
    .on('end',()=>res(books));
 });
 
+// Parse an uploaded CSV held in memory (no file is ever written to disk).
+const parseGoodreadsBuffer = (buffer) =>
+  parseGoodreadsStream(Readable.from(buffer));
+
 const app = express();
 // We'll determine the port dynamically below
 // const PORT = process.env.PORT || 7070;
@@ -109,7 +108,8 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: mongoURI,
+    // Reuse the mongoose connection so tests and production share one client.
+    clientPromise,
     ttl: 14 * 24 * 60 * 60 // Session TTL of 14 days
   }),
   cookie: {
@@ -117,25 +117,6 @@ app.use(session({
     maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
   }
 }));
-
-// Auth middleware
-const requireAuth = (req, res, next) => {
-  const userId = req.headers['x-replit-user-id'];
-  const username = req.headers['x-replit-user-name'];
-  const sessionUserId = req.session.userId;
-
-  if (!userId && !sessionUserId) {
-    return res.status(401).json({ error: 'Unauthorized - Please login' });
-  }
-
-  // Add user info to request object
-  req.user = {
-    id: userId || sessionUserId,
-    username: username || req.session.username
-  };
-
-  next();
-};
 
 // Auth endpoints
 app.post('/api/auth/register', async (req, res) => {
@@ -185,31 +166,6 @@ app.post('/api/auth/register', async (req, res) => {
 // Login endpoint
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const replitId = req.headers['x-replit-user-id'];
-    const replitName = req.headers['x-replit-user-name'];
-
-    if (replitId && replitName) {
-      // Replit login: find or create user by Replit ID
-      let user = await User.findOne({ replitId });
-      if (!user) {
-        user = await User.create({
-          replitId,
-          username: replitName,
-          readingData: {
-            books: [],
-            stats: {},
-            goals: { yearly: 52, monthly: 4 }
-          }
-        });
-      }
-      // Update last login time and save session info
-      user.lastLogin = new Date();
-      await user.save();
-      req.session.userId = user._id;
-      req.session.replitId = replitId;
-      return res.json({ user });
-    }
-
     // Username/password login
     const { username, password } = req.body;
     const user = await User.findOne({ username });
@@ -226,7 +182,8 @@ app.post('/api/auth/login', async (req, res) => {
     req.session.userId = user._id;
     res.json({ user: { ...user.toJSON(), password: undefined } });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    logger.error('Login error:', { error });
+    res.status(500).json({ error: 'Login failed. Please try again.' });
   }
 });
 
@@ -325,29 +282,9 @@ app.get('/api/auth/status', async (req, res) => {
 });
 
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const baseDir = path.join(__dirname, 'uploads');
-    const dest = req.session?.userEmail
-      ? path.join(baseDir, req.session.userEmail)
-      : path.join(baseDir, 'guest');
-    fs.mkdir(dest, { recursive: true }, (err) => {
-      if (err) {
-        logger.error('Upload dir creation error:', { error: err, destination: dest });
-        return cb(new Error('Upload directory error'));
-      }
-      cb(null, dest);
-    });
-  },
-  filename: (req, file, cb) => {
-    const ts = Date.now();
-    cb(null, `goodreads-${ts}${path.extname(file.originalname)}`);
-  }
-});
-
+// Configure multer for file uploads — parse in memory, never write to disk.
 const uploadSingle = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB cap
   fileFilter: (_req, file, cb) => {
     const ok = file.mimetype === 'text/csv' ||
@@ -358,27 +295,34 @@ const uploadSingle = multer({
   }
 }).single('file');
 
-// API endpoint for uploading Goodreads CSV
-app.post('/api/upload', (req, res) => {
+// Rate limit uploads: 10 per 15 minutes per IP (honours `trust proxy`).
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many uploads from this IP. Please try again later.' }
+});
+
+// API endpoint for uploading Goodreads CSV. The file is parsed from memory and
+// never stored on disk. Parsed books are persisted only for a signed-in user,
+// keyed by user id.
+app.post('/api/upload', uploadLimiter, (req, res) => {
   uploadSingle(req, res, async (multerErr) => {
     try {
       if (multerErr) {
-        logger.error('Multer error during file upload:', { error: multerErr, file: req.file });
+        logger.warn('Multer error during file upload', { message: multerErr.message });
         return res.status(400).json({ error: 'File upload failed. ' + multerErr.message });
       }
-      if (!req.file) {
+      if (!req.file || !req.file.buffer) {
         logger.warn('No file uploaded in /api/upload');
         return res.status(400).json({ error: 'No file uploaded' });
       }
-      if (!req.file.path || !fs.existsSync(req.file.path)) {
-        logger.error('Uploaded file not saved or path missing', { file: req.file });
-        return res.status(400).json({ error: 'Upload failed – file not saved' });
-      }
 
       try {
-        const books = await parseGoodreadsCsv(req.file.path);
+        const books = await parseGoodreadsBuffer(req.file.buffer);
         if (!Array.isArray(books)) {
-          logger.error('Failed to parse books data from CSV', { filePath: req.file.path });
+          logger.error('Failed to parse books data from CSV');
           throw new Error('Failed to parse books data');
         }
 
@@ -389,41 +333,27 @@ app.post('/api/upload', (req, res) => {
             { _id: req.session.userId },
             { $set: { 'readingData.books': books, 'readingData.stats': stats } }
           ).exec();
-          logger.info('User data updated after CSV upload', { userId: req.session.userId, booksCount: books.length });
+          logger.info('User data updated after CSV upload', { userId: String(req.session.userId), booksCount: books.length });
         } else {
-          logger.info('Guest CSV uploaded and parsed', { booksCount: books.length, filePath: req.file.path });
+          logger.info('Guest CSV parsed in memory', { booksCount: books.length });
         }
 
         return res.json({ data: { books, stats } });
       } catch (parseError) {
-        logger.error('Error parsing CSV:', { error: parseError, filePath: req.file.path });
+        logger.warn('Error parsing CSV', { message: parseError.message });
         return res.status(400).json({ error: 'Failed to parse CSV file. Please ensure it is a valid Goodreads export.' });
       }
     } catch (err) {
-      logger.error('Upload processing error:', { error: err, file: req.file });
-      await cleanupFile(req.file?.path);
+      logger.error('Upload processing error', { message: err.message });
       return res.status(400).json({
-        error: err.message?.includes('CSV') ? 
-          'Invalid CSV format. Please upload a valid Goodreads export.' : 
+        error: err.message?.includes('CSV') ?
+          'Invalid CSV format. Please upload a valid Goodreads export.' :
           'Failed to process file. Please try again.'
       });
     }
   });
 });
 
-// Helper function to safely clean up uploaded files
-async function cleanupFile(filePath) {
-  if (filePath && fs.existsSync(filePath)) {
-    try {
-      await fs.promises.unlink(filePath);
-      logger.info('Cleaned up uploaded file:', { filePath });
-    } catch (err) {
-      logger.error('Error cleaning up file:', { error: err, filePath });
-    }
-  }
-}
-
-// API endpoint to get reading stats without uploading
 // File listing endpoint
 app.get('/api/files/list', async (req, res) => {
   try {
@@ -565,45 +495,6 @@ app.delete('/api/user/data', async (req, res) => {
   }
 });
 
-app.get('/api/stats', async (req, res) => {
-  // Serve stats for the authenticated user; fall back to the guest bucket.
-  const subDir = req.session?.userEmail || 'guest';
-  const userDir = path.join(__dirname, 'uploads', subDir);
-
-  let files;
-  try {
-    files = await fs.promises.readdir(userDir);
-  } catch {
-    logger.warn('/api/stats: upload directory not found', { subDir });
-    return res.status(404).json({ error: 'No data available' });
-  }
-
-  const mostRecentFile = files
-    .filter(f => f.startsWith('goodreads-'))
-    .sort()
-    .reverse()[0];
-
-  if (!mostRecentFile) {
-    logger.warn('/api/stats: no Goodreads files found', { subDir });
-    return res.status(404).json({ error: 'No data available' });
-  }
-
-  try {
-    const results = await parseGoodreadsCsv(path.join(userDir, mostRecentFile));
-    logger.info('Successfully retrieved stats', { file: mostRecentFile, subDir });
-    return res.json({
-      success: true,
-      stats: generateStats(results),
-      data: results
-    });
-  } catch (error) {
-    logger.error('Error retrieving stats from file:', { error, file: mostRecentFile });
-    return res.status(500).json({ error: 'Error retrieving stats' });
-  }
-});
-
-
-
 // Function to generate reading statistics
 function generateStats(books) {
   const totalBooks = books.length;
@@ -728,8 +619,33 @@ app.use((err, req, res, _next) => {
 });
 
 const PORT = process.env.PORT || 5003;
-app.listen(PORT, '0.0.0.0', () => {
-  logger.info(`Server running on port ${PORT}`);
-});
+const HOST = process.env.HOST || '0.0.0.0';
+
+// Boot sequence: init Firebase, connect Mongo, then listen. Kept out of module
+// import so tests can require the app without credentials or a live database.
+async function start() {
+  try {
+    initFirebase();
+  } catch (error) {
+    logger.error('Error initializing Firebase Admin:', { error });
+    process.exit(1);
+  }
+  try {
+    await connectMongo();
+  } catch (err) {
+    logger.error('MongoDB connection error:', { error: err });
+    process.exit(1);
+  }
+  return app.listen(PORT, HOST, () => {
+    logger.info(`Server running on port ${PORT}`);
+  });
+}
+
+if (require.main === module) {
+  start();
+}
 
 module.exports = app; // For testing purposes
+module.exports.start = start;
+module.exports.initFirebase = initFirebase;
+module.exports.connectMongo = connectMongo;
