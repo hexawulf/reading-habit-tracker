@@ -100,9 +100,8 @@ describe('TopAuthors Page', () => {
         const expectedSlug = encodeURIComponent(author.author);
         expect(authorCardLink).toHaveAttribute('href', `/author/${expectedSlug}`);
         
-        // Check avatar placeholder (initials)
-        const initials = author.author.split(' ').map(n => n[0]).join('').toUpperCase();
-        // If only one word, use first char. If multiple, first char of first and last.
+        // Check avatar placeholder (initials): first char of the first and
+        // last name, uppercased (single-word names use only the first char).
         let expectedInitials = '?';
         if (author.author) {
             const names = author.author.split(' ');
