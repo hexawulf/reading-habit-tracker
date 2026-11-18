@@ -45,7 +45,7 @@ const Dashboard = () => {
   // Log key stats only when values change to avoid console spam
   React.useEffect(() => {
     if (
-      process.env.NODE_ENV !== 'production' &&
+      import.meta.env.DEV &&
       typeof stats.totalBooks === 'number' &&
       typeof readThisYear === 'number'
     ) {
