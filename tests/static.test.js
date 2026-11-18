@@ -7,24 +7,39 @@ const app = require('../server.js');
 
 const buildDir = path.join(__dirname, '..', 'client', 'build');
 const staticJsDir = path.join(buildDir, 'static', 'js');
+const FIXTURE_JS = 'kiro-test-fixture.abc123.js';
 let createdBuild = false;
+let createdIndex = false;
+let createdFixtureJs = false;
 
 beforeAll(() => {
   if (!fs.existsSync(buildDir)) {
     createdBuild = true;
     fs.mkdirSync(staticJsDir, { recursive: true });
-    fs.writeFileSync(path.join(buildDir, 'index.html'), '<!doctype html><title>mybooks</title>');
-    fs.writeFileSync(path.join(staticJsDir, 'main.abc123.js'), 'console.log(1);');
+  } else if (!fs.existsSync(staticJsDir)) {
+    fs.mkdirSync(staticJsDir, { recursive: true });
+  }
+  const indexPath = path.join(buildDir, 'index.html');
+  if (!fs.existsSync(indexPath)) {
+    createdIndex = true;
+    fs.writeFileSync(indexPath, '<!doctype html><title>mybooks</title>');
+  }
+  const fixturePath = path.join(staticJsDir, FIXTURE_JS);
+  if (!fs.existsSync(fixturePath)) {
+    createdFixtureJs = true;
+    fs.writeFileSync(fixturePath, 'console.log(1);');
   }
 });
 
 afterAll(() => {
+  if (createdFixtureJs) fs.rmSync(path.join(staticJsDir, FIXTURE_JS), { force: true });
+  if (createdIndex) fs.rmSync(path.join(buildDir, 'index.html'), { force: true });
   if (createdBuild) fs.rmSync(buildDir, { recursive: true, force: true });
 });
 
 describe('RH-11: caching and static 404s', () => {
   test('a hashed /static/ asset is immutable and long-cached', async () => {
-    const res = await request(app).get('/static/js/main.abc123.js');
+    const res = await request(app).get(`/static/js/${FIXTURE_JS}`);
     expect(res.status).toBe(200);
     expect(res.headers['cache-control']).toMatch(/immutable/);
     expect(res.headers['cache-control']).toMatch(/max-age=31536000/);
