@@ -65,6 +65,10 @@ async function connectMongo(uri) {
     serverSelectionTimeoutMS: 5000
   });
   resolveClient(mongoose.connection.getClient());
+  // Wait for connect-mongo to finish opening the sessions collection and
+  // creating its TTL index before returning, so fast test suites cannot
+  // disconnect mongoose while createIndex() is still in flight.
+  await sessionStore.collectionP;
   logger.info('Connected to MongoDB');
 }
 
@@ -130,15 +134,17 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json({ limit: '2mb' }));
+const sessionStore = MongoStore.create({
+  // Reuse the mongoose connection so tests and production share one client.
+  clientPromise,
+  ttl: 14 * 24 * 60 * 60 // Session TTL of 14 days
+});
+
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({
-    // Reuse the mongoose connection so tests and production share one client.
-    clientPromise,
-    ttl: 14 * 24 * 60 * 60 // Session TTL of 14 days
-  }),
+  store: sessionStore,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
@@ -653,3 +659,4 @@ module.exports = app; // For testing purposes
 module.exports.start = start;
 module.exports.initFirebase = initFirebase;
 module.exports.connectMongo = connectMongo;
+module.exports.sessionStore = sessionStore;
