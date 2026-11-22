@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './AboutModal.css';
 
 const AboutModal = ({ onClose }) => {
+  // Close on Escape for keyboard accessibility.
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
   return (
     <div className="about-modal-overlay">
-      <div className="about-modal">
+      <div className="about-modal" role="dialog" aria-modal="true" aria-label="About Reading Habit Tracker">
         <button
           className="about-modal-close-button"
           onClick={onClose}
