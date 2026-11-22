@@ -75,9 +75,7 @@ in the database — the original file is not kept.
 | **Vite** | 6 | Build tool and dev server |
 | **React Router** | 6 | Client-side routing / SPA navigation |
 | **Recharts** | 2 | Bar and pie charts |
-| **Chart.js** (react-chartjs-2) | 4 | Additional charts |
 | **Firebase SDK** | 11 | Client-side Google Sign-In (popup) |
-| **axios** | 1 | HTTP client |
 | **react-icons** | 4 | Icon set |
 | **Vitest + Testing Library** | — | Component tests (jsdom) |
 | **Custom CSS** | — | Night Owl–inspired theme |
@@ -101,7 +99,7 @@ reading-habit-tracker/
 ├── models/
 │   └── User.js                # Mongoose schema (auth + readingData)
 ├── shared/
-│   └── stats.js               # Stats algorithm (server side)
+│   └── stats.js               # Shared stats algorithm (server & client)
 ├── src/
 │   └── logger/index.js        # Winston logger setup
 ├── tests/                     # Server tests (Jest + supertest)
@@ -111,7 +109,7 @@ reading-habit-tracker/
 │   ├── vite.config.ts         # Vite config (build.outDir 'build', envPrefix)
 │   ├── vitest.config.ts       # Vitest config (jsdom)
 │   ├── eslint.config.js       # Client ESLint flat config (React + hooks)
-│   ├── public/                # Favicons, logo (served at site root)
+│   ├── public/                # Favicons, logo (served from Vite build)
 │   └── src/
 │       ├── index.jsx          # React entry
 │       ├── App.jsx            # Router + provider root
@@ -322,6 +320,7 @@ curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:5003/assets/nope.js  
 
 | Version | Date | Highlights |
 |---|---|---|
+| **1.2.1** | 2026-11 | Collapsed duplicate stats module to one shared source; removed unused Chart.js and axios; removed duplicate root icons |
 | **1.2.0** | 2026-11 | Client moved from Create React App to Vite; client tests run on Vitest; Google Fonts allowed by the CSP; client security updates |
 | **1.1.0** | 2026-11 | Security & quality release: in-memory uploads, real logout, hardened sessions and headers, accurate stats, CI |
 | **1.0.0-secure** | 2025-07 | Initial tagged release |

@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.2.1] - 2026-11-22
+
+Code cleanup and dependency reduction release (no behavior changes).
+
+### Changed
+- `client/src/lib/stats.js` now re-exports `shared/stats.js` directly instead of
+  maintaining a 132-line duplicate copy (RH-09).
+- `FileUpload.jsx` uploads Goodreads CSVs via native `fetch` with
+  `credentials: 'include'`.
+- Updated `README.md` project structure and frontend dependency list.
+
+### Removed
+- Removed unused `chart.js` and `react-chartjs-2` client dependencies (charts
+  use Recharts) and `axios`.
+- Removed duplicate root `public/` icons and `public/README.md` (byte-identical
+  to `client/public/`, which Vite serves).
+
 ## [1.2.0] - 2026-11-18
 
 Client build-tool release: the React client moves from Create React App

@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import './FileUpload.css';
 import { useReadingData } from '../context/ReadingDataContext';
 
@@ -38,26 +37,28 @@ const FileUpload = () => {
       setUploading(true);
       setError('');
 
-      const response = await axios.post('/api/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
-        validateStatus: function (status) {
-          return status >= 200 && status < 300;
-        }
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
       });
 
-      if (response.data?.data) {
-        const { books, stats } = response.data.data;
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        setError(payload?.error || 'Upload failed. Please try again.');
+        return;
+      }
+
+      if (payload?.data) {
+        const { books, stats } = payload.data;
         // Process and store the received books and stats
         await processReadingData({ books: books || [], stats: stats || {} });
         navigate('/');
       } else {
         throw new Error('Invalid response format from server');
       }
-    } catch (err) {
-      const msg = err.response?.data?.error || 'Upload failed. Please try again.';
-      setError(msg);
+    } catch (_err) {
+      setError('Upload failed. Please try again.');
     } finally {
       setUploading(false);
     }
