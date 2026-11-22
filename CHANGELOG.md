@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.3.0] - 2026-11-22
+
+Tier-S parity pass: zero `npm audit` advisories, a modular server, supply-chain
+hygiene and a Playwright E2E smoke suite. No HTTP route, status code, validation
+limit, cookie setting or CSP changed.
+
+### Security
+- All production and development `npm audit` advisories cleared at both the root
+  and `client/` (0 / 0, `--omit=dev` and full).
+- Server: `firebase-admin` `13.10` → `14.5`, moved to the modular SDK
+  (`firebase-admin/app`, `firebase-admin/auth`); `express` `4.18` → `4.22`.
+- Client: replaced the `firebase` metapackage with modular `@firebase/app` and
+  `@firebase/auth`; `react-router-dom` `6.14` → `7.18` (resolves
+  `GHSA-337j-9hxr-rhxg`); `vitest` `2.1` → `5.1` (clears `esbuild` /
+  `vite-node` / `tinypool` dev advisories). `REACT_APP_FIREBASE_*` env names are
+  unchanged.
+- Added `SECURITY.md` (supported versions, private disclosure, controls summary).
+
+### Added
+- Playwright E2E smoke suite (`npm run test:e2e`, `npm run test:e2e:live`):
+  health and fail-closed API checks, guest CSV upload + dashboard + localStorage
+  persistence across reload, 8-view sidebar navigation + author drill-down,
+  theme toggle, About modal (open, attribution, Escape to close) and a mobile
+  no-horizontal-overflow check, asserting zero page errors and zero `>=500`
+  responses.
+- `.github/dependabot.yml`: weekly grouped minor/patch updates for the server,
+  the client and GitHub Actions.
+- Fresh README screenshots captured from synthetic demo data only.
+
+### Changed
+- `server.js` split from a 662-line monolith into `src/routes/auth.js`,
+  `src/routes/data.js` and `src/csv/goodreads.js`; `server.js` is now 220 lines.
+  Every `/api/*` path, status code, limit and test export is unchanged.
+- CI (`.github/workflows/ci.yml`): GitHub Actions SHA-pinned (checkout v7.0.1,
+  setup-node v7.1.0), Node 24, `cancel-in-progress` only for pull requests, and
+  a new Playwright E2E job.
+- The About modal now closes on `Escape` (accessibility).
+
 ## [1.2.1] - 2026-11-22
 
 Code cleanup and dependency reduction release (no behavior changes).

@@ -37,4 +37,21 @@ module.exports = [
       },
     },
   },
+  {
+    // Playwright E2E suite and its config / bootstrap (ESM).
+    files: ['e2e/**/*.mjs', 'playwright.config.mjs'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+    },
+    rules: {
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      'no-console': 'off',
+    },
+  },
 ];

@@ -1,6 +1,6 @@
 // client/src/firebase.js
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { initializeApp, getApps, getApp } from "@firebase/app";
+import { getAuth } from "@firebase/auth";
 
 // Firebase web config. Values come from the client build environment via Vite's
 // import.meta.env. The vite.config envPrefix allows both VITE_ and REACT_APP_

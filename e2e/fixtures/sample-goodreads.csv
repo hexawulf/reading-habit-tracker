@@ -1,0 +1,9 @@
+Book Id,Title,Author,Author l-f,Additional Authors,ISBN,ISBN13,My Rating,Average Rating,Publisher,Binding,Number of Pages,Year Published,Original Publication Year,Date Read,Date Added,Bookshelves,Bookshelves with positions,Exclusive Shelf,My Review,Spoiler,Private Notes,Read Count,Owned Copies
+1,Pride and Prejudice,Jane Austen,"Austen, Jane",,"=""0141439513""","=""9780141439518""",5,4.28,Penguin Classics,Paperback,435,2003,1813,2021/01/15,2021/01/02,,,read,,,,1,0
+2,Moby-Dick,Herman Melville,"Melville, Herman",,"=""142437247""","=""9780142437247""",4,3.52,Penguin Classics,Paperback,625,2003,1851,2021/03/22,2021/02/10,,,read,,,,1,0
+3,Frankenstein,Mary Shelley,"Shelley, Mary",,"=""0486282112""","=""9780486282114""",5,3.85,Dover Publications,Paperback,166,1994,1818,2021/06/09,2021/05/20,,,read,,,,1,0
+4,The Adventures of Sherlock Holmes,Arthur Conan Doyle,"Doyle, Arthur Conan",,"=""1613823789""","=""9781613823781""",4,4.32,Simon & Schuster,Paperback,307,2011,1892,2022/02/18,2022/01/30,,,read,,,,1,0
+5,A Tale of Two Cities,Charles Dickens,"Dickens, Charles",,"=""1853260398""","=""9781853260391""",4,3.86,Wordsworth Editions,Paperback,448,1999,1859,2022/07/04,2022/06/15,,,read,,,,1,0
+6,Dracula,Bram Stoker,"Stoker, Bram",,"=""0486411095""","=""9780486411095""",5,4.02,Dover Publications,Paperback,368,2000,1897,2023/04/12,2023/03/28,,,read,,,,1,0
+7,The Picture of Dorian Gray,Oscar Wilde,"Wilde, Oscar",,"=""0141439572""","=""9780141439570""",5,4.12,Penguin Classics,Paperback,254,2003,1890,2023/09/30,2023/09/01,,,read,,,,1,0
+8,Great Expectations,Charles Dickens,"Dickens, Charles",,"=""0141439564""","=""9780141439563""",3,3.79,Penguin Classics,Paperback,544,2002,1861,2024/01/20,2023/12/28,,,to-read,,,,0,0

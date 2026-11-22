@@ -2,26 +2,16 @@ require('dotenv').config();
 const logger = require('./src/logger');
 
 const express = require('express');
-const multer = require('multer');
-const dayjs = require('dayjs');
-const customParse = require('dayjs/plugin/customParseFormat');
-dayjs.extend(customParse);
 const cors = require('cors');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const bcrypt = require('bcrypt');
-const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const admin = require('firebase-admin');
-const User = require('./models/User');
+const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const path = require('path');
-const csvParser = require('csv-parser');
-const { generateStats } = require('./shared/stats');
 
-const parseDate = (s)=>{ if(!s||!s.trim())return null;
-  const d=dayjs(s.trim(),['YYYY/MM/DD','MM/DD/YYYY','DD/MM/YYYY','YYYY-MM-DD'],true);
-  return d.isValid()?d.toDate():null; };
+const authRoutes = require('./src/routes/auth');
+const dataRoutes = require('./src/routes/data');
 
 logger.info('✅ Winston logger initialized – startup check');
 
@@ -29,7 +19,7 @@ logger.info('✅ Winston logger initialized – startup check');
 // Initialize Firebase Admin. Pulled into a function so importing this module
 // for tests does not require real credentials or call process.exit.
 function initFirebase() {
-  if (admin.apps.length) return;
+  if (getApps().length) return;
   const serviceAccount = {
     type: process.env.FIREBASE_TYPE,
     project_id: process.env.FIREBASE_PROJECT_ID,
@@ -43,8 +33,8 @@ function initFirebase() {
     client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
   };
 
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+  initializeApp({
+    credential: cert(serviceAccount)
   });
   logger.info('Firebase Admin initialized successfully');
 }
@@ -71,32 +61,6 @@ async function connectMongo(uri) {
   await sessionStore.collectionP;
   logger.info('Connected to MongoDB');
 }
-
-const { Readable } = require('stream');
-
-const parseGoodreadsStream = (stream) =>
- new Promise((res,rej)=>{
-  const books=[];
-  stream
-   .on('error',e=>rej(new Error('File read failed: '+e.message)))
-   .pipe(csvParser())
-   .on('data',row=>{
-     if((row['Exclusive Shelf']||'').trim().toLowerCase()!=='read')return;
-     books.push({
-       title: row['Title']?.trim()||'(Untitled)',
-       author: row['Author']?.trim()||'Unknown',
-       myRating: parseInt(row['My Rating']||'0',10)||0,
-       pages: parseInt(row['Number of Pages']||'0',10)||0,
-       dateRead: parseDate(row['Date Read'])
-     });
-   })
-   .on('error',e=>rej(new Error('CSV parse failed: '+e.message)))
-   .on('end',()=>res(books));
-});
-
-// Parse an uploaded CSV held in memory (no file is ever written to disk).
-const parseGoodreadsBuffer = (buffer) =>
-  parseGoodreadsStream(Readable.from(buffer));
 
 const app = express();
 
@@ -125,9 +89,6 @@ app.use(helmet({
   crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
 }));
 
-// We'll determine the port dynamically below
-// const PORT = process.env.PORT || 7070;
-
 // Middleware
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
@@ -153,414 +114,11 @@ app.use(session({
   }
 }));
 
-// Auth endpoints
-
-// Validate auth request bodies. Returns an error string, or null if valid.
-// `mode` is 'register' (strict length) or 'login' (type-only, so existing
-// 6+ character passwords still work).
-function validateCredentials(body, mode) {
-  const { username, password } = body || {};
-  if (typeof username !== 'string' || typeof password !== 'string') {
-    return 'Username and password are required';
-  }
-  if (username.length < 3 || username.length > 64) {
-    return 'Username must be between 3 and 64 characters';
-  }
-  if (mode === 'register') {
-    if (password.length < 8 || password.length > 128) {
-      return 'Password must be between 8 and 128 characters';
-    }
-  } else {
-    if (password.length < 1 || password.length > 128) {
-      return 'Invalid credentials';
-    }
-  }
-  return null;
-}
-
-// Validate a saved book array (RH-10). Returns an error string, or null.
-const MAX_BOOKS = 20000;
-function validateBooks(books) {
-  if (!Array.isArray(books)) {
-    return 'readingData must be an array';
-  }
-  if (books.length > MAX_BOOKS) {
-    return `Too many books (max ${MAX_BOOKS})`;
-  }
-  for (const b of books) {
-    if (b === null || typeof b !== 'object' || Array.isArray(b)) {
-      return 'Each book must be an object';
-    }
-    if (b.title !== undefined && typeof b.title !== 'string') return 'Invalid book title';
-    if (b.author !== undefined && typeof b.author !== 'string') return 'Invalid book author';
-    if (b.myRating !== undefined && typeof b.myRating !== 'number') return 'Invalid book rating';
-    if (b.pages !== undefined && typeof b.pages !== 'number') return 'Invalid page count';
-  }
-  return null;
-}
-
-app.post('/api/auth/register', async (req, res) => {
-  try {
-    const validationError = validateCredentials(req.body, 'register');
-    if (validationError) {
-      return res.status(400).json({ error: validationError });
-    }
-    const { username, password } = req.body;
-
-    // Check if user exists
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      return res.status(400).json({ error: 'Username already exists' });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
-    const user = await User.create({
-      username,
-      password: hashedPassword,
-      readingData: {
-        books: [],
-        stats: {},
-        goals: {
-          yearly: 52,
-          monthly: 4
-        }
-      }
-    });
-
-    req.session.regenerate((err) => {
-      if (err) {
-        logger.error('Session regenerate error on register');
-        return res.status(500).json({ error: 'Registration failed. Please try again.' });
-      }
-      req.session.userId = user._id;
-      req.session.username = user.username;
-      res.json({ user: { id: user._id, name: user.username, email: user.email || null, picture: null } });
-    });
-  } catch (error) {
-    logger.error('Registration error:', { message: error.message });
-    res.status(500).json({ error: 'Registration failed. Please try again.' });
-  }
-});
-
-// Login endpoint
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const validationError = validateCredentials(req.body, 'login');
-    if (validationError) {
-      return res.status(400).json({ error: validationError });
-    }
-    // Username/password login
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
-    if (!user || !user.password) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    // Check password
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    req.session.regenerate((err) => {
-      if (err) {
-        logger.error('Session regenerate error on login');
-        return res.status(500).json({ error: 'Login failed. Please try again.' });
-      }
-      req.session.userId = user._id;
-      req.session.username = user.username;
-      res.json({ user: { id: user._id, name: user.username, email: user.email || null, picture: null } });
-    });
-  } catch (error) {
-    logger.error('Login error:', { error });
-    res.status(500).json({ error: 'Login failed. Please try again.' });
-  }
-});
-
-app.post('/api/auth/google', async (req, res) => {
-  try {
-    const { token } = req.body;
-    if (!token) {
-      return res.status(400).json({ error: 'No token provided' });
-    }
-
-    if (!admin.apps.length) {
-      return res.status(500).json({ error: 'Firebase Admin not initialized' });
-    }
-
-    // Verify the token with Firebase Admin
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    if (!decodedToken) {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-
-    const userId = decodedToken.uid;
-    logger.info('Google auth: token verified', { googleId: userId });
-
-    let user = await User.findOne({ googleId: userId });
-    if (!user) {
-      // Generate unique username by appending random digits if needed
-      let username = decodedToken.name || decodedToken.email;
-      let uniqueUsername = username;
-      let counter = 1;
-      while (await User.findOne({ username: uniqueUsername })) {
-        uniqueUsername = `${username}${counter}`;
-        counter++;
-      }
-
-      user = await User.create({
-        googleId: userId,
-        username: uniqueUsername,
-        email: decodedToken.email,
-        readingData: {
-          books: [],
-          stats: {},
-          goals: {
-            yearly: 52,
-            monthly: 4
-          }
-        }
-      });
-    }
-
-    req.session.regenerate((err) => {
-      if (err) {
-        logger.error('Session regenerate error on Google auth');
-        return res.status(500).json({ error: 'Authentication failed' });
-      }
-      // Store user info in the fresh session.
-      req.session.userId = user._id;
-      req.session.userPicture = decodedToken.picture || null;
-      req.session.userEmail = decodedToken.email || null;
-      req.session.userName = decodedToken.name || null;
-      res.json({
-        user: {
-          id: user._id,
-          name: user.username,
-          email: user.email || null,
-          picture: decodedToken.picture || null
-        }
-      });
-    });
-  } catch (error) {
-    logger.error('Google auth error:', { message: error.message });
-    res.status(500).json({ error: 'Authentication failed' });
-  }
-});
-
-app.get('/api/auth/status', async (req, res) => {
-  try {
-    if (!req.session.userId) {
-      return res.status(401).json({ 
-        isAuthenticated: false 
-      });
-    }
-
-    const user = await User.findById(req.session.userId);
-    if (!user) {
-      logger.warn('Auth status check: User not found in DB for session ID', { sessionUserId: req.session.userId });
-      return res.status(401).json({ 
-        isAuthenticated: false 
-      });
-    }
-
-    res.json({
-      isAuthenticated: true,
-      user: {
-        id: user._id,
-        name: user.username,
-        email: user.email,
-        picture: req.session.userPicture || null,
-        googleId: user.googleId || null
-      }
-    });
-  } catch (error) {
-    logger.error('Auth status error:', { message: error.message });
-    res.status(500).json({ error: 'Failed to check authentication status' });
-  }
-});
-
-// Logout: destroy the session and clear the cookie.
-app.post('/api/auth/logout', (req, res) => {
-  if (!req.session) {
-    res.clearCookie('connect.sid');
-    return res.json({ success: true });
-  }
-  req.session.destroy((err) => {
-    if (err) {
-      logger.error('Logout error:', { message: err.message });
-      return res.status(500).json({ error: 'Logout failed' });
-    }
-    res.clearCookie('connect.sid');
-    res.json({ success: true });
-  });
-});
-
-
-// Configure multer for file uploads — parse in memory, never write to disk.
-const uploadSingle = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB cap
-  fileFilter: (_req, file, cb) => {
-    const ok = file.mimetype === 'text/csv' ||
-                file.mimetype === 'application/vnd.ms-excel' ||
-                path.extname(file.originalname).toLowerCase() === '.csv';
-    if (ok) return cb(null, true);
-    cb(new Error('Only CSV files are allowed'));
-  }
-}).single('file');
-
-// Rate limit uploads: 10 per 15 minutes per IP (honours `trust proxy`).
-const uploadLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many uploads from this IP. Please try again later.' }
-});
-
-// API endpoint for uploading Goodreads CSV. The file is parsed from memory and
-// never stored on disk. Parsed books are persisted only for a signed-in user,
-// keyed by user id.
-app.post('/api/upload', uploadLimiter, (req, res) => {
-  uploadSingle(req, res, async (multerErr) => {
-    try {
-      if (multerErr) {
-        logger.warn('Multer error during file upload', { message: multerErr.message });
-        return res.status(400).json({ error: 'File upload failed. ' + multerErr.message });
-      }
-      if (!req.file || !req.file.buffer) {
-        logger.warn('No file uploaded in /api/upload');
-        return res.status(400).json({ error: 'No file uploaded' });
-      }
-
-      try {
-        const books = await parseGoodreadsBuffer(req.file.buffer);
-        if (!Array.isArray(books)) {
-          logger.error('Failed to parse books data from CSV');
-          throw new Error('Failed to parse books data');
-        }
-
-        const stats = generateStats(books);
-
-        if (req.session?.userId) {
-          await User.updateOne(
-            { _id: req.session.userId },
-            { $set: { 'readingData.books': books, 'readingData.stats': stats } }
-          ).exec();
-          logger.info('User data updated after CSV upload', { userId: String(req.session.userId), booksCount: books.length });
-        } else {
-          logger.info('Guest CSV parsed in memory', { booksCount: books.length });
-        }
-
-        return res.json({ data: { books, stats } });
-      } catch (parseError) {
-        logger.warn('Error parsing CSV', { message: parseError.message });
-        return res.status(400).json({ error: 'Failed to parse CSV file. Please ensure it is a valid Goodreads export.' });
-      }
-    } catch (err) {
-      logger.error('Upload processing error', { message: err.message });
-      return res.status(400).json({
-        error: err.message?.includes('CSV') ?
-          'Invalid CSV format. Please upload a valid Goodreads export.' :
-          'Failed to process file. Please try again.'
-      });
-    }
-  });
-});
-
-app.get('/api/user/data', async (req, res) => {
-  try {
-    if (!req.session.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const user = await User.findById(req.session.userId);
-    if (!user) {
-      logger.warn('User data requested but user not found in DB', { sessionUserId: String(req.session.userId) });
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({
-      readingData: user.readingData.books || [],
-      stats: user.readingData.stats || {},
-      goals: user.readingData.goals || { yearly: 52, monthly: 4 }
-    });
-  } catch (err) {
-    logger.error('GET /api/user/data error:', { error: err, userId: req.session.userId });
-    res.status(500).json({ error: 'Failed to fetch user data' });
-  }
-});
-
-app.post('/api/user/data', async (req, res) => {
-  try {
-    if (!req.session.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    // Validate the book array before touching the database (RH-10).
-    const { readingData, stats, goalProgress } = req.body;
-    if (readingData !== undefined) {
-      const validationError = validateBooks(readingData);
-      if (validationError) {
-        return res.status(400).json({ error: validationError });
-      }
-    }
-
-    const user = await User.findById(req.session.userId);
-    if (!user) {
-      logger.warn('Attempt to post user data but user not found in DB', { sessionUserId: String(req.session.userId) });
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    if (Array.isArray(readingData)) {
-      user.readingData.books = readingData;
-    }
-    if (stats) {
-      user.readingData.stats = stats;
-    }
-    if (goalProgress?.yearly?.target) {
-      user.readingData.goals.yearly = goalProgress.yearly.target;
-    }
-    if (goalProgress?.monthly?.target) {
-      user.readingData.goals.monthly = goalProgress.monthly.target;
-    }
-
-    await user.save();
-    logger.info('User data saved successfully', { userId: req.session.userId });
-    res.json({ success: true });
-  } catch (err) {
-    logger.error('POST /api/user/data error:', { error: err, userId: req.session.userId });
-    res.status(500).json({ error: 'Failed to save user data' });
-  }
-});
-
-app.delete('/api/user/data', async (req, res) => {
-  try {
-    if (!req.session.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-    const user = await User.findById(req.session.userId);
-    if (!user) {
-      logger.warn('Attempt to delete user data but user not found in DB', { sessionUserId: req.session.userId });
-      return res.status(404).json({ error: 'User not found' });
-    }
-    user.readingData = {
-      books: [],
-      stats: {},
-      goals: { yearly: 52, monthly: 4 }
-    };
-    await user.save();
-    logger.info('User data deleted successfully', { userId: req.session.userId });
-    res.json({ success: true });
-  } catch (err) {
-    logger.error('DELETE /api/user/data error:', { error: err, userId: req.session.userId });
-    res.status(500).json({ error: 'Failed to delete user data' });
-  }
-});
+// Application routes (mounted at the app root so /api/* paths are unchanged).
+// Auth: /api/auth/{register,login,google,status,logout}
+// Data: /api/upload, /api/user/data (GET/POST/DELETE)
+app.use(authRoutes);
+app.use(dataRoutes);
 
 // Reading statistics come from the shared module (RH-09), so the server and
 // client agree on the numbers.

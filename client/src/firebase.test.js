@@ -6,13 +6,13 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 // assert each field maps to its REACT_APP_FIREBASE_* variable.
 const initializeApp = vi.fn(() => ({ name: 'test-app' }));
 
-vi.mock('firebase/app', () => ({
+vi.mock('@firebase/app', () => ({
   initializeApp: (config) => initializeApp(config),
   getApps: () => [],
   getApp: () => ({ name: 'test-app' }),
 }));
 
-vi.mock('firebase/auth', () => ({
+vi.mock('@firebase/auth', () => ({
   getAuth: () => ({}),
 }));
 

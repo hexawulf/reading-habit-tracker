@@ -32,6 +32,18 @@ in the database — the original file is not kept.
 
 ---
 
+## 📸 Screenshots
+
+> Captured from synthetic demo data (public-domain classics), not real reading history.
+
+| Dashboard (dark) | Dashboard (light) |
+|---|---|
+| ![Dashboard, dark theme](docs/screenshots/dashboard-dark.png) | ![Dashboard, light theme](docs/screenshots/dashboard-light.png) |
+
+![Monthly progress](docs/screenshots/monthly-progress.png)
+
+---
+
 ## ✨ Features
 
 | Feature | Description |
@@ -58,7 +70,7 @@ in the database — the original file is not kept.
 | **Express** | 4 | HTTP server & REST API |
 | **Mongoose** | 8 | MongoDB ODM |
 | **MongoDB Atlas** | — | Cloud database (accounts & reading data) |
-| **Firebase Admin SDK** | 13 | Server-side Google ID-token verification |
+| **Firebase Admin SDK** | 14 | Server-side Google ID-token verification (modular SDK) |
 | **express-session + connect-mongo** | — | Sessions stored in MongoDB |
 | **multer** | 1.4 (lts) | CSV upload, in-memory, 5 MB cap, CSV-only |
 | **csv-parser** | 3 | Streaming Goodreads CSV parsing |
@@ -73,11 +85,12 @@ in the database — the original file is not kept.
 |---|---|---|
 | **React** | 18 | UI framework |
 | **Vite** | 6 | Build tool and dev server |
-| **React Router** | 6 | Client-side routing / SPA navigation |
+| **React Router** | 7 | Client-side routing / SPA navigation |
 | **Recharts** | 2 | Bar and pie charts |
-| **Firebase SDK** | 11 | Client-side Google Sign-In (popup) |
+| **Firebase SDK** | `@firebase/app` + `@firebase/auth` | Client-side Google Sign-In (popup, modular SDK) |
 | **react-icons** | 4 | Icon set |
 | **Vitest + Testing Library** | — | Component tests (jsdom) |
+| **Playwright** | 1.65 | End-to-end smoke tests (Chromium) |
 | **Custom CSS** | — | Night Owl–inspired theme |
 
 ### Infrastructure
@@ -94,16 +107,28 @@ in the database — the original file is not kept.
 
 ```
 reading-habit-tracker/
-├── server.js                  # Express server — API routes & static serving
+├── server.js                  # Express app assembly, security, static serving
 ├── ecosystem.config.js        # PM2 deployment config
+├── playwright.config.mjs      # Playwright E2E config (chromium)
 ├── models/
 │   └── User.js                # Mongoose schema (auth + readingData)
 ├── shared/
 │   └── stats.js               # Shared stats algorithm (server & client)
 ├── src/
-│   └── logger/index.js        # Winston logger setup
+│   ├── logger/index.js        # Winston logger setup
+│   ├── csv/goodreads.js       # Goodreads CSV parsing & book normalization
+│   └── routes/
+│       ├── auth.js            # /api/auth/{register,login,google,status,logout}
+│       └── data.js            # /api/upload, /api/user/data (GET/POST/DELETE)
 ├── tests/                     # Server tests (Jest + supertest)
-├── .github/workflows/ci.yml   # CI: server and client jobs
+├── e2e/                       # Playwright smoke suite
+│   ├── smoke.spec.mjs         # E2E smoke tests
+│   ├── start-test-server.mjs  # Boots server.js on in-memory MongoDB for E2E
+│   └── fixtures/              # Synthetic Goodreads CSV fixture
+├── docs/screenshots/          # README screenshots (synthetic demo data)
+├── .github/
+│   ├── workflows/ci.yml       # CI: server, client and e2e jobs
+│   └── dependabot.yml         # Weekly grouped dependency updates
 ├── client/                    # React SPA (Vite)
 │   ├── index.html             # Vite HTML entry
 │   ├── vite.config.ts         # Vite config (build.outDir 'build', envPrefix)
@@ -200,6 +225,8 @@ npm start          # serves the built SPA + API on PORT (default 5003)
 | `npm start` | Start the API server (`node server.js`) |
 | `npm run lint` | ESLint over the server code |
 | `npm test` | Server tests (Jest + supertest) |
+| `npm run test:e2e` | Playwright E2E smoke suite against a local in-memory server |
+| `npm run test:e2e:live` | Playwright E2E smoke suite against `https://mybooks.piapps.dev` |
 
 ### Client (`client/package.json`)
 | Script | Does |
@@ -257,15 +284,27 @@ prefix, so the names did not change when the client moved to Vite.
 npm test                 # server: Jest + supertest (API, auth, static, CSP)
 cd client && npm test    # client: Vitest + jsdom (Header, Sidebar, Dashboard,
                          #         TopAuthors, firebase config)
+npm run test:e2e         # E2E: Playwright (Chromium) against a local server
+                         #      booted on an in-memory MongoDB
 ```
+
+The E2E suite covers the health check, fail-closed API behaviour, the guest CSV
+upload workflow with `localStorage` persistence across a reload, sidebar
+navigation across all eight views plus author drill-down, the theme toggle, the
+About modal (open, attribution, close on Escape) and a mobile no-overflow check,
+asserting zero page errors and zero `>=500` responses.
 
 ## 🤖 CI
 
 `.github/workflows/ci.yml` runs on every pull request and on pushes to `main`,
-on Node 22:
+on Node 24 (GitHub Actions are SHA-pinned):
 
 - **server**: `npm ci` → `npm run lint` → `npm test`
 - **client**: `npm ci` → `npm run lint` → `npm test` → `npm run build`
+- **e2e**: build server + client → install Chromium → `npm run test:e2e`
+
+Dependabot (`.github/dependabot.yml`) opens weekly grouped minor/patch PRs for
+the server, the client and the GitHub Actions.
 
 ---
 
@@ -320,6 +359,7 @@ curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:5003/assets/nope.js  
 
 | Version | Date | Highlights |
 |---|---|---|
+| **1.3.0** | 2026-11 | Zero `npm audit` advisories (root + client); modular `server.js` (routers + CSV module); modular Firebase SDKs; React Router 7; SHA-pinned CI on Node 24 + Dependabot + `SECURITY.md`; Playwright E2E smoke suite |
 | **1.2.1** | 2026-11 | Collapsed duplicate stats module to one shared source; removed unused Chart.js and axios; removed duplicate root icons |
 | **1.2.0** | 2026-11 | Client moved from Create React App to Vite; client tests run on Vitest; Google Fonts allowed by the CSP; client security updates |
 | **1.1.0** | 2026-11 | Security & quality release: in-memory uploads, real logout, hardened sessions and headers, accurate stats, CI |

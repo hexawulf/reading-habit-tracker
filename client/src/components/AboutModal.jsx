@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './AboutModal.css';
 
 const AboutModal = ({ onClose }) => {
+  // Close on Escape for keyboard accessibility.
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
   return (
     <div className="about-modal-overlay">
-      <div className="about-modal">
+      <div className="about-modal" role="dialog" aria-modal="true" aria-label="About Reading Habit Tracker">
         <button
           className="about-modal-close-button"
           onClick={onClose}
@@ -16,7 +25,7 @@ const AboutModal = ({ onClose }) => {
         <h2>About Reading Habit Tracker</h2>
         <p>A web application for tracking and visualizing your reading habits using Goodreads export data.</p>
 
-        <p>Version 1.2.0</p>
+        <p>Version 1.3.0</p>
         <p>Released: November 2026</p>
 
         <h3>Overview</h3>
