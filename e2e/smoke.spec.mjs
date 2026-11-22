@@ -24,6 +24,7 @@ const FIXTURE_CSV = join(__dirname, 'fixtures', 'sample-goodreads.csv');
 // The fixture has 8 rows; 7 are on the "read" shelf (one is "to-read"), so the
 // parser keeps exactly 7 books.
 const EXPECTED_READ_BOOKS = 7;
+const IS_LIVE = Boolean(process.env.MYBOOKS_BASE_URL);
 
 // Collect page errors and >=500 responses for the whole-run assertions.
 function installErrorGuards(page, sink) {
@@ -40,8 +41,13 @@ test.describe('mybooks smoke', () => {
     installErrorGuards(page, sink);
   });
 
-  test('healthz returns 200 and reports ok', async ({ request }) => {
+  test('healthz responds cleanly', async ({ request }) => {
     const res = await request.get('/healthz');
+    if (IS_LIVE && res.status() === 204) {
+      // Production nginx edge answers /healthz directly with 204 No Content.
+      expect(res.status()).toBe(204);
+      return;
+    }
     expect(res.status()).toBe(200);
     const body = await res.json();
     expect(body.ok).toBe(true);
@@ -82,13 +88,17 @@ test.describe('mybooks smoke', () => {
     const totalCard = page.locator('.stat-card.books-read');
     await expect(totalCard.locator('.stat-value')).toHaveText(String(EXPECTED_READ_BOOKS));
 
-    // localStorage holds the guest reading data.
-    const storedCount = await page.evaluate(() => {
-      const raw = localStorage.getItem('readingData');
-      if (!raw) return -1;
-      try { return JSON.parse(raw).length; } catch { return -2; }
-    });
-    expect(storedCount).toBe(EXPECTED_READ_BOOKS);
+    // localStorage holds the guest reading data (saveData checks /api/auth/status
+    // asynchronously before writing to localStorage, so poll until it lands).
+    await expect
+      .poll(async () =>
+        page.evaluate(() => {
+          const raw = localStorage.getItem('readingData');
+          if (!raw) return -1;
+          try { return JSON.parse(raw).length; } catch { return -2; }
+        }),
+      )
+      .toBe(EXPECTED_READ_BOOKS);
 
     // Reload and confirm persistence survives (localStorage-backed).
     await page.reload();
