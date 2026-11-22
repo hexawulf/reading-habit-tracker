@@ -64,9 +64,11 @@ const AboutModal = ({ onClose }) => {
         </ul>
 
         <h3>Contact</h3>
-        <p>Author: 0xWulf</p>
         <p>
-          Email: <a href="mailto:dev@0xwulf.dev">dev@0xwulf.dev</a>
+          <strong>Developer</strong>
+          <br />
+          Erling Wulf Weinreich (0xWulf) ·{' '}
+          <a href="mailto:dev@0xwulf.dev">dev@0xwulf.dev</a>
         </p>
         <p>
           GitHub:{' '}
