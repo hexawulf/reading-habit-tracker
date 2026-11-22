@@ -56,7 +56,7 @@ const AboutModal = ({ onClose }) => {
 
         <h3>🛠️ Tech Stack</h3>
         <ul>
-          <li><strong>Frontend:</strong> React, React Router, Recharts, Chart.js, Vite</li>
+          <li><strong>Frontend:</strong> React, React Router, Recharts, Vite</li>
           <li><strong>Backend:</strong> Node.js, Express, MongoDB (Mongoose)</li>
           <li><strong>Auth:</strong> Firebase (Google sign-in), sessions</li>
           <li><strong>Security:</strong> Helmet (CSP), rate limiting</li>
@@ -64,12 +64,12 @@ const AboutModal = ({ onClose }) => {
           <li><strong>Styling:</strong> Custom CSS</li>
         </ul>
 
-        <h3>What's new in 1.2.0</h3>
+        <h3>What's new in 1.3.0</h3>
         <ul>
-          <li>Faster builds: the app now uses Vite instead of Create React App</li>
-          <li>The client component tests run again (and pass) in continuous integration</li>
-          <li>Google Fonts load correctly again (the content security policy allows them)</li>
-          <li>Security updates across the client dependencies</li>
+          <li>Zero dependency vulnerabilities across server and client (modular Firebase SDK, React Router 7, Express 4.22)</li>
+          <li>Modularized server architecture (auth, data, and Goodreads CSV modules) with unchanged API behavior</li>
+          <li>Keyboard-accessible About modal (press Escape to close) and shared chart stylesheets</li>
+          <li>Playwright end-to-end smoke suite, Dependabot, and hardened SHA-pinned CI</li>
         </ul>
 
         <h3>Contact</h3>
