@@ -13,7 +13,7 @@ const MongoStore = require('connect-mongo');
 const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const admin = require('firebase-admin');
+const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const User = require('./models/User');
 const path = require('path');
 const csvParser = require('csv-parser');
@@ -29,7 +29,7 @@ logger.info('✅ Winston logger initialized – startup check');
 // Initialize Firebase Admin. Pulled into a function so importing this module
 // for tests does not require real credentials or call process.exit.
 function initFirebase() {
-  if (admin.apps.length) return;
+  if (getApps().length) return;
   const serviceAccount = {
     type: process.env.FIREBASE_TYPE,
     project_id: process.env.FIREBASE_PROJECT_ID,
@@ -43,8 +43,8 @@ function initFirebase() {
     client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
   };
 
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+  initializeApp({
+    credential: cert(serviceAccount)
   });
   logger.info('Firebase Admin initialized successfully');
 }
@@ -287,12 +287,15 @@ app.post('/api/auth/google', async (req, res) => {
       return res.status(400).json({ error: 'No token provided' });
     }
 
-    if (!admin.apps.length) {
+    if (!getApps().length) {
       return res.status(500).json({ error: 'Firebase Admin not initialized' });
     }
 
-    // Verify the token with Firebase Admin
-    const decodedToken = await admin.auth().verifyIdToken(token);
+    // Verify the token with Firebase Admin. The auth subpackage is required
+    // lazily so simply importing this module (e.g. in Jest) never eagerly
+    // loads firebase-admin/auth and its ESM-only jose dependency.
+    const { getAuth } = require('firebase-admin/auth');
+    const decodedToken = await getAuth().verifyIdToken(token);
     if (!decodedToken) {
       return res.status(401).json({ error: 'Invalid token' });
     }

@@ -3,7 +3,7 @@ import './Auth.css';
 // Import only the necessary auth instance from firebase.js
 import { auth } from '../firebase'; 
 // Keep GoogleAuthProvider and signInWithPopup if they are used directly with the imported auth
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth'; 
+import { GoogleAuthProvider, signInWithPopup } from '@firebase/auth'; 
 
 // Firebase is NOT initialized here anymore. It's done in firebase.js
 
