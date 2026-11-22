@@ -5,6 +5,7 @@ import {
   Tooltip, Legend, ResponsiveContainer, LineChart, Line
 } from 'recharts';
 import { useReadingData } from '../context/ReadingDataContext';
+import '../styles/chart-page.css';
 import './MonthlyProgress.css';
 
 // Night Owl theme colors

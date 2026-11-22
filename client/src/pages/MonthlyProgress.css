@@ -1,20 +1,4 @@
 /* client/src/pages/MonthlyProgress.css */
-.monthly-progress-page {
-  padding: 1rem; /* Consistent padding */
-  color: #f7fafc !important; /* var(--night-owl-text) */
-}
-
-.monthly-progress-page h1 {
-  /* font-size: var(--h1-font-size); /* Inherits from index.css */
-  margin-bottom: 1.5rem;
-}
-
-.monthly-progress-page h2 {
-  /* font-size: var(--h2-font-size); /* Inherits from index.css */
-  margin-top: 1.5rem; /* Consistent margin */
-  margin-bottom: 1rem;
-}
-
 .year-selector {
   display: flex;
   align-items: center;
@@ -46,17 +30,6 @@
   outline: none;
   border-color: #7e57c2 !important; /* var(--night-owl-accent1) */
   box-shadow: 0 0 0 2px #7e57c24D !important; /* rgba(var(--night-owl-accent1-rgb), 0.3) */
-}
-
-.charts-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.monthly-progress-page .chart-card h3 {
-  margin-bottom: 1rem;
 }
 
 .calendar-grid {
@@ -183,10 +156,6 @@
 }
 
 /* Light Theme Overrides */
-body.light-theme .monthly-progress-page {
-  color: #212529 !important;
-}
-
 body.light-theme .year-selector {
   background-color: #F8F9FA !important;
   border-color: #DEE2E6 !important;
@@ -259,16 +228,12 @@ body.light-theme .no-books-message {
 
 /* Responsive adjustments - structure remains, theming applied above */
 @media (max-width: 992px) {
-  .charts-container {
-    grid-template-columns: 1fr; /* Stack charts */
-  }
   .calendar-grid { /* Adjust calendar for tablets */
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   }
 }
 
 @media (max-width: 768px) {
-  .monthly-progress-page { padding: 0.75rem; }
   .stats-overview { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); } /* Smaller stat cards */
   
   .calendar-grid {

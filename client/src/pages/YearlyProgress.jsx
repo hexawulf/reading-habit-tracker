@@ -6,6 +6,7 @@ import {
   Cell, Legend // Removed PieChart, Pie as they are not used here
 } from 'recharts';
 import { useReadingData } from '../context/ReadingDataContext';
+import '../styles/chart-page.css';
 import './YearlyProgress.css';
 
 // Night Owl theme colors

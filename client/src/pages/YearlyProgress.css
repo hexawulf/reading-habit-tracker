@@ -1,20 +1,4 @@
 /* client/src/pages/YearlyProgress.css */
-.yearly-progress-page {
-  padding: 1rem; /* Consistent padding */
-  color: #f7fafc !important; /* var(--night-owl-text) */
-}
-
-.yearly-progress-page h1 {
-  /* font-size: var(--h1-font-size); /* Inherits from index.css */
-  margin-bottom: 1.5rem;
-}
-
-.yearly-progress-page h2 {
-  /* font-size: var(--h2-font-size); /* Inherits from index.css */
-  margin-top: 1.5rem; /* Consistent margin */
-  margin-bottom: 1rem;
-}
-
 .yearly-progress-page .stats-overview {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 0.75rem;
@@ -31,17 +15,6 @@
   color: #f7fafc !important; /* var(--night-owl-text) */
   opacity: 0.8;
   margin-top: 0.1rem;
-}
-
-.charts-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.yearly-progress-page .chart-card h3 { /* Assuming .chart-card is globally themed */
-  margin-bottom: 1rem;
 }
 
 .years-grid {
@@ -119,10 +92,6 @@
 }
 
 /* Light Theme Overrides */
-body.light-theme .yearly-progress-page {
-  color: #212529 !important;
-}
-
 body.light-theme .yearly-progress-page .stat-subtitle {
   color: #495057 !important; /* Light theme text */
   opacity: 0.8;
@@ -171,14 +140,7 @@ body.light-theme .no-goal-history {
 
 
 /* Responsive adjustments */
-@media (max-width: 992px) {
-  .charts-container {
-    grid-template-columns: 1fr; /* Stack charts */
-  }
-}
-
 @media (max-width: 768px) {
-  .yearly-progress-page { padding: 0.75rem; }
   .yearly-progress-page .stats-overview { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
   .years-grid {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Smaller year cards */
