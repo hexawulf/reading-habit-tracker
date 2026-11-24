@@ -157,6 +157,15 @@ app.get('/assets/*', (req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
+// Crawl files are the static robots.txt and sitemap.xml from the Vite build
+// (client/public, copied into client/build). express.static serves them when
+// they exist. If they are missing, answer 404 as plain text — never the SPA
+// shell. A 200 HTML body at these paths is what Search Console treats as a
+// broken robots file or sitemap.
+app.get(['/robots.txt', '/sitemap.xml'], (req, res) => {
+  res.status(404).type('text/plain').send('Not found');
+});
+
 // SPA fallback: send index.html (no-cache) for non-API routes.
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
