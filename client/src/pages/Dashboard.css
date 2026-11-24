@@ -29,7 +29,7 @@
   .recent-books,
   .reading-insights,
   .authors-list-card { 
-    background-color: #2d3748;
+    background-color: var(--night-owl-card-background);
     border: 1px solid var(--current-border);
     color: var(--current-text);
     border-radius: var(--border-radius, 8px); 
@@ -48,7 +48,7 @@
   body.light-theme .recent-books,
   body.light-theme .reading-insights,
   body.light-theme .authors-list-card {
-    background-color: #F8F9FA;
+    background-color: var(--light-card-background);
   }
 
   /* New rule for .stat-card specific layout properties */
@@ -74,7 +74,7 @@
   
   /* Section for grouping related stats - can be a new div in JSX */
   .stats-group-container {
-    /* background-color: #2d3748; */ /* Handled by inline styles */
+    /* background-color: var(--night-owl-card-background); */ /* Handled by inline styles */
     border-radius: var(--border-radius, 8px);
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     padding: 1rem;
@@ -85,7 +85,7 @@
   }
 
   body.light-theme .stats-group-container {
-    /* background-color: #F8F9FA; */ /* Handled by inline styles */
+    /* background-color: var(--light-background); */ /* Handled by inline styles */
   }
   
   .stats-overview {
@@ -102,11 +102,11 @@
     font-weight: 500;
   }
   
-  .stat-value { /* This is already in App.css, ensure consistency or override */
-    font-size: 2rem; /* Kept from previous densification */
+  .stat-value { /* Accent figures, same token as App.css */
+    font-size: 2rem;
     font-weight: 700;
-    color: var(--current-text); /* FIXED */
-    margin-bottom: 0.1rem; 
+    color: var(--current-link);
+    margin-bottom: 0.1rem;
   }
   
   .rating-stars { /* This is in App.css, check if override is needed */

@@ -72,24 +72,24 @@
 }
 
 .nav-item:hover {
-  background-color: var(--current-border); /* Themed: Subtle hover using current border color */
-  color: var(--night-owl-accent1); /* Accent color for icon and text on hover */
+  background-color: var(--current-border);
+  color: var(--current-link);
 }
 .nav-item:hover .icon {
- color: var(--night-owl-accent1); /* Ensure icon specifically gets accent color */
+ color: var(--current-link);
 }
 
 
 .nav-item.active {
-  background-color: var(--night-owl-accent1); /* Global accent for active item background */
-  color: var(--night-owl-text); /* Themed: Light text on dark accent background */
+  background-color: var(--night-owl-accent1);
+  color: var(--on-accent);
 }
 
 .nav-item.active .icon {
-  color: var(--night-owl-text); /* Themed: Icon color for active state */
+  color: var(--on-accent);
 }
 .nav-item.active .nav-text {
-  color: var(--night-owl-text); /* Themed: Text color for active state */
+  color: var(--on-accent);
   font-weight: 600;
 }
 

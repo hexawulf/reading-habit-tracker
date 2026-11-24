@@ -26,8 +26,8 @@ button, .btn { /* Apply base font to buttons */
   font-family: var(--font-base);
   cursor: pointer;
   /* Basic button styling, can be extended with classes */
-  background-color: var(--night-owl-accent1); /* Using global accent */
-  color: var(--night-owl-text); /* Text color for dark accent button, might need adjustment for light theme if accent doesn't change */
+  background-color: var(--night-owl-accent1); /* teal-700, white text passes AA */
+  color: var(--on-accent);
   border: 1px solid var(--current-border); /* Use current border */
   padding: 0.5em 1em; /* Base padding for default buttons */
   border-radius: 4px;
@@ -36,7 +36,7 @@ button, .btn { /* Apply base font to buttons */
 }
 
 button:hover, .btn:hover {
-  background-color: var(--night-owl-accent2); /* Slightly different global accent on hover */
+  background-color: var(--accent-hover); /* teal-800 */
 }
 
 .app {
@@ -73,7 +73,7 @@ button:hover, .btn:hover {
 .stat-value {
   font-size: 2rem; /* Reduced font size */
   font-weight: 700;
-  color: var(--night-owl-accent2); /* Using global accent */
+  color: var(--current-link);
   margin: 0.3rem 0;
 }
 
@@ -93,25 +93,26 @@ button:hover, .btn:hover {
 }
 
 .btn-primary { /* This will override the base button, .btn styles */
-  background-color: var(--night-owl-accent1); /* Global accent */
-  border-color: var(--night-owl-accent1); /* Ensure border matches */
-  color: var(--night-owl-text); /* Text color for dark accent button */
+  background-color: var(--night-owl-accent1);
+  border-color: var(--night-owl-accent1);
+  color: var(--on-accent);
 }
 
 .btn-primary:hover {
-  background-color: var(--night-owl-accent2); /* Global accent */
-  border-color: var(--night-owl-accent2);
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .btn-secondary {
-  background-color: var(--night-owl-accent2);  /* Global accent */
-  border-color: var(--night-owl-accent2);
-  color: var(--night-owl-text); /* Text color for dark accent button */
+  background-color: transparent;
+  border-color: var(--current-link);
+  color: var(--current-link);
 }
 
 .btn-secondary:hover {
-  background-color: var(--night-owl-accent1);  /* Global accent */
+  background-color: var(--night-owl-accent1);
   border-color: var(--night-owl-accent1);
+  color: var(--on-accent);
 }
 
 .btn-lg {

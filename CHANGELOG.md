@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- UI recolor to the canonical 0xWulf teal palette shared with PiDeck, PiTasker,
+  and CodePatchwork: slate surfaces, teal-700 actions (white text),
+  teal-400 links in dark mode, and teal-700 links in light mode.
+- Logo and favicons are the rounded teal tile with the MB mark
+  (`#14B8A6` → `#0D9488`). `theme-color` is `#0D9488`.
+
 ## [1.3.0] - 2026-11-22
 
 Tier-S parity pass: zero `npm audit` advisories, a modular server, supply-chain

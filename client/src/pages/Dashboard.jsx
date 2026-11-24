@@ -8,28 +8,28 @@ import {
 } from 'recharts';
 import './Dashboard.css';
 
-// FIXED: Use actual hex values instead of CSS variables in JavaScript
-const NIGHT_OWL_ACCENT_1 = "#7e57c2"; // Purple
-const NIGHT_OWL_ACCENT_2 = "#82aaff"; // Blue
+// Chart series: teal-700 and canonical teal-500. CSS variables so both themes match.
+const NIGHT_OWL_ACCENT_1 = "var(--night-owl-accent1)";
+const NIGHT_OWL_ACCENT_2 = "var(--night-owl-accent2)";
 
-// FIXED: Function to get CSS variable values at runtime
-// This function might become less relevant for card styles if hardcoded in JS,
-// but retained for other dynamic styles like chart elements.
+// Read tokens from body so body.light-theme overrides win over :root.
 const getCSSVariable = (variableName) => {
+  const fromBody = getComputedStyle(document.body).getPropertyValue(variableName).trim();
+  if (fromBody) return fromBody;
   return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
 };
 
 // Theme style objects
 const darkThemeStyles = {
-  backgroundColor: '#2d3748', // --night-owl-card-background
-  color: '#f7fafc',           // --night-owl-text
-  border: '1px solid #4a5568' // --night-owl-border
+  backgroundColor: 'var(--night-owl-card-background)', // --night-owl-card-background
+  color: 'var(--night-owl-text)',           // --night-owl-text
+  border: '1px solid var(--night-owl-border)' // --night-owl-border
 };
 
 const lightThemeStyles = {
-  backgroundColor: '#F8F9FA', // --light-card-background
-  color: '#212529',           // --light-text
-  border: '1px solid #DEE2E6' // --light-border
+  backgroundColor: 'var(--light-card-background)',
+  color: 'var(--light-text)',
+  border: '1px solid var(--light-border)'
 };
 
 const Dashboard = () => {
@@ -167,7 +167,7 @@ const Dashboard = () => {
     '#ff8c42', // 2 stars (orange)
     '#ffc700', // 3 stars (yellow)
     '#c3e88d', // 4 stars (light green)
-    '#89ddff'  // 5 stars (light blue)
+    'var(--teal-400)'  // 5 stars (teal highlight)
   ];
 
   const safeData = Array.isArray(readingData) ? readingData : [];
@@ -188,9 +188,9 @@ const Dashboard = () => {
   };
 
   // FIXED: Get current theme colors at runtime
-  const currentCardBg = getCSSVariable('--current-card-background') || '#2d3748';
-  const currentBorder = getCSSVariable('--current-border') || '#4a5568';
-  const currentText = getCSSVariable('--current-text') || '#f7fafc';
+  const currentCardBg = getCSSVariable('--current-card-background') || 'var(--night-owl-card-background)';
+  const currentBorder = getCSSVariable('--current-border') || 'var(--night-owl-border)';
+  const currentText = getCSSVariable('--current-text') || 'var(--night-owl-text)';
 
   return (
     <div className="dashboard">
@@ -244,7 +244,7 @@ const Dashboard = () => {
             <Tooltip 
               contentStyle={{ backgroundColor: currentCardBg, border: `1px solid ${currentBorder}`, color: currentText, borderRadius: '6px' }} 
               itemStyle={{ color: currentText }}
-              cursor={{ fill: 'rgba(130, 170, 255, 0.15)' }}/>
+              cursor={{ fill: 'rgba(20, 184, 166, 0.18)' }}/>
             <Bar dataKey="count" fill={NIGHT_OWL_ACCENT_1} name="Books Read" isAnimationActive={true} />
           </BarChart>
         </ResponsiveContainer>
@@ -260,7 +260,7 @@ const Dashboard = () => {
             <Tooltip 
               contentStyle={{ backgroundColor: currentCardBg, border: `1px solid ${currentBorder}`, color: currentText, borderRadius: '6px' }} 
               itemStyle={{ color: currentText }}
-              cursor={{ fill: 'rgba(130, 170, 255, 0.15)' }}/>
+              cursor={{ fill: 'rgba(20, 184, 166, 0.18)' }}/>
             <Legend wrapperStyle={{ color: currentText, fontSize: '12px' }} />
             <Bar dataKey={previousYear} fill={NIGHT_OWL_ACCENT_2} name={previousYear} isAnimationActive={true} />
             <Bar dataKey={currentYear} fill={NIGHT_OWL_ACCENT_1} name={currentYear} isAnimationActive={true} />

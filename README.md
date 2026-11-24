@@ -56,7 +56,7 @@ in the database — the original file is not kept.
 | 🏃 **Reading Pace** | Books/month and pages/day from real date ranges |
 | 🔐 **Optional Google Sign-In** | Firebase Authentication (popup flow); use it signed out too |
 | 💾 **Per-user Storage** | Signed-in data saved in MongoDB; guests keep data in the browser |
-| 🌗 **Dark / Light Theme** | Night Owl dark theme with a light-mode toggle |
+| 🌗 **Dark / Light Theme** | Slate surfaces with the canonical 0xWulf teal, and a light-mode toggle |
 | 📱 **Responsive Design** | Works on desktop and mobile |
 
 ---
@@ -91,7 +91,7 @@ in the database — the original file is not kept.
 | **react-icons** | 4 | Icon set |
 | **Vitest + Testing Library** | — | Component tests (jsdom) |
 | **Playwright** | 1.65 | End-to-end smoke tests (Chromium) |
-| **Custom CSS** | — | Night Owl–inspired theme |
+| **Custom CSS** | — | Slate + canonical teal (`#14B8A6` / `#0D9488` / `#0F766E`) |
 
 ### Infrastructure
 | Component | Detail |

@@ -12,7 +12,7 @@
 }
 .yearly-progress-page .stat-subtitle {
   font-size: 0.85rem;
-  color: #f7fafc !important; /* var(--night-owl-text) */
+  color: var(--night-owl-text) !important; /* var(--night-owl-text) */
   opacity: 0.8;
   margin-top: 0.1rem;
 }
@@ -25,17 +25,17 @@
 }
 
 .year-card {
-  background-color: #2d3748 !important; /* var(--night-owl-card-background) */
+  background-color: var(--night-owl-card-background) !important; /* var(--night-owl-card-background) */
   border-radius: var(--border-radius, 8px); /* Assuming var(--border-radius) is fine */
-  border: 1px solid #4a5568 !important; /* var(--night-owl-border) */
+  border: 1px solid var(--night-owl-border) !important; /* var(--night-owl-border) */
   box-shadow: var(--card-shadow); /* Assuming var(--card-shadow) is fine or globally handled */
   overflow: hidden;
 }
 
 .year-header {
   padding: 0.8rem 1rem;
-  background-color: #7e57c2 !important; /* var(--night-owl-accent1) */
-  color: #1a202c !important; /* var(--night-owl-background) for contrast text */
+  background-color: var(--night-owl-accent1) !important;
+  color: var(--on-accent) !important;
   text-align: center;
 }
 
@@ -43,13 +43,12 @@
   margin: 0;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #1a202c !important; /* var(--night-owl-background) for contrast text */
+  color: var(--on-accent) !important;
 }
 
 .year-book-count {
   font-size: 0.85rem;
-  opacity: 0.9;
-  color: #1a202c !important; /* var(--night-owl-background) for contrast text */
+  color: var(--on-accent) !important;
 }
 
 .year-stats {
@@ -59,7 +58,7 @@
 .year-stats p {
   margin-bottom: 0.4rem;
   font-size: 0.85rem;
-  color: #f7fafc !important; /* var(--night-owl-text) */
+  color: var(--night-owl-text) !important; /* var(--night-owl-text) */
   display: flex;
   justify-content: space-between;
 }
@@ -67,7 +66,7 @@
 
 .year-stats span {
   font-weight: 600;
-  color: #82aaff !important; /* var(--night-owl-accent2) */
+  color: var(--night-owl-accent2) !important; /* var(--night-owl-accent2) */
 }
 .year-stats .rating-stars { /* Assuming this is a specific class for star icons */
   font-size: 0.85rem;
@@ -76,15 +75,15 @@
 }
 
 .goal-history-container { /* If this uses .chart-card, it's globally themed. Otherwise: */
-  /* background-color: #2d3748 !important; */
-  /* border: 1px solid #4a5568 !important; */
-  /* color: #f7fafc !important; */
+  /* background-color: var(--night-owl-card-background) !important; */
+  /* border: 1px solid var(--night-owl-border) !important; */
+  /* color: var(--night-owl-text) !important; */
 }
 
 .no-goal-history {
   text-align: center;
   padding: 1.5rem;
-  color: #f7fafc !important; /* var(--night-owl-text) */
+  color: var(--night-owl-text) !important; /* var(--night-owl-text) */
   font-size: 0.9rem;
 }
 .no-goal-history p {
@@ -93,18 +92,18 @@
 
 /* Light Theme Overrides */
 body.light-theme .yearly-progress-page .stat-subtitle {
-  color: #495057 !important; /* Light theme text */
+  color: var(--light-muted) !important; /* Light theme text */
   opacity: 0.8;
 }
 
 body.light-theme .year-card {
-  background-color: #F8F9FA !important;
-  border-color: #DEE2E6 !important;
+  background-color: var(--light-card-background) !important;
+  border-color: var(--light-border) !important;
   /* box-shadow: original var(--card-shadow) if different for light */
 }
 
 body.light-theme .year-header {
-  background-color: #5e35b1 !important; /* Light theme accent1 */
+  background-color: var(--light-accent1) !important; /* Light theme accent1 */
   color: #fff !important; /* White text for contrast */
 }
 
@@ -113,29 +112,28 @@ body.light-theme .year-header h3 {
 }
 
 body.light-theme .year-book-count {
-  color: #e0e0e0 !important; /* Lighter text on accent1 for light theme */
-  opacity: 0.9;
+  color: #fff !important;
 }
 
 body.light-theme .year-stats p {
-  color: #212529 !important;
+  color: var(--light-text) !important;
 }
 
 body.light-theme .year-stats span {
-  color: #007bff !important; /* Standard light theme accent (e.g., primary blue) */
+  color: var(--light-link) !important; /* Standard light theme accent (e.g., primary blue) */
 }
 body.light-theme .year-stats .rating-stars {
   color: #FFC107 !important; /* Gold/Yellow is often fine for both themes */
 }
 
 body.light-theme .goal-history-container {
-  /* background-color: #F8F9FA !important; */
-  /* border-color: #DEE2E6 !important; */
-  /* color: #212529 !important; */
+  /* background-color: var(--light-background) !important; */
+  /* border-color: var(--light-border) !important; */
+  /* color: var(--light-text) !important; */
 }
 
 body.light-theme .no-goal-history {
-  color: #212529 !important;
+  color: var(--light-text) !important;
 }
 
 
