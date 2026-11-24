@@ -1,5 +1,6 @@
 require('dotenv').config();
 const logger = require('./src/logger');
+const { assertSafeTestMongoUri, assertSessionSecret } = require('./src/safety');
 
 const express = require('express');
 const cors = require('cors');
@@ -48,6 +49,10 @@ async function connectMongo(uri) {
   const mongoURI = uri || process.env.MONGO_URI;
   if (!mongoURI) {
     throw new Error('MONGO_URI environment variable is not set');
+  }
+  // Tests (Jest workers or NODE_ENV=test) may only connect to a loopback URI.
+  if (process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID) {
+    assertSafeTestMongoUri(mongoURI);
   }
   mongoose.set('strictQuery', false);
   await mongoose.connect(mongoURI, {
@@ -101,8 +106,9 @@ const sessionStore = MongoStore.create({
   ttl: 14 * 24 * 60 * 60 // Session TTL of 14 days
 });
 
+assertSessionSecret();
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store: sessionStore,

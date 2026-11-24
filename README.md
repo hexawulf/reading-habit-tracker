@@ -182,8 +182,10 @@ reading-habit-tracker/
 git clone https://github.com/hexawulf/reading-habit-tracker.git
 cd reading-habit-tracker
 
-# 2. Install server deps (postinstall also installs the client)
-npm install
+# 2. Install deps (no postinstall hook; client is installed explicitly)
+npm ci --ignore-scripts
+npm rebuild bcrypt
+npm run install-client
 
 # 3. Configure the server environment
 cp .env.example .env
@@ -197,14 +199,19 @@ cp .env.example .env
 ### Run (two terminals)
 
 ```bash
-# Terminal 1 — backend on :5003 (nodemon)
-npm run dev
+# Terminal 1 — backend on :5093 (matches the Vite dev proxy default)
+PORT=5093 npm run dev
 
-# Terminal 2 — Vite dev server on :3000, proxies /api to :5003
+# Terminal 2 — Vite dev server on :3000, proxies /api to :5093
 cd client && npm run dev
 ```
 
 Open **http://localhost:3000**.
+
+The Vite dev server proxies `/api` to `VITE_API_PROXY` (default
+`http://127.0.0.1:5093`). It refuses to start if the target uses port `5003`
+(the live PM2 process on piapps) unless you set `ALLOW_PROD_PROXY=1`. Use that
+flag only for a local API on a laptop, never in the live clone.
 
 ### Build for production
 
@@ -226,12 +233,12 @@ npm start          # serves the built SPA + API on PORT (default 5003)
 | `npm run lint` | ESLint over the server code |
 | `npm test` | Server tests (Jest + supertest) |
 | `npm run test:e2e` | Playwright E2E smoke suite against a local in-memory server |
-| `npm run test:e2e:live` | Playwright E2E smoke suite against `https://mybooks.piapps.dev` |
+| `npm run test:e2e:live` | Playwright E2E smoke suite against live `https://mybooks.piapps.dev` (prints a guest-only warning) |
 
 ### Client (`client/package.json`)
 | Script | Does |
 |---|---|
-| `npm run dev` | Vite dev server on :3000 (proxies `/api` → :5003) |
+| `npm run dev` | Vite dev server on :3000 (proxies `/api` → `VITE_API_PROXY`, default :5093) |
 | `npm run build` | Production build into `client/build` |
 | `npm run preview` | Preview the production build |
 | `npm run lint` | ESLint over `client/src` (React + hooks) |
@@ -299,9 +306,9 @@ asserting zero page errors and zero `>=500` responses.
 `.github/workflows/ci.yml` runs on every pull request and on pushes to `main`,
 on Node 24 (GitHub Actions are SHA-pinned):
 
-- **server**: `npm ci` → `npm run lint` → `npm test`
+- **server**: `npm ci --ignore-scripts` → `npm rebuild bcrypt` → `npm run lint` → `npm test`
 - **client**: `npm ci` → `npm run lint` → `npm test` → `npm run build`
-- **e2e**: build server + client → install Chromium → `npm run test:e2e`
+- **e2e**: server `npm ci --ignore-scripts` + client `npm ci` + build → install Chromium → `npm run test:e2e`
 
 Dependabot (`.github/dependabot.yml`) opens weekly grouped minor/patch PRs for
 the server, the client and the GitHub Actions.
@@ -311,13 +318,20 @@ the server, the client and the GitHub Actions.
 ## 🚢 Deployment
 
 Production runs on `piapps` under PM2 (app `mybooks`) on `127.0.0.1:5003`, with
-nginx terminating TLS in front at `https://mybooks.piapps.dev`.
+nginx terminating TLS in front at `https://mybooks.piapps.dev`. This is the live
+Atlas database. Do not run `npm test` or the Vite dev server against port `5003`
+in this clone (tests must use a loopback in-memory MongoDB; Vite defaults to
+`:5093` and refuses `:5003`). `npm run build` sets `emptyOutDir: true`, so a
+rebuild briefly clears `client/build` and static assets will 404 until it
+finishes.
 
 ```bash
 cd /home/zk/projects/reading-habit-tracker
 git pull --ff-only origin main
-npm ci            # root + client (postinstall)
-npm run build     # Vite build into client/build
+npm ci --ignore-scripts
+npm rebuild bcrypt
+npm run install-client
+npm run build     # Vite build into client/build (briefly clears that dir)
 pm2 restart mybooks
 ```
 

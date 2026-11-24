@@ -5,16 +5,15 @@
   "description": "A web application to track reading habits using Goodreads export data",
   "main": "server.js",
   "scripts": {
-    "postinstall": "cd client && npm ci || npm install",
     "build": "cd client && npm run build",
     "start": "node server.js",
     "dev": "NODE_ENV=development nodemon server.js",
     "client": "cd client && npm start",
-    "install-client": "cd client && npm install",
+    "install-client": "cd client && npm ci",
     "lint": "eslint .",
     "test": "jest",
     "test:e2e": "playwright test --project=chromium",
-    "test:e2e:live": "MYBOOKS_BASE_URL=https://mybooks.piapps.dev playwright test --project=chromium"
+    "test:e2e:live": "node e2e/warn-live.mjs && MYBOOKS_BASE_URL=https://mybooks.piapps.dev playwright test --project=chromium"
   },
   "author": "hexawulf",
   "license": "MIT",

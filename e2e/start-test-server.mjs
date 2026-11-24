@@ -18,6 +18,7 @@ import { createRequire } from 'node:module';
 import { generateKeyPairSync } from 'node:crypto';
 
 const require = createRequire(import.meta.url);
+const { assertSafeTestMongoUri } = require('../src/safety');
 
 const PORT = process.env.MYBOOKS_E2E_PORT || '5093';
 
@@ -56,6 +57,7 @@ async function main() {
   // HTTPS on the loopback test server.
   process.env.NODE_ENV = process.env.NODE_ENV === 'production' ? 'test' : (process.env.NODE_ENV || 'test');
   setFakeFirebaseEnv();
+  assertSafeTestMongoUri(process.env.MONGO_URI);
 
   const server = require('../server.js');
   const httpServer = await server.start();
