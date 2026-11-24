@@ -1,3 +1,12 @@
+// HAZARD: this file is the production PM2 process (app name "mybooks")
+// on piapps, bound to 127.0.0.1:5003 and using the live Atlas database
+// via the clone's .env. Do not start or restart it from a dev checkout
+// by accident. Do not run `npm test` or the Vite dev server against
+// port 5003 in the live clone — tests must use a loopback in-memory
+// MongoDB, and Vite defaults to :5093 (port 5003 is refused).
+// `npm run build` sets emptyOutDir, so a rebuild briefly clears client/build
+// and will 404 static assets until the build finishes.
+
 const path = require('path');
 
 // Allow the working directory to be overridden via environment variable.

@@ -8,6 +8,9 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 module.exports = async () => {
   const mongod = await MongoMemoryServer.create();
   process.env.MONGO_URI = mongod.getUri();
+  // Test-only values, propagated to Jest workers. Not real secrets.
+  process.env.SESSION_SECRET = process.env.SESSION_SECRET || 'test-session-secret';
+  process.env.NODE_ENV = 'test';
   // Stash the instance so globalTeardown can stop it.
   global.__MONGOD__ = mongod;
 };
