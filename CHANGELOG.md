@@ -8,6 +8,8 @@
   teal-400 links in dark mode, and teal-700 links in light mode.
 - Logo and favicons are the rounded teal tile with the MB mark
   (`#14B8A6` → `#0D9488`). `theme-color` is `#0D9488`.
+- README screenshots recaptured from the synthetic Goodreads fixture so the
+  dark dashboard, light dashboard, and monthly progress views show the teal UI.
 
 ## [1.3.0] - 2026-11-22
 
