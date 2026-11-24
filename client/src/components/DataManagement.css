@@ -2,8 +2,8 @@
 
 /* Dark Theme Defaults */
 .data-management {
-  background-color: #2d3748 !important;
-  color: #f7fafc !important;
+  background-color: var(--night-owl-card-background) !important;
+  color: var(--night-owl-text) !important;
   border-radius: 10px;
   padding: 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Kept for consistency, consider removing if not desired in dark theme */
@@ -13,7 +13,7 @@
 .data-management h2 {
   margin-top: 0;
   margin-bottom: 1.5rem;
-  color: #f7fafc !important; /* Dark theme adjustment */
+  color: var(--night-owl-text) !important; /* Dark theme adjustment */
   font-size: 1.5rem;
 }
 
@@ -26,9 +26,9 @@
 
 .action-card {
   padding: 1.5rem;
-  background-color: #2d3748 !important;
-  color: #f7fafc !important;
-  border: 1px solid #4a5568 !important;
+  background-color: var(--night-owl-card-background) !important;
+  color: var(--night-owl-text) !important;
+  border: 1px solid var(--night-owl-border) !important;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -37,12 +37,12 @@
 .action-card h3 {
   margin-top: 0;
   margin-bottom: 0.5rem;
-  color: #f7fafc !important; /* Dark theme adjustment */
+  color: var(--night-owl-text) !important; /* Dark theme adjustment */
   font-size: 1.2rem;
 }
 
 .action-card p {
-  color: #a0aec0 !important; /* Dark theme adjustment for less emphasis */
+  color: var(--night-owl-muted) !important; /* Dark theme adjustment for less emphasis */
   margin-bottom: 1rem;
   flex-grow: 1;
 }
@@ -67,8 +67,8 @@
 }
 
 .export-button:disabled {
-  background-color: #4a5568 !important; /* Dark theme adjustment */
-  color: #a0aec0 !important; /* Dark theme adjustment */
+  background-color: var(--night-owl-border) !important; /* Dark theme adjustment */
+  color: var(--night-owl-muted) !important; /* Dark theme adjustment */
   cursor: not-allowed;
 }
 
@@ -93,7 +93,7 @@
 .file-input-label {
   display: inline-block;
   padding: 0.75rem 1rem;
-  background-color: #3F51B5; /* Keep original or choose dark theme friendly blue */
+  background-color: var(--night-owl-accent1); /* Keep original or choose dark theme friendly blue */
   color: white;
   border-radius: 4px;
   cursor: pointer;
@@ -103,7 +103,7 @@
 }
 
 .file-input-label:hover {
-  background-color: #303f9f;
+  background-color: var(--accent-hover);
 }
 
 .file-input {
@@ -127,9 +127,9 @@
 }
 
 .data-info {
-  background-color: #2d3748 !important;
-  color: #f7fafc !important;
-  border: 1px solid #4a5568 !important;
+  background-color: var(--night-owl-card-background) !important;
+  color: var(--night-owl-text) !important;
+  border: 1px solid var(--night-owl-border) !important;
   padding: 1rem;
   border-radius: 8px;
 }
@@ -137,19 +137,19 @@
 .data-info h3 {
   margin-top: 0;
   margin-bottom: 0.5rem;
-  color: #f7fafc !important; /* Dark theme adjustment */
+  color: var(--night-owl-text) !important; /* Dark theme adjustment */
   font-size: 1.1rem;
 }
 
 .data-info p {
-  color: #a0aec0 !important; /* Dark theme adjustment */
+  color: var(--night-owl-muted) !important; /* Dark theme adjustment */
   margin-bottom: 0.5rem;
 }
 
 .data-stats {
   display: flex;
   gap: 1.5rem;
-  color: #a0aec0 !important; /* Dark theme adjustment */
+  color: var(--night-owl-muted) !important; /* Dark theme adjustment */
 }
 
 @media (max-width: 768px) {
@@ -161,32 +161,32 @@
 
 /* Light Theme Overrides */
 body.light-theme .data-management {
-  background-color: #F8F9FA !important;
-  color: #212529 !important;
+  background-color: var(--light-background) !important;
+  color: var(--light-text) !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Ensure shadow is present in light theme */
 }
 
 body.light-theme .data-management h2 {
-  color: #212529 !important;
+  color: var(--light-text) !important;
 }
 
 body.light-theme .action-card {
-  background-color: #F8F9FA !important;
-  color: #212529 !important;
-  border: 1px solid #DEE2E6 !important;
+  background-color: var(--light-card-background) !important;
+  color: var(--light-text) !important;
+  border: 1px solid var(--light-border) !important;
 }
 
 body.light-theme .action-card h3 {
-  color: #212529 !important;
+  color: var(--light-text) !important;
 }
 
 body.light-theme .action-card p {
-  color: #495057 !important; /* Light theme adjustment for paragraph text */
+  color: var(--light-muted) !important; /* Light theme adjustment for paragraph text */
 }
 
 body.light-theme .export-button:disabled {
   background-color: #e9ecef !important; /* Light theme adjustment */
-  color: #6c757d !important; /* Light theme adjustment */
+  color: var(--light-muted) !important; /* Light theme adjustment */
 }
 
 body.light-theme .danger-zone {
@@ -202,19 +202,19 @@ body.light-theme .success-message {
 }
 
 body.light-theme .data-info {
-  background-color: #F8F9FA !important;
-  color: #212529 !important;
-  border: 1px solid #DEE2E6 !important;
+  background-color: var(--light-card-background) !important;
+  color: var(--light-text) !important;
+  border: 1px solid var(--light-border) !important;
 }
 
 body.light-theme .data-info h3 {
-  color: #212529 !important;
+  color: var(--light-text) !important;
 }
 
 body.light-theme .data-info p {
-  color: #495057 !important; /* Light theme adjustment */
+  color: var(--light-muted) !important; /* Light theme adjustment */
 }
 
 body.light-theme .data-stats {
-  color: #495057 !important; /* Light theme adjustment */
+  color: var(--light-muted) !important; /* Light theme adjustment */
 }

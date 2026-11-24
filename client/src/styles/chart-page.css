@@ -2,7 +2,7 @@
 .monthly-progress-page,
 .yearly-progress-page {
   padding: 1rem;
-  color: #f7fafc !important;
+  color: var(--night-owl-text) !important;
 }
 
 .monthly-progress-page h1,
@@ -30,7 +30,7 @@
 
 body.light-theme .monthly-progress-page,
 body.light-theme .yearly-progress-page {
-  color: #212529 !important;
+  color: var(--light-text) !important;
 }
 
 @media (max-width: 992px) {

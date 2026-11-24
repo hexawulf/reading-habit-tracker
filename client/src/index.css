@@ -1,28 +1,54 @@
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Night Owl (Dark Theme) Specifics */
-  --night-owl-background: #011627;
-  --night-owl-text: #f7fafc;
-  --night-owl-card-background: #2d3748;
-  --night-owl-border: #4a5568;
-  --night-owl-accent1: #7e57c2; /* Purple */
-  --night-owl-accent1-rgb: 126, 87, 194;
-  --night-owl-accent2: #82aaff; /* Blueish */
-  --night-owl-accent2-rgb: 130, 170, 255;
+  color-scheme: dark;
 
-  /* Light Theme Specifics */
-  --light-background: #FFFFFF;
-  --light-text: #212529;
-  --light-card-background: #F8F9FA;
-  --light-border: #DEE2E6;
+  /* Canonical 0xWulf teal (vault: canonical-repo-color-teal.md).
+     Button fills use teal-700 so white text stays WCAG AA (5.47:1).
+     teal-500/600 are the brand mark and the second chart series.
+     Same surface stops as PiDeck / PiTasker. */
+  --teal-200: #99f6e4;
+  --teal-300: #5eead4;
+  --teal-400: #2dd4bf;
+  --teal-500: #14b8a6;
+  --teal-600: #0d9488;
+  --teal-700: #0f766e;
+  --teal-800: #115e59;
+  --teal-900: #134e4a;
 
-  /* Generic Variables - Default to Dark Theme */
+  --night-owl-background: #020617; /* slate-950 */
+  --night-owl-text: #f8fafc; /* slate-50 */
+  --night-owl-muted: #94a3b8; /* slate-400 */
+  --night-owl-card-background: #1e293b; /* slate-800 */
+  --night-owl-border: #475569; /* slate-600 */
+  --night-owl-accent1: var(--teal-700);
+  --night-owl-accent1-rgb: 15, 118, 110;
+  --night-owl-accent2: var(--teal-500);
+  --night-owl-accent2-rgb: 20, 184, 166;
+  --night-owl-link: var(--teal-400);
+
+  --light-background: #f1f5f9; /* slate-100 */
+  --light-text: #0f172a; /* slate-900 */
+  --light-muted: #475569; /* slate-600 */
+  --light-card-background: #ffffff;
+  --light-border: #cbd5e1; /* slate-300 */
+  --light-accent1: var(--teal-700);
+  --light-accent1-rgb: 15, 118, 110;
+  --light-accent2: var(--teal-600);
+  --light-accent2-rgb: 13, 148, 136;
+  --light-link: var(--teal-700);
+
+  --on-accent: #ffffff;
+  --accent-hover: var(--teal-800);
+  --brand: var(--teal-600);
+
+  /* Generic variables. Default is the dark theme; body.light-theme overrides. */
   --current-background: var(--night-owl-background);
   --current-text: var(--night-owl-text);
+  --current-muted: var(--night-owl-muted);
   --current-card-background: var(--night-owl-card-background);
   --current-border: var(--night-owl-border);
-  /* --current-accent1: var(--night-owl-accent1); */ /* Example if needed */
+  --current-link: var(--night-owl-link);
 
   /* Typography */
   --font-base: 'Fira Code', 'Consolas', 'Monaco', monospace;
@@ -50,11 +76,13 @@ body {
 }
 
 body.light-theme {
+  color-scheme: light;
   --current-background: var(--light-background);
   --current-text: var(--light-text);
+  --current-muted: var(--light-muted);
   --current-card-background: var(--light-card-background);
   --current-border: var(--light-border);
-  /* --current-accent1: var(--light-accent1); */ /* Example if needed */
+  --current-link: var(--light-link);
 }
 
 code {
@@ -82,8 +110,23 @@ h3 { font-size: var(--h3-font-size, 1.4rem); }
 
 a {
   text-decoration: none;
-  color: var(--night-owl-accent1); /* Keep purple links for now, or use a --current-link-color variable */
+  color: var(--current-link);
 }
 a:hover {
   text-decoration: underline;
+}
+
+::selection {
+  background: var(--teal-900);
+  color: var(--night-owl-text);
+}
+
+body.light-theme ::selection {
+  background: var(--teal-200);
+  color: var(--light-text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--current-link);
+  outline-offset: 2px;
 }

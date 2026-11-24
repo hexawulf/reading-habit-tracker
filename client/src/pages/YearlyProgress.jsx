@@ -16,7 +16,7 @@ const NIGHT_OWL_TEXT = "var(--night-owl-text)";
 const NIGHT_OWL_BORDER = "var(--night-owl-border)";
 // Palette for Goal Achievement History (example)
 const GOAL_ACHIEVEMENT_COLORS = {
-  over100: '#82aaff', // Accent 2 (Excellent)
+  over100: 'var(--night-owl-accent2)', // Accent 2 (Excellent)
   almost100: '#c3e88d', // Light Green (Great)
   good: '#ffc700',     // Yellow (Good)
   ok: '#ff8c42',       // Orange (Okay)

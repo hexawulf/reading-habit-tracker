@@ -33,7 +33,9 @@
 }
 
 .header-logo {
-  max-height: 32px; /* Slightly smaller logo */
+  width: 32px;
+  height: 32px;
+  display: block;
 }
 
 .logo h1 { /* Will inherit font-family */
@@ -69,8 +71,8 @@
 
 
 .nav-link:hover {
-  color: var(--night-owl-accent1); /* Accent color for text on hover */
-  background-color: var(--current-border); /* Themed: Subtle background hover */
+  color: var(--current-link);
+  background-color: var(--current-border);
 }
 
 .user-menu {
@@ -94,7 +96,7 @@
 
 .user-avatar-button:hover {
   background-color: var(--current-border); /* Themed: Subtle background hover */
-  color: var(--night-owl-accent1); /* Accent color for text on hover */
+  color: var(--current-link);
 }
 
 .user-avatar-img {
@@ -147,7 +149,7 @@
 
 .dropdown-item:hover {
   background-color: var(--current-border); /* Themed: Subtle background hover */
-  color: var(--night-owl-accent1); /* Accent color for text on hover */
+  color: var(--current-link);
 }
 
 /* Remove hamburger menu toggle styles */

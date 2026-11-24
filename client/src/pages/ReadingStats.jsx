@@ -8,7 +8,7 @@ const NIGHT_OWL_ACCENT_1 = "var(--night-owl-accent1)";
 const NIGHT_OWL_TEXT = "var(--night-owl-text)";
 const NIGHT_OWL_BORDER = "var(--night-owl-border)";
 const RATING_COLORS = [ // Night Owl friendly rating colors
-  '#ff5370', '#ff8c42', '#ffc700', '#c3e88d', '#89ddff'
+  '#ff5370', '#ff8c42', '#ffc700', '#c3e88d', 'var(--teal-400)'
 ];
 
 export default function ReadingStats() {
